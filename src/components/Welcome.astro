@@ -2,6 +2,7 @@
 import astroLogo from "../assets/astro.svg";
 import background from "../assets/background.svg";
 const search = Astro.url.searchParams;
+console.log(search);
 ---
 
 <div id="container">
@@ -21,7 +22,7 @@ const search = Astro.url.searchParams;
         </label>
         <label>
           Whatsapp:
-          <input type="password" name="password" />
+          <input type="text" name="password" />
         </label>
         <button class="rounded-md bg-primary p-2 text-white">
           Quero entrar!
