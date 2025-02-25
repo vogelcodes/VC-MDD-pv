@@ -3,6 +3,22 @@ import astroLogo from "../assets/astro.svg";
 import background from "../assets/background.svg";
 const search = Astro.url.searchParams;
 console.log(search);
+
+if (Astro.request.method === "POST") {
+  try {
+    const data = await Astro.request.formData();
+    const name = data.get("username");
+    const email = data.get("email");
+    const password = data.get("password");
+    const source = data.get("source");
+    console.log(data);
+    // Do something with the data
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
+  }
+}
 ---
 
 <div id="container">
