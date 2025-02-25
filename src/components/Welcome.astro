@@ -12,6 +12,7 @@ if (Astro.request.method === "POST") {
     const password = data.get("password");
     const source = data.get("source");
     console.log(data);
+    Astro.redirect("https://pay.hotmart.com/checkout/6150000");
     // Do something with the data
   } catch (error) {
     if (error instanceof Error) {
