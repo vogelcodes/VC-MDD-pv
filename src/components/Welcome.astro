@@ -31,7 +31,12 @@ if (Astro.request.method === "POST") {
           Nome:
           <input type="text" name="username" />
         </label>
-        <input type="text" name="source" value={search.get("utm_source")} />
+        <input
+          type="text"
+          name="source"
+          hidden
+          value={search.get("utm_source")}
+        />
         <label>
           Email:
           <input type="email" name="email" />
