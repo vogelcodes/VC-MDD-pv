@@ -11,7 +11,10 @@ if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
   const name = data.get("name");
   const firstName = name?.toString().split(" ")[0];
-  const ct = hash.sha256().update(data.get("ct-lwr")?.toString()).digest("hex");
+  const ct = hash
+    .sha256()
+    .update(data.get("city-lwr")?.toString())
+    .digest("hex");
   const st = hash.sha256().update(data.get("state")?.toString()).digest("hex");
   const country = hash
     .sha256()
