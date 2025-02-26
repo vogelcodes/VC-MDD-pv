@@ -4,6 +4,8 @@ import background from "../assets/background.svg";
 import ReactPhoneInput from "./react-phone";
 import { formatPhoneNumber } from "react-phone-number-input";
 
+const { clientID } = Astro.props;
+
 type LocationInfo = {
   country_code: string;
 
@@ -52,6 +54,7 @@ console.log(locationInfo.city);
           hidden
           value={JSON.stringify(locationInfo)}
         />
+        <input type="text" name="clientID" hidden value={clientID} />
         <label>
           Email:
           <input type="email" name="email" />

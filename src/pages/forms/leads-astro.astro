@@ -1,4 +1,6 @@
 ---
+import { date } from "astro:schema";
+
 if (Astro.request.method === "POST") {
   const userIP = Astro.clientAddress;
   const data = await Astro.request.formData();
@@ -7,11 +9,21 @@ if (Astro.request.method === "POST") {
   const phoneac = data.get("phoneac");
   const phone = data.get("phone");
   const source = data.get("source");
-  console.log(data, userIP);
+  const location = data.get("location");
+  const clientID = data.get("clientID");
+
   // Do something with the data
   // Redirect to a thank you page
-  return Astro.redirect(
-    `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+  //   return Astro.redirect(
+  //     `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+  //   );
+  return new Response(
+    JSON.stringify({ name, email, phoneac, phone, source, location, clientID }),
+    {
+      headers: {
+        "content-type": "text/plain",
+      },
+    }
   );
 }
 ---
