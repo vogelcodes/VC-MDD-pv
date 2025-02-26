@@ -6,9 +6,17 @@ hash.sha256().update("abc").digest("hex");
 
 if (Astro.request.method === "POST") {
   const userIP = Astro.clientAddress;
+  const agent = Astro.request.headers.get("user-agent");
+  console.log(agent);
   const data = await Astro.request.formData();
   const name = data.get("name");
   const firstName = name?.toString().split(" ")[0];
+  const ct = hash.sha256().update(data.get("ct-lwr")?.toString()).digest("hex");
+  const st = hash.sha256().update(data.get("state")?.toString()).digest("hex");
+  const country = hash
+    .sha256()
+    .update(data.get("countryName")?.toString())
+    .digest("hex");
   const fn = hash
     .sha256()
     .update(firstName?.toLowerCase() || "")
@@ -53,8 +61,12 @@ if (Astro.request.method === "POST") {
       ln,
       em,
       ph,
+      ct,
+      st,
+      country,
+      client_user_agent: agent,
 
-      userIP,
+      client_ip_address: userIP,
     }),
     {
       headers: {

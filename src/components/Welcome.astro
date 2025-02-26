@@ -42,12 +42,21 @@ console.log(locationInfo.city);
           Nome:
           <input type="text" name="name" />
         </label>
+        <label>
+          Email:
+          <input type="email" name="email" />
+        </label>
+        <label>
+          Whatsapp:
+          <ReactPhoneInput client:load />
+        </label>
         <input
           type="text"
           name="source"
           hidden
           value={search.get("utm_source")}
         />
+        <input type="text" name="fbc" hidden value={search.get("fbclid")} />
         <input
           type="text"
           name="location"
@@ -62,7 +71,7 @@ console.log(locationInfo.city);
         />
         <input
           type="text"
-          name="ct"
+          name="city-lwr"
           hidden
           value={locationInfo.city
             ?.toString()
@@ -71,26 +80,18 @@ console.log(locationInfo.city);
         />
         <input
           type="text"
-          name="st"
+          name="state"
           hidden
           value={locationInfo.region?.toLowerCase()}
         />
 
         <input
           type="text"
-          name="country"
+          name="countryName"
           hidden
           value={JSON.stringify(locationInfo.country)}
         />
         <input type="text" name="clientID" hidden value={clientID} />
-        <label>
-          Email:
-          <input type="email" name="email" />
-        </label>
-        <label>
-          Whatsapp:
-          <ReactPhoneInput client:load />
-        </label>
         <button class="rounded-md bg-primary p-2 text-white">
           Quero entrar!
         </button>
