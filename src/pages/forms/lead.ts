@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `https://pay.hotmart.com/O84147403X?checkoutMode=10&sck=${source}&email=${email}&name=${name}&phoneac=${phoneac}`,
+        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phoneac=${phoneac}`,
       },
     });
 
