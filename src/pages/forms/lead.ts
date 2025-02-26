@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { formatPhoneNumber } from "react-phone-number-input";
 
 export const GET: APIRoute = ({ params, request }) => {
   return new Response(
@@ -14,12 +15,13 @@ export const POST: APIRoute = async ({ request }) => {
     const name = data.get("name");
     const email = data.get("email");
     const phoneac = data.get("phoneac");
+    const phone = data.get("phone");
     const source = data.get("source");
     console.log(data);
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phoneac=${phoneac}`,
+        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
       },
     });
 
