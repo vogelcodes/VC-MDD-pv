@@ -1,0 +1,54 @@
+import type { APIRoute } from "astro";
+
+export const GET: APIRoute = ({ params, request }) => {
+  return new Response(
+    JSON.stringify({
+      message: "This was a GET!",
+    })
+  );
+};
+
+export const POST: APIRoute = async ({ request }) => {
+  try {
+    const data = await request.formData();
+    const name = data.get("name");
+    const email = data.get("email");
+    const phone = data.get("phone");
+    const source = data.get("source");
+    console.log(data);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `https://pay.hotmart.com/O84147403X?checkoutMode=10&sck=${source}&email=${email}&name=${name}&phoneac=${phone}`,
+      },
+    });
+
+    // Do something with the data
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
+  }
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: "https://pv.lactoflow.com.br",
+    },
+  });
+};
+
+export const DELETE: APIRoute = ({ request }) => {
+  return new Response(
+    JSON.stringify({
+      message: "This was a DELETE!",
+    })
+  );
+};
+
+export const ALL: APIRoute = ({ request }) => {
+  return new Response(
+    JSON.stringify({
+      message: `This was a ${request.method}!`,
+    })
+  );
+};
