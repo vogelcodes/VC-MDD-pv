@@ -11,13 +11,14 @@ export const GET: APIRoute = ({ params, request }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    const userIP = request.headers.get("x-real-ip");
     const data = await request.formData();
     const name = data.get("name");
     const email = data.get("email");
     const phoneac = data.get("phoneac");
     const phone = data.get("phone");
     const source = data.get("source");
-    console.log(data);
+    console.log(data, userIP);
     return new Response(null, {
       status: 302,
       headers: {

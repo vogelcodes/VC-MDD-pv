@@ -4,9 +4,27 @@ import background from "../assets/background.svg";
 import ReactPhoneInput from "./react-phone";
 import { formatPhoneNumber } from "react-phone-number-input";
 
-const search = Astro.url.searchParams;
+type LocationInfo = {
+  country_code: string;
 
-console.log(search);
+  country_name: string;
+  region_code: string;
+  region_name: string;
+  city: string;
+  isp: string;
+  zip_code: string;
+  time_zone: string;
+  latitude: number;
+  longitude: number;
+};
+
+const search = Astro.url.searchParams;
+const userIp = Astro.clientAddress;
+console.log(userIp);
+const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
+const locationInfo: LocationInfo = await ipResponse.json();
+
+console.log(locationInfo.city);
 ---
 
 <div id="container">
