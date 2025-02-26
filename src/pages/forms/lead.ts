@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request }) => {
     const data = await request.formData();
     const name = data.get("name");
     const email = data.get("email");
-    const phone = data.get("phoneac");
+    const phoneac = data.get("phoneac");
     const source = data.get("source");
     console.log(data);
     return new Response(null, {
