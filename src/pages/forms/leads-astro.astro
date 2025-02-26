@@ -1,0 +1,17 @@
+---
+if (Astro.request.method === "POST") {
+  const userIP = Astro.clientAddress;
+  const data = await Astro.request.formData();
+  const name = data.get("name");
+  const email = data.get("email");
+  const phoneac = data.get("phoneac");
+  const phone = data.get("phone");
+  const source = data.get("source");
+  console.log(data, userIP);
+  // Do something with the data
+  // Redirect to a thank you page
+  return Astro.redirect(
+    `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+  );
+}
+---
