@@ -15,16 +15,19 @@ export default function ReactPhoneInput() {
       <PhoneInput
         required
         labels={ptBR}
+        placeholder="DDD + Número"
         name="phoneraw"
         flags={flags}
         value={phone}
         defaultCountry="BR"
         onChange={setPhone}
       />
-      <input type="text" name="intl-phone" value={phone} />
+      <input type="text" readOnly hidden name="intl-phone" value={phone} />
       <input
         type="text"
         name="phoneac"
+        readOnly
+        hidden
         value={formatPhoneNumber(phone || "")}
       />
     </>

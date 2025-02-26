@@ -46,6 +46,12 @@ console.log(locationInfo.city);
           hidden
           value={search.get("utm_source")}
         />
+        <input
+          type="text"
+          name="location"
+          hidden
+          value={JSON.stringify(locationInfo)}
+        />
         <label>
           Email:
           <input type="email" name="email" />
