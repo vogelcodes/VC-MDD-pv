@@ -1,7 +1,10 @@
 ---
-import Welcome from "../components/Welcome.astro";
+import PreCheckout from "../components/Precheckout.astro";
 import Layout from "../layouts/Layout.astro";
 import { createId } from "@paralleldrive/cuid2";
+import { useState } from "react";
+
+// const [cta, setCta] = useState("");
 
 let uuid = createId();
 if (!Astro.cookies.get("uuid")) {
@@ -15,5 +18,8 @@ console.log(clientUuid);
 ---
 
 <Layout>
-  <Welcome clientID={clientUuid?.value} />
+  <PreCheckout clientID={clientUuid?.value} />
+  <button class="rounded-md bg-amber-300 text-center bg-primary p-2 text-black"
+    >CTA 1</button
+  >
 </Layout>

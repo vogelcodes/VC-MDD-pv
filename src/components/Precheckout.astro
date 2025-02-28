@@ -1,0 +1,103 @@
+---
+import ReactPhoneInput from "./react-phone";
+import { formatPhoneNumber } from "react-phone-number-input";
+
+const { clientID, pcId } = Astro.props;
+
+type LocationInfo = {
+  country_code: string;
+
+  country: string;
+  region_code: string;
+  region: string;
+  city: string;
+  isp: string;
+  zip_code: string;
+  time_zone: string;
+  latitude: number;
+  longitude: number;
+};
+
+const search = Astro.url.searchParams;
+const userIp = Astro.clientAddress;
+console.log(userIp);
+const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
+const locationInfo: LocationInfo = await ipResponse.json();
+
+console.log(locationInfo.city);
+---
+
+<div id="container" class="bg-yellow-50">
+  <main>
+    <div class="flex flex-col gap-2 items-center">
+      <h1>Register Form: {pcId}</h1>
+      <form
+        class="flex flex-col items-center gap-1.5"
+        method="post"
+        action="/forms/leads-astro"
+      >
+        <div class="flex flex-col gap-1.5 items-start">
+          <label>
+            Nome:
+            <input type="text" placeholder="Seu Nome" name="name" />
+          </label>
+          <label>
+            Email:
+            <input type="text" placeholder="Seu melhor email" name="email" />
+          </label>
+          <label>
+            Whatsapp:
+            <ReactPhoneInput client:load />
+          </label>
+          <input
+            type="text"
+            name="source"
+            hidden
+            value={search.get("utm_source")}
+          />
+          <input type="text" name="fbc" hidden value={search.get("fbclid")} />
+          <input
+            type="text"
+            name="location"
+            hidden
+            value={JSON.stringify(locationInfo)}
+          />
+          <input
+            type="text"
+            name="city"
+            hidden
+            value={JSON.stringify(locationInfo.city)}
+          />
+          <input
+            type="text"
+            name="city-lwr"
+            hidden
+            value={locationInfo.city
+              ?.toString()
+              .replace(/\s+/g, "")
+              .toLowerCase()}
+          />
+          <input
+            type="text"
+            name="state"
+            hidden
+            value={locationInfo.region?.toLowerCase()}
+          />
+
+          <input
+            type="text"
+            name="countryName"
+            hidden
+            value={JSON.stringify(locationInfo.country)}
+          />
+          <input type="text" name="clientID" hidden value={clientID} />
+        </div>
+        <button
+          class="rounded-md bg-amber-300 text-center bg-primary p-2 text-black"
+        >
+          Quero entrar!
+        </button>
+      </form>
+    </div>
+  </main>
+</div>
