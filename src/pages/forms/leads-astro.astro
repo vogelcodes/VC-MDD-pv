@@ -42,6 +42,8 @@ if (Astro.request.method === "POST") {
   const source = data.get("source");
   const location = data.get("location");
   const clientID = data.get("clientID");
+  const fbp = data.get("fbp");
+  const fbc = data.get("fbc");
   const fields: { [key: string]: any } = {};
   data.forEach((value, key) => {
     fields[key] = value;
@@ -63,6 +65,8 @@ if (Astro.request.method === "POST") {
           country: country, // hashed country name
           client_ip_address: userIP,
           client_user_agent: agent,
+          fbc,
+          fbp,
         },
         custom_data: {
           source: source,
@@ -72,7 +76,7 @@ if (Astro.request.method === "POST") {
       },
     ],
   };
-  console.log("Meta Conversion API Event Data:", metaEventData);
+  console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
   const sendToMeta = async () => {
     try {
       if (!META_PIXEL_ACCESS_TOKEN || !META_PIXEL_ID) {

@@ -29,6 +29,29 @@ console.log(locationInfo.city);
 ---
 
 <div id="container" class="bg-green">
+  <script>
+    //get _fbc cookie from browser
+    const fbc = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("_fbc"))
+      ?.split("=")[1];
+    //get _fbp cookie from browser
+    console.log(fbc);
+    const fbp = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("_fbp"))
+      ?.split("=")[1];
+    console.log(fbp);
+    //set _fbc cookie value to hidden input
+    const fbcInput = document.querySelector('input[name="fbc"]');
+    if (fbcInput) {
+      fbcInput.setAttribute("value", fbc ?? "");
+    }
+    const fbpInput = document.querySelector('input[name="fbp"]');
+    if (fbpInput) {
+      fbpInput.setAttribute("value", fbp ?? "");
+    }
+  </script>
   <main>
     <div class="flex flex-col gap-2 items-center">
       <h1 class="text-2xl font-bold leading-6 text-blue">
@@ -59,7 +82,8 @@ console.log(locationInfo.city);
             value={search.get("utm_source")}
           />
           <input type="text" name="cta" hidden value="" />
-          <input type="text" name="fbc" hidden value={search.get("fbclid")} />
+          <input type="text" name="fbc" hidden />
+          <input type="text" name="fbp" hidden />
           <input
             type="text"
             name="location"
