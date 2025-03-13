@@ -12,6 +12,7 @@ export default function YoutubePlayer() {
         id="eXp3-bclWPs"
         title="Método LactoFlow®️"
         poster="maxresdefault"
+        webp
       />
     </div>
   );
