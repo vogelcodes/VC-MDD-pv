@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Metropolis", "sans-serif";
+  --color-green: #76b1af;
+  --color-red: #c6302c;
+  --color-red-100: #f9b8ac;
+  --color-red-400: #f55d4e;
+  --color-red-fura: #ff3131;
+  --color-blue: #122e49;
+  --color-blue-fura: #14a3fe;
+  --color-green-fura: #2adcaa;
+  --color-cream: #fcfaef;
+}
+
 @layer base {
   input {
     @apply w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm;

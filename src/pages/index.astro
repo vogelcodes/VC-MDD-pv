@@ -18,6 +18,56 @@ console.log(clientUuid);
 ---
 
 <Layout>
+  <main>
+    <header class="flex flex-col items-center">
+      <div class="w-[180px] sm:w-[300px]">
+        <img src="/logo-portrait-v2.svg" alt="logo" width={300} height={120} />
+      </div>
+
+      <h1
+        class="mb-[14.4px] mt-6 px-4 text-center text-[18px] font-extrabold text-amber-100 uppercase leading-[29px] tracking-[-25] text-cream sm:w-2/3 sm:px-0 sm:text-[24px] sm:leading-[36px]"
+      >
+        Aprenda como{" "}
+        <span class="text-[25px] text-red-400 sm:text-[35px]">
+          aumentar a sua produção
+        </span>{" "}
+        de leite e ofereça o{" "}
+        <span class="text-[25px] text-green sm:text-[35px]">
+          melhor alimento do mundo
+        </span>{" "}
+        ao seu bebê.
+      </h1>
+      <p
+        class="mx-auto w-[80%] max-w-[600px] text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] tracking-[-25] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+      >
+        Assista a essa aula gratuita e comece a aumentar a sua produção de leite
+        HOJE MESMO
+      </p>
+      <div class="flex flex-col items-center lg:flex-row">
+        <div class="flex items-center">
+          <div class="m-2">
+            <img
+              class="ml-2 animate-bounce"
+              src="/arrow-down.svg"
+              alt="one"
+              height={36}
+              width={36}
+            />
+          </div>
+        </div>
+      </div>
+      <iframe
+        width="560"
+        height="315"
+        src="https://www.youtube.com/embed/eXp3-bclWPs?si=H8oYqN9H72Zq0FvQ"
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen></iframe>
+      >
+    </header>
+  </main>
+
   <PreCheckout clientID={clientUuid?.value} />
   <button class="rounded-md bg-amber-300 text-center bg-primary p-2 text-black"
     >CTA 1</button

@@ -1,8 +1,7 @@
 ---
 import { date } from "astro:schema";
-import hash from "hash.js";
-
-hash.sha256().update("abc").digest("hex");
+import pkg from "hash.js"; // Correct named import
+const { sha256 } = pkg;
 
 if (Astro.request.method === "POST") {
   const userIP = Astro.clientAddress;
@@ -11,29 +10,24 @@ if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
   const name = data.get("name");
   const firstName = name?.toString().split(" ")[0];
-  const ct = hash
-    .sha256()
+  const ct = sha256() // Directly use sha256()
     .update(data.get("city-lwr")?.toString())
     .digest("hex");
-  const st = hash.sha256().update(data.get("state")?.toString()).digest("hex");
-  const country = hash
-    .sha256()
+  const st = sha256().update(data.get("state")?.toString()).digest("hex"); // Directly use sha256()
+  const country = sha256() // Directly use sha256()
     .update(data.get("countryName")?.toString())
     .digest("hex");
-  const fn = hash
-    .sha256()
+  const fn = sha256() // Directly use sha256()
     .update(firstName?.toLowerCase() || "")
     .digest("hex");
 
   const lastName = name?.toString().slice(name?.toString().indexOf(" ") + 1);
-  const ln = hash
-    .sha256()
+  const ln = sha256() // Directly use sha256()
     .update(lastName?.toLowerCase() || "")
     .digest("hex");
 
   const email = data.get("email");
-  const em = hash
-    .sha256()
+  const em = sha256() // Directly use sha256()
     .update(email?.toString().trim().toLowerCase() || "")
     .digest("hex");
 
@@ -41,7 +35,7 @@ if (Astro.request.method === "POST") {
   const phone = data.get("phone");
   const intlPhone = data.get("intl-phone");
   const intlPhoneSanitized = intlPhone?.toString().replace("+", "");
-  const ph = hash.sha256().update(intlPhoneSanitized).digest("hex");
+  const ph = sha256().update(intlPhoneSanitized).digest("hex"); // Directly use sha256()
   const source = data.get("source");
   const location = data.get("location");
   const clientID = data.get("clientID");
@@ -52,9 +46,10 @@ if (Astro.request.method === "POST") {
 
   // Do something with the data
   // Redirect to a thank you page
-  //   return Astro.redirect(
-  //     `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
-  //   );
+  // return Astro.redirect(
+  //   // `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+  //   `/thank-you`
+  // );
   return new Response(
     JSON.stringify({
       ...fields,
