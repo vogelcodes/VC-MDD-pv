@@ -1,5 +1,6 @@
 ---
 import PreCheckout from "../components/Precheckout.astro";
+import YoutubePlayer from "../components/yt-player";
 import Layout from "../layouts/Layout.astro";
 import { createId } from "@paralleldrive/cuid2";
 import { useState } from "react";
@@ -56,7 +57,8 @@ console.log(clientUuid);
           </div>
         </div>
       </div>
-      <iframe
+      <!-- <div>
+        <iframe
         width="560"
         height="315"
         src="https://www.youtube.com/embed/eXp3-bclWPs?si=H8oYqN9H72Zq0FvQ"
@@ -64,9 +66,11 @@ console.log(clientUuid);
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
-      >
+        </div> -->
     </header>
   </main>
+
+  <YoutubePlayer client:load />
 
   <PreCheckout clientID={clientUuid?.value} />
   <button class="rounded-md bg-amber-300 text-center bg-primary p-2 text-black"
