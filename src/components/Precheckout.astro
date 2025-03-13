@@ -19,6 +19,7 @@ type LocationInfo = {
 };
 
 const search = Astro.url.searchParams;
+console.log(search);
 const userIp = Astro.clientAddress;
 console.log(userIp);
 const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
@@ -57,6 +58,7 @@ console.log(locationInfo.city);
             hidden
             value={search.get("utm_source")}
           />
+          <input type="text" name="cta" hidden value="" />
           <input type="text" name="fbc" hidden value={search.get("fbclid")} />
           <input
             type="text"

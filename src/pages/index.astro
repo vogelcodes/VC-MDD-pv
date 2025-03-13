@@ -3,9 +3,6 @@ import PreCheckout from "../components/Precheckout.astro";
 import YoutubePlayer from "../components/yt-player";
 import Layout from "../layouts/Layout.astro";
 import { createId } from "@paralleldrive/cuid2";
-import { useState } from "react";
-
-// const [cta, setCta] = useState("");
 
 let uuid = createId();
 if (!Astro.cookies.get("uuid")) {
@@ -13,9 +10,6 @@ if (!Astro.cookies.get("uuid")) {
 }
 let clientUuid = Astro.cookies.get("uuid");
 console.log(clientUuid);
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
@@ -72,8 +66,63 @@ console.log(clientUuid);
 
   <YoutubePlayer client:load />
 
-  <PreCheckout clientID={clientUuid?.value} />
-  <button class="rounded-md bg-amber-300 text-center bg-primary p-2 text-black"
-    >CTA 1</button
+  <script>
+    import { isModalOpen, ctaValue } from "../store";
+
+    const modal = document.getElementById("modal") as HTMLDivElement;
+
+    function openModal(cta: string) {
+      // add cta to url params
+      //add cta to input hidden
+      const form = document.querySelector("form");
+      if (form) {
+        const ctaInput = form.querySelector('input[name="cta"]');
+        if (ctaInput) {
+          ctaInput.setAttribute("value", cta);
+        }
+      }
+
+      ctaValue.set(cta);
+      if (!modal) return;
+
+      modal.style.display = "flex";
+    }
+    function closeModal() {
+      if (!modal) return;
+      modal.style.display = "none";
+    }
+    isModalOpen.set(false);
+
+    const cta1 = document.getElementById("1");
+    if (cta1) cta1.addEventListener("click", () => openModal("1"));
+
+    const cta2 = document.getElementById("2");
+    if (cta2) cta2.addEventListener("click", () => openModal("2"));
+
+    const cta3 = document.getElementById("3");
+    if (cta3) cta3.addEventListener("click", () => openModal("3"));
+
+    const cta4 = document.getElementById("4");
+    if (cta4) cta4.addEventListener("click", () => openModal("4"));
+
+    const closeBtn = document.getElementById("close");
+    if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
+  </script>
+
+  <div class="flex flex-col items-center space-y-4 my-4">
+    <button id="1" class="rounded-md bg-amber-300 p-2 text-black">CTA 1</button>
+    <button id="2" class="rounded-md bg-amber-300 p-2 text-black">CTA 2</button>
+    <button id="3" class="rounded-md bg-amber-300 p-2 text-black">CTA 3</button>
+    <button id="4" class="rounded-md bg-amber-300 p-2 text-black">CTA 4</button>
+  </div>
+
+  <div
+    id="modal"
+    class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
   >
+    <div class="bg-white p-4 rounded-md relative">
+      <button id="close" class="absolute top-2 right-2"> Fechar </button>
+      <PreCheckout clientID={clientUuid?.value} />
+    </div>
+  </div>
 </Layout>
