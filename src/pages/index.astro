@@ -1,4 +1,5 @@
 ---
+import CTA from "../components/CTA.astro";
 import PreCheckout from "../components/Precheckout.astro";
 import YoutubePlayer from "../components/yt-player";
 import Layout from "../layouts/Layout.astro";
@@ -85,11 +86,11 @@ console.log(clientUuid);
       ctaValue.set(cta);
       if (!modal) return;
 
-      modal.style.display = "flex";
+      modal.classList.remove("hidden");
     }
     function closeModal() {
       if (!modal) return;
-      modal.style.display = "none";
+      modal.classList.add("hidden");
     }
     isModalOpen.set(false);
 
@@ -110,18 +111,20 @@ console.log(clientUuid);
   </script>
 
   <div class="flex flex-col items-center space-y-4 my-4">
-    <button id="1" class="rounded-md bg-amber-300 p-2 text-black">CTA 1</button>
-    <button id="2" class="rounded-md bg-amber-300 p-2 text-black">CTA 2</button>
-    <button id="3" class="rounded-md bg-amber-300 p-2 text-black">CTA 3</button>
-    <button id="4" class="rounded-md bg-amber-300 p-2 text-black">CTA 4</button>
+    <CTA ctaOption="1" />
+    <CTA ctaOption="2" price label="Você também pode aumentar a sua produção" />
+    <CTA ctaOption="3" price label="Tenha acesso a tudo isso agora" />
+    <CTA ctaOption="4" price label="Quero aumentar minha produção de leite" />
   </div>
 
   <div
     id="modal"
-    class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+    class="hidden fixed inset-0 flex items-center justify-center bg-blue/70"
   >
-    <div class="bg-white p-4 rounded-md relative">
-      <button id="close" class="absolute top-2 right-2"> Fechar </button>
+    <div
+      class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl"
+    >
+      <button id="close" class="absolute top-2 right-2">✖</button>
       <PreCheckout clientID={clientUuid?.value} />
     </div>
   </div>

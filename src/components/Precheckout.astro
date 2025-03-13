@@ -28,19 +28,19 @@ const locationInfo: LocationInfo = await ipResponse.json();
 console.log(locationInfo.city);
 ---
 
-<div id="container" class="bg-yellow-50">
+<div id="container" class="bg-green">
   <main>
     <div class="flex flex-col gap-2 items-center">
-      <h1 class="">
-        Register Form: {pcId}
+      <h1 class="text-2xl font-bold leading-6 text-blue">
+        Preencha esse formulário e entre para o LactoFlow: {pcId}
       </h1>
       <form
-        class="flex flex-col items-center gap-1.5"
+        class="flex flex-col items-center gap-1.5 w-full"
         method="post"
         action="/forms/leads-astro"
       >
         <div class="flex flex-col gap-1.5 items-start">
-          <label>
+          <label class="w-full">
             Nome:
             <input type="text" placeholder="Seu Nome" name="name" />
           </label>
@@ -97,10 +97,13 @@ console.log(locationInfo.city);
           <input type="text" name="clientID" hidden value={clientID} />
         </div>
         <button
-          class="rounded-md bg-amber-300 text-center bg-primary p-2 text-black"
+          class="mx-auto mt-4 w-full rounded-lg border-b-4 border-b-[#236C0F] bg-[#40C351] px-2 py-3 text-[13.6px] font-extrabold uppercase text-cream hover:scale-[104%] hover:border-b-[#44972d] hover:bg-[#236C0F] lg:py-5 lg:text-[22.6px]"
         >
           Quero entrar!
         </button>
+        <h3 class="text-center text-base text-blue">
+          SEUS DADOS ESTÃO SEGUROS
+        </h3>
       </form>
     </div>
   </main>
