@@ -1,0 +1,137 @@
+---
+import LiteYouTubeEmbed from "react-lite-youtube-embed";
+import "react-lite-youtube-embed/dist/LiteYouTubeEmbed.css";
+
+import YoutubePlayer from "./yt-player";
+---
+
+<section class="my-2">
+  <h1
+    class="mx-auto mb-[14.4px] mt-6 px-4 text-center text-cream text-[25px] font-extrabold sm:px-2 lg:w-[450px] lg:text-[31.25px]"
+  >
+    Depoimentos das alunas que seguiram o método LactoFlow®:
+  </h1>
+  <div
+    class="mx-auto my-4 flex max-w-[40rem] flex-col items-center gap-2 text-cream"
+  >
+    <div class="card bg-cream shadow-lg rounded-2xl p-4">
+      <div class="card-body flex flex-col items-center">
+        <div
+          class="flex flex-col-reverse items-center gap-6 md:flex-row-reverse md:items-start"
+        >
+          <div class="h-[350px] w-[206px]">
+            <LiteYouTubeEmbed
+              client:idle
+              id="JtDPUXTqjLg"
+              title="Método LactoFlow®️"
+              poster="maxresdefault"
+              webp
+              aspectHeight={350}
+              aspectWidth={206}
+            />
+          </div>
+          <p class="text-blue md:w-1/2">
+            <span class="pb-4 text-center font-bold">
+              O bebê da Ariane não pegou o peito.
+            </span>{" "}
+            <br /> Ela nos conta quais técnicas do LactoFlow®️ ela usou para conseguir
+            montar um estoque de leite materno. Hoje ela segue uma amamentação por{
+              " "
+            }
+            <span class="font-bold">Ordenha Exclusiva</span>, descubra o que é
+            no vídeo:
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="card bg-cream shadow-lg rounded-md p-4">
+      <div class="card-body flex flex-col items-center">
+        <div
+          class="flex flex-col items-center gap-6 md:flex-row md:items-start"
+        >
+          <div class="h-[350px] w-[206px]">
+            <LiteYouTubeEmbed
+              client:idle
+              id="eVpBHlpupu0"
+              title="Método LactoFlow®️"
+              poster="maxresdefault"
+              webp
+              aspectHeight={350}
+              aspectWidth={206}
+            />
+          </div>
+          <p class="text-blue md:w-1/2">
+            <span class="pb-4 text-center font-bold">
+              O bebê da Raquel precisou ficar internado na UTI
+            </span>{" "}
+            durante 12 dias com bronquiolite. Com as estratégias do LactoFlow, ela
+            conseguiu tirar a cada 2 a 3 horas 100 ml de leite para que ele não precisasse
+            de fórmula e ouviu da equipe médica: “Mamãe, você é a única que está
+            conseguindo tirar leite aqui. Você é a única que está conseguindo dar
+            100% de leite materno pro seu filho.”
+          </p>
+        </div>
+      </div>
+    </div>
+    <div></div>
+    <div></div>
+  </div>
+  <div
+    class="flex flex-col items-center gap-4 md:grid md:grid-cols-2 lg:grid-cols-3"
+  >
+    {
+      /*<div class="w-[340px]">
+  <LiteYouTubeEmbed
+      id="eVpBHlpupu0"
+      title="Método LactoFlow®️"
+      poster="maxresdefault"
+      thumbnail="/depoimentos/depo-raquel.webp"
+      aspectHeight={500}
+      aspectWidth={280}
+                  />
+
+        </div>
+    <div class="w-[340px]">
+  <LiteYouTubeEmbed
+      id="PzxmWmJLjz8"
+      title="Método LactoFlow®️"
+      poster="maxresdefault"
+      thumbnail="/depoimentos/depo-priscila.webp"
+      aspectHeight={500}
+      aspectWidth={280}
+/>
+
+        </div>*/
+    }
+    {
+      [1, 2].map((number) => {
+        return (
+          <div class="">
+            <img
+              class="mx-auto rounded-xl"
+              width={340}
+              height={500}
+              src={`/depoimentos/metodo/${number}.jpg`}
+              alt="depoimento"
+            />
+          </div>
+        );
+      })
+    }
+    {
+      [3, 4, 5, 6, 7, 8, 9].map((number) => {
+        return (
+          <div class="">
+            <img
+              class="mx-auto rounded-xl"
+              width={340}
+              height={500}
+              src={`/depoimentos/metodo/${number}.jpg`}
+              alt="depoimento"
+            />
+          </div>
+        );
+      })
+    }
+  </div>
+</section>
