@@ -137,12 +137,14 @@ console.log(clientUuid);
 
     <div
       id="modal"
-      class="hidden fixed inset-0 flex items-center justify-center bg-blue/70"
+      class="hidden fixed inset-0 flex items-center justify-center bg-blue/70 z-10"
     >
       <div
-        class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl"
+        class="mt-4 transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl"
       >
-        <button id="close" class="absolute top-2 right-2">✖</button>
+        <button id="close" class="text-gray-500 absolute top-2 text-2xl right-6"
+          >✖</button
+        >
         <PreCheckout clientID={clientUuid?.value} />
       </div>
     </div>
