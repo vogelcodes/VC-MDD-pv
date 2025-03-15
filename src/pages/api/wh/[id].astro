@@ -64,10 +64,10 @@ if (Astro.request.method === "POST") {
   const lastName = last_name;
 
   const ct = sha256() // Directly use sha256()
-    .update(address?.country || "") //using country as city for this implementation
+    .update(address?.city?.toString().replace(/\s+/g, "").toLowerCase() || "") //using country as city for this implementation
     .digest("hex");
   const st = sha256()
-    .update(address?.country_iso || "")
+    .update(address?.state || "")
     .digest("hex"); // Directly use sha256()
   const country = sha256() // Directly use sha256()
     .update(address?.country || "")
@@ -117,7 +117,11 @@ if (Astro.request.method === "POST") {
       },
     ],
   };
-  console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
+  console.log(
+    "Meta Conversion API Event Data:",
+    JSON.stringify(metaEventData),
+    buyer
+  );
   const sendToMeta = async () => {
     try {
       if (!META_PIXEL_ACCESS_TOKEN || !META_PIXEL_ID) {
