@@ -3,58 +3,101 @@ import { date } from "astro:schema";
 import pkg from "hash.js"; // Correct named import
 const { sha256 } = pkg;
 
+const { id } = Astro.params;
+
 const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
 const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
 
 if (Astro.request.method === "POST") {
   const userIP = Astro.clientAddress;
   const agent = Astro.request.headers.get("user-agent");
-  console.log(agent);
-  const data = await Astro.request.formData();
-  const name = data.get("name");
-  const firstName = name?.toString().split(" ")[0];
+  console.log("Agent:", agent);
+  const requestBody = await Astro.request.json();
+  console.log("Received payload:", JSON.stringify(requestBody, null, 2));
+
+  // Check if the event is PURCHASE_APPROVED
+  if (requestBody.event !== "PURCHASE_APPROVED") {
+    console.log("Event is not PURCHASE_APPROVED, skipping Meta event.");
+    return new Response(
+      JSON.stringify({
+        message: "Event is not PURCHASE_APPROVED, skipping Meta event.",
+      }),
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+        status: 200,
+      }
+    );
+  }
+
+  const { data } = requestBody;
+
+  const { buyer, purchase } = data;
+
+  if (!buyer || !purchase) {
+    console.error("Missing buyer or purchase data in the payload.");
+    return new Response(
+      JSON.stringify({
+        error: "Missing buyer or purchase data in the payload.",
+      }),
+      {
+        headers: {
+          "content-type": "application/json",
+        },
+        status: 400,
+      }
+    );
+  }
+  const {
+    email,
+    name,
+    first_name,
+    last_name,
+    checkout_phone_code,
+    checkout_phone,
+    address,
+  } = buyer;
+  const { full_price, transaction, order_date, payment, offer } = purchase;
+
+  const firstName = first_name;
+  const lastName = last_name;
+
   const ct = sha256() // Directly use sha256()
-    .update(data.get("city-lwr")?.toString())
+    .update(address?.country || "") //using country as city for this implementation
     .digest("hex");
-  const st = sha256().update(data.get("state")?.toString()).digest("hex"); // Directly use sha256()
+  const st = sha256()
+    .update(address?.country_iso || "")
+    .digest("hex"); // Directly use sha256()
   const country = sha256() // Directly use sha256()
-    .update(data.get("countryName")?.toString())
+    .update(address?.country || "")
     .digest("hex");
   const fn = sha256() // Directly use sha256()
     .update(firstName?.toLowerCase() || "")
     .digest("hex");
 
-  const lastName = name?.toString().slice(name?.toString().indexOf(" ") + 1);
   const ln = sha256() // Directly use sha256()
     .update(lastName?.toLowerCase() || "")
     .digest("hex");
 
-  const email = data.get("email");
   const em = sha256() // Directly use sha256()
     .update(email?.toString().trim().toLowerCase() || "")
     .digest("hex");
+  const phone = checkout_phone_code?.toString() + checkout_phone.toString();
+  console.log(phone);
 
-  const phoneac = data.get("phoneac");
-  const phone = data.get("phone");
-  const intlPhone = data.get("intl-phone");
-  const intlPhoneSanitized = intlPhone?.toString().replace("+", "");
-  const ph = sha256().update(intlPhoneSanitized).digest("hex"); // Directly use sha256()
-  const source = data.get("source");
-  const location = data.get("location");
-  const clientID = data.get("clientID");
-  const fbp = data.get("fbp");
-  const fbc = data.get("fbc");
-  const fields: { [key: string]: any } = {};
-  data.forEach((value, key) => {
-    fields[key] = value;
-  });
+  const ph = sha256()
+    .update(phone?.toString() || "")
+    .digest("hex"); // Directly use sha256()
+
   const metaEventData = {
     data: [
       {
-        event_name: "Lead", // Standard event name for a lead
-        event_time: Math.floor(Date.now() / 1000), // Current timestamp in seconds
+        event_name: "Purchase", // Standard event name for a purchase
+        event_time: Math.floor(order_date / 1000), // Current timestamp in seconds
         action_source: "website",
-        event_id: clientID, // You could also generate a unique ID here
+        event_id: transaction, // Using the transaction as the event id
+        event_source_url: offer.code,
         user_data: {
           em: em, // Hashed email
           ph: ph, // Hashed phone number
@@ -65,13 +108,10 @@ if (Astro.request.method === "POST") {
           country: country, // hashed country name
           client_ip_address: userIP,
           client_user_agent: agent,
-          fbc,
-          fbp,
         },
         custom_data: {
-          source: source,
-          city: data.get("city"),
-          cta: data.get("cta"),
+          currency: full_price.currency_value,
+          value: full_price.value,
         },
       },
     ],
@@ -110,32 +150,16 @@ if (Astro.request.method === "POST") {
   // Call the function to send data to Meta
   await sendToMeta();
 
-  // Do something with the data
-  // Redirect to a thank you page
-  // return Astro.redirect(
-  //   // `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
-  //   `/thank-you`
-  // );
   return new Response(
     JSON.stringify({
-      ...fields,
-      firstName,
-      lastName,
-      fn,
-      ln,
-      em,
-      ph,
-      ct,
-      st,
-      country,
-      client_user_agent: agent,
-
-      client_ip_address: userIP,
+      message: "Purchase event sent to Meta successfully",
+      requestBody,
     }),
     {
       headers: {
-        "content-type": "text/plain",
+        "content-type": "application/json",
       },
+      status: 200,
     }
   );
 }
