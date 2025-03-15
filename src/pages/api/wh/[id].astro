@@ -83,7 +83,7 @@ if (Astro.request.method === "POST") {
   const em = sha256() // Directly use sha256()
     .update(email?.toString().trim().toLowerCase() || "")
     .digest("hex");
-  const phone = checkout_phone_code?.toString() + checkout_phone.toString();
+  const phone = "+55" + checkout_phone.toString();
   console.log(phone);
 
   const ph = sha256()
