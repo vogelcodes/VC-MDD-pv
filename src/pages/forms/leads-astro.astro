@@ -2,6 +2,30 @@
 import { date } from "astro:schema";
 import pkg from "hash.js"; // Correct named import
 const { sha256 } = pkg;
+import { GoogleSpreadsheet } from "google-spreadsheet";
+import { JWT } from "google-auth-library";
+
+const SCOPES = [
+  "https://www.googleapis.com/auth/spreadsheets",
+  "https://www.googleapis.com/auth/drive.file",
+];
+
+const jwt = new JWT({
+  email: import.meta.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+  key: import.meta.env.GOOGLE_PRIVATE_KEY,
+  scopes: SCOPES,
+});
+const doc = new GoogleSpreadsheet(
+  "1LTTnaYcOwe_-_U1RNK-Kp37gxrzTP7cMIyGLzFaMvHI",
+  jwt
+);
+await doc.loadInfo(); // loads document properties and worksheets
+console.log(doc.title);
+await doc.updateProperties({ title: "renamed doc" });
+
+const sheet = doc.sheetsByIndex[0]; // or use `doc.sheetsById[id]` or `doc.sheetsByTitle[title]`
+console.log(sheet.title);
+console.log(sheet.rowCount);
 
 const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
 const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
@@ -76,6 +100,15 @@ if (Astro.request.method === "POST") {
       },
     ],
   };
+  sheet.setHeaderRow(["name", "email", "phone", "city", "state", "country"]);
+  sheet.addRow({
+    name: name?.toString() || "",
+    email: email?.toString() || "",
+    phone: intlPhone?.toString() || "",
+    city: data.get("city")?.toString() || "",
+    state: data.get("state")?.toString() || "",
+    country: data.get("countryName")?.toString() || "",
+  });
   console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
   const sendToMeta = async () => {
     try {
