@@ -1,6 +1,7 @@
 ---
 import LiteYouTubeEmbed from "react-lite-youtube-embed";
 import "react-lite-youtube-embed/dist/LiteYouTubeEmbed.css";
+import Image from "astro/components/Image.astro";
 
 import YoutubePlayer from "./yt-player";
 ---
@@ -111,7 +112,8 @@ import YoutubePlayer from "./yt-player";
               class="mx-auto rounded-xl"
               width={340}
               height={500}
-              src={`/depoimentos/metodo/${number}.jpg`}
+              loading="lazy"
+              src={`/metodo/${number}.webp`}
               alt="depoimento"
             />
           </div>
@@ -126,7 +128,8 @@ import YoutubePlayer from "./yt-player";
               class="mx-auto rounded-xl"
               width={340}
               height={500}
-              src={`/depoimentos/metodo/${number}.jpg`}
+              loading="lazy"
+              src={`metodo/${number}.webp`}
               alt="depoimento"
             />
           </div>

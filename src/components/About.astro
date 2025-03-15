@@ -1,16 +1,12 @@
 ---
 import H1 from "./H1.astro";
+import Image from "astro/components/Image.astro";
+import about1 from "../assets/img/carol-close-md.webp";
 ---
 
 <section class="p-2">
   <div class="flex max-w-2xl flex-col items-center gap-3">
-    <img
-      width={720}
-      height={0}
-      alt="Carolina Procaci"
-      class="rounded-md"
-      src={"/carol-close-md.webp"}
-    />
+    <Image alt="Carolina Procaci" class="rounded-md" src={about1} />
     <div class="card max-w-2xl bg-cream text-blue shadow-lg">
       <div class="card-body">
         <H1>Quem é Carolina Procaci?</H1>

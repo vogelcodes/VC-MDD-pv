@@ -22,7 +22,10 @@ const search = Astro.url.searchParams;
 console.log(search);
 const userIp = Astro.clientAddress;
 console.log(userIp);
+//time how long it takes to get location info
+console.time("location");
 const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
+console.timeEnd("location");
 const locationInfo: LocationInfo = await ipResponse.json();
 
 console.log(locationInfo.city);
@@ -77,7 +80,7 @@ console.log(locationInfo.city);
           </label>
           <label>
             Whatsapp:
-            <ReactPhoneInput client:load />
+            <ReactPhoneInput client:idle />
           </label>
           <input
             type="text"

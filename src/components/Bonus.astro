@@ -1,5 +1,13 @@
 ---
-
+import Image from "astro/components/Image.astro";
+import zoom from "../assets/img/zoom.svg";
+import zoomCall from "../assets/img/zoom-call.webp";
+import zoom2408 from "../assets/img/zoom-24-08.webp";
+import oficina from "../assets/img/oficina.webp";
+import ervasMock from "../assets/img/ervas-mock.webp";
+import receitasMock from "../assets/img/receitas-mock.webp";
+import telegram2 from "../assets/img/telegram-2.svg";
+import telegram2408 from "../assets/img/telegram-24-08.webp";
 ---
 
 <section class="mt-2 w-full bg-cream p-2 text-2xl text-blue">
@@ -12,41 +20,23 @@
     <div class="card bg-blue shadow-lg">
       <div class="card-body flex flex-col items-center">
         <div class="flex flex-row items-center gap-2">
-          <img alt="zoom" width={44} src={"/zoom.svg"} height={44} />
+          <Image height={44} alt="zoom" src={zoom} />
 
           <p class="text-2xl">Suporte quinzenal no Zoom</p>
         </div>
-        <img
-          alt="telegram-comunidade"
-          width={500}
-          height={500}
-          src={"/zoom-call.webp"}
-          class="rounded-md"
-        />
+        <Image alt="telegram-comunidade" src={zoomCall} class="rounded-md" />
         <p class="text-justify text-lg">
           Todos os meses, temos dois encontros marcados onde você tem a
           oportunidade de ligar sua câmera e conversar diretamente comigo para
           tirar todas as suas dúvidas sobre o método.
         </p>
-        <img
-          alt="zoom-comunidade"
-          width={576}
-          height={856}
-          src={"/zoom-24-08.webp"}
-          class="rounded-md"
-        />
+        <Image alt="zoom-comunidade" src={zoom2408} class="rounded-md" />
         <div class="flex flex-row items-center gap-2 pt-4">
-          <img alt="zoom" width={44} src={"/zoom.svg"} height={44} />
+          <Image height={44} alt="zoom" src={zoom} />
 
           <p class="text-2xl">Oficina mensal no Zoom</p>
         </div>
-        <img
-          alt="zoom-comunidade"
-          width={500}
-          height={500}
-          src={"/oficina.webp"}
-          class="rounded-md"
-        />
+        <Image alt="zoom-comunidade" src={oficina} class="rounded-md" />
 
         <p class="text-justify text-lg">
           Todos os meses eu faço uma Oficina sobre os mais diversos temas da
@@ -73,21 +63,15 @@
       <div class="card-body p-1 pt-4">
         <div class="flex flex-col items-center gap-2">
           {
-            /* <img
+            /* <Image
       alt="wpp"
-      width={44}
+      
       src={"/telegram-2.svg"}
-      height={44}
-      ></img> */
+      
+      ></Image> */
           }
           <p class="p-3 text-center">🌿Guia de Ervas Amigas da Amamentação🌿</p>
-          <img
-            alt="telegram-comunidade"
-            width={400}
-            height={600}
-            src={"/ervas-mock.webp"}
-            class="rounded-md"
-          />
+          <Image alt="telegram-comunidade" src={ervasMock} class="rounded-md" />
           <p class="break-words p-4 text-justify text-lg">
             Quando usadas da forma correta, as ervas galactagogas podem sim dar
             um bom gás no seu resultado. E para te ajudar com orientações sobre
@@ -97,11 +81,9 @@
             o que você precisa saber sobre o mundo das ervas.
           </p>
           <p class="text-center">👩‍🍳E-book - Receitas Amigas da Amamentação🧁</p>
-          <img
+          <Image
             alt="telegram-comunidade"
-            width={300}
-            height={500}
-            src={"/receitas-mock.webp"}
+            src={receitasMock}
             class="rounded-md"
           />
           <p class="p-4 text-justify text-lg">
@@ -118,15 +100,13 @@
       <div class="card-body px-4">
         <div class="flex flex-col items-center gap-2">
           <div class="flex flex-row items-center gap-2 pt-2">
-            <img alt="wpp" width={44} src={"/telegram-2.svg"} height={44} />
+            <Image height={44} alt="telegram" src={telegram2} />
 
             <p class="">Comunidade exclusiva de alunas</p>
           </div>
-          <img
+          <Image
             alt="telegram-comunidade"
-            width={260}
-            height={500}
-            src={"/telegram-24-08.webp"}
+            src={telegram2408}
             class="w-full rounded-md sm:w-[300px]"
           />
           <p class="text-justify text-lg">

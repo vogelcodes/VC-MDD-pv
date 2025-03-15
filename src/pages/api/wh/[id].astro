@@ -1,0 +1,142 @@
+---
+import { date } from "astro:schema";
+import pkg from "hash.js"; // Correct named import
+const { sha256 } = pkg;
+
+const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
+const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
+
+if (Astro.request.method === "POST") {
+  const userIP = Astro.clientAddress;
+  const agent = Astro.request.headers.get("user-agent");
+  console.log(agent);
+  const data = await Astro.request.formData();
+  const name = data.get("name");
+  const firstName = name?.toString().split(" ")[0];
+  const ct = sha256() // Directly use sha256()
+    .update(data.get("city-lwr")?.toString())
+    .digest("hex");
+  const st = sha256().update(data.get("state")?.toString()).digest("hex"); // Directly use sha256()
+  const country = sha256() // Directly use sha256()
+    .update(data.get("countryName")?.toString())
+    .digest("hex");
+  const fn = sha256() // Directly use sha256()
+    .update(firstName?.toLowerCase() || "")
+    .digest("hex");
+
+  const lastName = name?.toString().slice(name?.toString().indexOf(" ") + 1);
+  const ln = sha256() // Directly use sha256()
+    .update(lastName?.toLowerCase() || "")
+    .digest("hex");
+
+  const email = data.get("email");
+  const em = sha256() // Directly use sha256()
+    .update(email?.toString().trim().toLowerCase() || "")
+    .digest("hex");
+
+  const phoneac = data.get("phoneac");
+  const phone = data.get("phone");
+  const intlPhone = data.get("intl-phone");
+  const intlPhoneSanitized = intlPhone?.toString().replace("+", "");
+  const ph = sha256().update(intlPhoneSanitized).digest("hex"); // Directly use sha256()
+  const source = data.get("source");
+  const location = data.get("location");
+  const clientID = data.get("clientID");
+  const fbp = data.get("fbp");
+  const fbc = data.get("fbc");
+  const fields: { [key: string]: any } = {};
+  data.forEach((value, key) => {
+    fields[key] = value;
+  });
+  const metaEventData = {
+    data: [
+      {
+        event_name: "Lead", // Standard event name for a lead
+        event_time: Math.floor(Date.now() / 1000), // Current timestamp in seconds
+        action_source: "website",
+        event_id: clientID, // You could also generate a unique ID here
+        user_data: {
+          em: em, // Hashed email
+          ph: ph, // Hashed phone number
+          fn: fn, //hashed first name
+          ln: ln, // hashed last name
+          ct: ct, //hashed city
+          st: st, // hashed state
+          country: country, // hashed country name
+          client_ip_address: userIP,
+          client_user_agent: agent,
+          fbc,
+          fbp,
+        },
+        custom_data: {
+          source: source,
+          city: data.get("city"),
+          cta: data.get("cta"),
+        },
+      },
+    ],
+  };
+  console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
+  const sendToMeta = async () => {
+    try {
+      if (!META_PIXEL_ACCESS_TOKEN || !META_PIXEL_ID) {
+        console.error(
+          "META_PIXEL_ACCESS_TOKEN or META_PIXEL_ID are not set in environment variables"
+        );
+        return;
+      }
+      const response = await fetch(
+        `https://graph.facebook.com/v18.0/${META_PIXEL_ID}/events?access_token=${META_PIXEL_ACCESS_TOKEN}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(metaEventData),
+        }
+      );
+
+      const result = await response.json();
+      console.log("Meta Conversion API Response:", result);
+
+      if (result.error) {
+        console.error("Meta Conversion API Error:", result.error);
+      }
+    } catch (error) {
+      console.error("Error sending data to Meta Conversion API:", error);
+    }
+  };
+
+  // Call the function to send data to Meta
+  await sendToMeta();
+
+  // Do something with the data
+  // Redirect to a thank you page
+  // return Astro.redirect(
+  //   // `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+  //   `/thank-you`
+  // );
+  return new Response(
+    JSON.stringify({
+      ...fields,
+      firstName,
+      lastName,
+      fn,
+      ln,
+      em,
+      ph,
+      ct,
+      st,
+      country,
+      client_user_agent: agent,
+
+      client_ip_address: userIP,
+    }),
+    {
+      headers: {
+        "content-type": "text/plain",
+      },
+    }
+  );
+}
+---
