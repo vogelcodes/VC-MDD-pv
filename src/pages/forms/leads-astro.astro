@@ -173,7 +173,7 @@ if (Astro.request.method === "POST") {
     .then((res) => res.json())
     .then((json) => console.log("Google Sheet POST Response:", json));
   console.timeEnd("onLeadSubmit");
-  const isCheckoutActive = true;
+  const isCheckoutActive = false;
   if (isCheckoutActive) {
     return new Response(null, {
       status: 302,
@@ -197,6 +197,7 @@ if (Astro.request.method === "POST") {
       client_user_agent: agent,
 
       client_ip_address: userIP,
+      redirect: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     }),
     {
       headers: {
