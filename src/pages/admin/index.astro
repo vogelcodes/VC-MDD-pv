@@ -4,6 +4,56 @@ const GSHEET_GET_WH_URL = import.meta.env.GSHEET_GET_WH_URL;
 const leads = await fetch(GSHEET_GET_WH_URL);
 const leadsData = await leads.json();
 console.log(leadsData);
+/*[
+"Date",
+    "name",
+    "email",
+    "phonerawCountry",
+    "phoneraw",
+    "intl-phone",
+    "phoneac",
+    "source",
+    "cta",
+    "fbc",
+    "fbp",
+    "location",
+    "city",
+    "city-lwr",
+    "state",
+    "countryName",
+    "clientID",
+    "client_ip_address",
+    "client_user_agent",
+    "firstName",
+    "lastName"
+  ],
+  [
+    "2025-04-23T08:29:52.983Z",
+    "Daniel Cordeiro Vogel Teixeira",
+    "danielcvt@gmail.com",
+    "BR",
+    "+55 21 98892 4861",
+    "+5521988924861",
+    "(21) 98892-4861",
+    "",
+    1,
+    "",
+    "",
+    "{\"status\":\"fail\",\"message\":\"reserved range\",\"query\":\"127.0.0.1\"}",
+    "",
+    "",
+    "",
+    "",
+    "b0njavbw6dugq2aonf0dim08",
+    "127.0.0.1",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    "Daniel",
+    "Cordeiro Vogel Teixeira"
+  ],*/
+// show every lead as a card
+let latestLeads = leadsData.slice(1).sort((a: string[], b: string[]) => {
+  return new Date(b[0]).getTime() - new Date(a[0]).getTime();
+});
 ---
 
 <Layout title="Admin Dashboard">
@@ -13,6 +63,10 @@ console.log(leadsData);
       Welcome to the admin area. This page is protected by HTTP Basic
       Authentication.
     </p>
-    <pre>{JSON.stringify(leadsData, null, 2)}</pre>
+    {
+      latestLeads.map((lead) => {
+        return <div class="card">{lead[0]}</div>;
+      })
+    }
   </main>
 </Layout>
