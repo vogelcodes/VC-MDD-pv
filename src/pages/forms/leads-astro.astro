@@ -147,7 +147,7 @@ if (Astro.request.method === "POST") {
     .then((res) => res.json())
     .then((json) => console.log("Google Sheet POST Response:", json));
   console.timeEnd("onLeadSubmit");
-  const isCheckoutActive = false;
+  const isCheckoutActive = true;
   if (isCheckoutActive) {
     return new Response(null, {
       status: 302,
