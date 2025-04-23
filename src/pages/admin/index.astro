@@ -1,5 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+const GSHEET_GET_WH_URL = import.meta.env.GSHEET_GET_WH_URL;
+const leads = await fetch(GSHEET_GET_WH_URL);
+const leadsData = await leads.json();
+console.log(leadsData);
 ---
 
 <Layout title="Admin Dashboard">
@@ -9,6 +13,6 @@ import Layout from "../../layouts/Layout.astro";
       Welcome to the admin area. This page is protected by HTTP Basic
       Authentication.
     </p>
+    <pre>{JSON.stringify(leadsData, null, 2)}</pre>
   </main>
 </Layout>
-

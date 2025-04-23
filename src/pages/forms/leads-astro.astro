@@ -129,18 +129,12 @@ if (Astro.request.method === "POST") {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      Date: new Date().toISOString(),
       ...fields,
       client_ip_address: userIP,
       client_user_agent: agent,
       firstName,
       lastName,
-      fn,
-      ln,
-      em,
-      ph,
-      ct,
-      st,
-      country,
     }),
   })
     .then((res) => res.json())
