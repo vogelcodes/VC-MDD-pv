@@ -15,7 +15,7 @@ export const onRequest = async (
     const metaEventData = {
       data: [
         {
-          event_name: "Lead", // Standard event name for a lead
+          event_name: "ViewContent", // Standard event name for a lead
           event_time: Math.floor(Date.now() / 1000), // Current timestamp in seconds
           action_source: "website",
           user_data: {
