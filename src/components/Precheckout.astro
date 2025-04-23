@@ -18,7 +18,7 @@ type LocationInfo = {
   longitude: number;
 };
 
-const search = Astro.url.searchParams;
+const search = Astro.url.pathname + Astro.url.search;
 console.log(search);
 const userIp = Astro.clientAddress;
 console.log(userIp);
@@ -77,12 +77,7 @@ console.log(locationInfo.city);
           Whatsapp:
           <ReactPhoneInput client:idle />
         </label>
-        <input
-          type="text"
-          name="source"
-          hidden
-          value={search.get("utm_source")}
-        />
+        <input type="text" name="source" hidden value={search} />
         <input type="text" name="cta" hidden value="" />
         <input type="text" name="fbc" hidden />
         <input type="text" name="fbp" hidden />

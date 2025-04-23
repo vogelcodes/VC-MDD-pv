@@ -28,43 +28,50 @@ import { sendToMeta } from "../../utils/metaConversionsAPI";
 // console.log(sheet.title);
 // console.log(sheet.rowCount);
 
-const GSHEET_POST_WH_URL = import.meta.env.GSHEET_POST_WH_URL;
+// Initialize leads cache at build time
 
+const GSHEET_POST_WH_URL = import.meta.env.GSHEET_POST_WH_URL;
+const GSHEET_GET_WH_URL = import.meta.env.GSHEET_GET_WH_URL;
+const TELEGRAM_BOT_URL = import.meta.env.TELEGRAM_BOT_URL;
 if (Astro.request.method === "POST") {
   console.time("onLeadSubmit");
   const userIP = Astro.clientAddress;
-  const agent = Astro.request.headers.get("user-agent");
+  const agent = Astro.request.headers.get("user-agent") || "";
   console.log(agent, userIP);
   const data = await Astro.request.formData();
   const name = data.get("name");
   const firstName = name?.toString().split(" ")[0];
-  const ct = sha256() // Directly use sha256()
-    .update(data.get("city-lwr")?.toString())
-    .digest("hex");
-  const st = sha256().update(data.get("state")?.toString()).digest("hex"); // Directly use sha256()
-  const country = sha256() // Directly use sha256()
+  const email = data.get("email")?.toString().trim().toLowerCase() || "";
+
+  // Check for returning lead
+
+  const ct = sha256().update(data.get("city-lwr")?.toString()).digest("hex");
+  const st = sha256().update(data.get("state")?.toString()).digest("hex");
+  const country = sha256()
     .update(data.get("countryName")?.toString())
     .digest("hex");
-  const fn = sha256() // Directly use sha256()
+  const fn = sha256()
     .update(firstName?.toLowerCase() || "")
     .digest("hex");
 
   const lastName = name?.toString().slice(name?.toString().indexOf(" ") + 1);
-  const ln = sha256() // Directly use sha256()
+  const ln = sha256()
     .update(lastName?.toLowerCase() || "")
     .digest("hex");
 
-  const email = data.get("email");
-  const em = sha256() // Directly use sha256()
-    .update(email?.toString().trim().toLowerCase() || "")
+  const em = sha256()
+    .update(email || "")
     .digest("hex");
 
-  const phoneac = data.get("phoneac");
-  const phone = data.get("phone");
-  const intlPhone = data.get("intl-phone");
+  const phoneac = data.get("phoneac") || "";
+  const phone = data.get("phone") || "";
+  const intlPhone = data.get("intl-phone") || "";
+  const city = data.get("city") || "";
+  const region = data.get("region") || "";
   const intlPhoneSanitized = intlPhone?.toString().replace("+", "");
-  const ph = sha256().update(intlPhoneSanitized).digest("hex"); // Directly use sha256()
-  const source = data.get("source");
+  const ph = sha256().update(intlPhoneSanitized).digest("hex");
+  const source = data.get("source") || "";
+  const cta = data.get("cta") || "";
   const location = data.get("location");
   const clientID = data.get("clientID");
   const fbp = data.get("fbp");
@@ -73,28 +80,29 @@ if (Astro.request.method === "POST") {
   data.forEach((value, key) => {
     fields[key] = value;
   });
+
   const metaEventData = {
     data: [
       {
-        event_name: "Lead", // Standard event name for a lead
-        event_time: Math.floor(Date.now() / 1000), // Current timestamp in seconds
+        event_name: "Lead",
+        event_time: Math.floor(Date.now() / 1000),
         action_source: "website",
-        event_id: clientID, // You could also generate a unique ID here
+        event_id: clientID,
         user_data: {
-          em: em, // Hashed email
-          ph: ph, // Hashed phone number
-          fn: fn, //hashed first name
-          ln: ln, // hashed last name
-          ct: ct, //hashed city
-          st: st, // hashed state
-          country: country, // hashed country name
+          em,
+          ph,
+          fn,
+          ln,
+          ct,
+          st,
+          country,
           client_ip_address: userIP,
           client_user_agent: agent,
           fbc,
           fbp,
         },
         custom_data: {
-          source: source,
+          source,
           city: data.get("city"),
           cta: data.get("cta"),
         },
@@ -148,6 +156,55 @@ if (Astro.request.method === "POST") {
       },
     });
   }
+  async function sendLeadToTelegram(
+    email: string,
+    intlPhone: string,
+    cta: string,
+    country: string,
+    city: string,
+    region: string,
+    agent: string,
+    source: string
+  ) {
+    const response = await fetch(GSHEET_GET_WH_URL, {});
+    const leadsList = await response.json();
+    const latestLeads = leadsList.slice(1).sort((a: string[], b: string[]) => {
+      return new Date(b[4]).getTime() - new Date(a[4]).getTime();
+    });
+    console.log(latestLeads);
+    const emailCount = latestLeads.filter(
+      (item: string[]) => item[2] === email
+    ).length;
+    console.log(emailCount);
+    const telegramMessage = fetch(
+      `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
+        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${
+          intlPhone
+        }\n${cta ?? ""}\n${
+          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-member-access
+          country + "-" + city + "-" + region
+        }
+            \n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\n
+            https://api.whatsapp.com/send?phone=${intlPhone
+              .replace("+", "")
+              .trim()}&text=${encodeURIComponent(
+              `Oi ${name}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
+            )}
+            `
+      )}`
+    );
+  }
+  sendLeadToTelegram(
+    email,
+    intlPhone.toString(),
+    cta.toString(),
+    country.toString(),
+    city.toString(),
+    region.toString(),
+    agent.toString(),
+    source.toString()
+  );
+
   return new Response(
     JSON.stringify({
       ...fields,
@@ -161,7 +218,6 @@ if (Astro.request.method === "POST") {
       st,
       country,
       client_user_agent: agent,
-
       client_ip_address: userIP,
       redirect: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     }),
