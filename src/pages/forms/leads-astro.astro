@@ -2,6 +2,7 @@
 import { date } from "astro:schema";
 import pkg from "hash.js"; // Correct named import
 const { sha256 } = pkg;
+import { sendToMeta } from "../../utils/metaConversionsAPI";
 // import { GoogleSpreadsheet } from "google-spreadsheet";
 // import { JWT } from "google-auth-library";
 
@@ -27,8 +28,6 @@ const { sha256 } = pkg;
 // console.log(sheet.title);
 // console.log(sheet.rowCount);
 
-const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
-const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
 const GSHEET_POST_WH_URL = import.meta.env.GSHEET_POST_WH_URL;
 
 if (Astro.request.method === "POST") {
@@ -101,6 +100,7 @@ if (Astro.request.method === "POST") {
         },
       },
     ],
+    test_event_code: "TEST41321",
   };
   // sheet.setHeaderRow(["name", "email", "phone", "city", "state", "country"]);
   // sheet.addRow({
@@ -113,38 +113,9 @@ if (Astro.request.method === "POST") {
   // });
 
   console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
-  const sendToMeta = async () => {
-    try {
-      if (!META_PIXEL_ACCESS_TOKEN || !META_PIXEL_ID) {
-        console.error(
-          "META_PIXEL_ACCESS_TOKEN or META_PIXEL_ID are not set in environment variables"
-        );
-        return;
-      }
-      const response = await fetch(
-        `https://graph.facebook.com/v18.0/${META_PIXEL_ID}/events?access_token=${META_PIXEL_ACCESS_TOKEN}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(metaEventData),
-        }
-      );
-
-      const result = await response.json();
-      console.log("Meta Conversion API Response:", result);
-
-      if (result.error) {
-        console.error("Meta Conversion API Error:", result.error);
-      }
-    } catch (error) {
-      console.error("Error sending data to Meta Conversion API:", error);
-    }
-  };
 
   // Call the function to send data to Meta
-  sendToMeta();
+  sendToMeta(metaEventData);
 
   // Do something with the data
   // Redirect to a thank you page

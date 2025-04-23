@@ -25,8 +25,8 @@ console.log(userIp);
 //time how long it takes to get location info
 console.time("location");
 const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
-console.timeEnd("location");
 const locationInfo: LocationInfo = await ipResponse.json();
+console.timeEnd("location");
 
 console.log(locationInfo.city);
 ---
