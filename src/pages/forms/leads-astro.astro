@@ -173,7 +173,7 @@ if (Astro.request.method === "POST") {
       `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
         `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${
           intlPhone
-        }\n${cta ?? ""}\n${
+        }\n CTA:+" "${cta ?? ""}\n${
           // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-member-access
           country + "-" + city + "-" + region
         }
