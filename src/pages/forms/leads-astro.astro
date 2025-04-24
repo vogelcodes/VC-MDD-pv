@@ -103,6 +103,7 @@ if (Astro.request.method === "POST") {
           client_user_agent: agent,
           fbc,
           fbp,
+          external_id: clientID,
         },
         custom_data: {
           source,
@@ -174,7 +175,7 @@ if (Astro.request.method === "POST") {
           intlPhone
         }\n${cta ?? ""}\n${
           // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, @typescript-eslint/no-unsafe-member-access
-          country + "-" + city + "-" + region
+          country + -+city + -+region
         }
             \n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\n
             https://api.whatsapp.com/send?phone=${intlPhone
