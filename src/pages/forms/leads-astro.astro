@@ -162,24 +162,6 @@ if (Astro.request.method === "POST") {
   //   // `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
   //   `/thank-you`
   // );
-  const response = fetch(GSHEET_POST_WH_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      Date: new Date().toISOString(),
-      ...fields,
-      client_ip_address: userIP,
-      client_user_agent: agent,
-      firstName,
-      lastName,
-    }),
-  })
-    .then((res) => res.json())
-    .then((json) => console.log("Google Sheet POST Response:", json));
-  console.timeEnd("onLeadSubmit");
-  const leadsList = await fetchLeads();
   async function sendLeadToTelegram(
     dryRun: boolean,
     email: string,
@@ -191,6 +173,7 @@ if (Astro.request.method === "POST") {
     agent: string,
     source: string
   ) {
+    const leadsList = await fetchLeads();
     const emailCount = leadsList.filter((item) => item.email === email).length;
     const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
       `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${intlPhone}\n${"CTA: " + (cta ?? "")}\n${country + "-" + city + "-" + region}\n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\nhttps://api.whatsapp.com/send?phone=${intlPhone
@@ -198,7 +181,7 @@ if (Astro.request.method === "POST") {
         .trim()}&text=${encodeURIComponent(
         `Oi ${firstName}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
       )}
-            `
+      `
     )}`;
 
     if (!dryRun) {
@@ -207,6 +190,25 @@ if (Astro.request.method === "POST") {
       console.log("DEBUG MODE: Not sending to Telegram");
       console.log(telegramURL);
     }
+    const response = fetch(GSHEET_POST_WH_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        Date: new Date().toISOString(),
+        ...fields,
+        client_ip_address: userIP,
+        client_user_agent: agent,
+        firstName,
+        lastName,
+        lead_count: emailCount + 1,
+        is_returning_lead: emailCount > 0 ? "true" : "false",
+      }),
+    })
+      .then((res) => res.json())
+      .then((json) => console.log("Google Sheet POST Response:", json));
+    console.timeEnd("onLeadSubmit");
   }
 
   sendLeadToTelegram(

@@ -26,6 +26,7 @@ const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 // --- End Cache Implementation ---
 
 export async function getLeads(): Promise<Record<string, string>[]> {
+  console.time("getLeads called");
   if (!sheetUrl) {
     console.error("GSHEET_GET_WH_URL environment variable is not set.");
     return []; // Return empty array if URL is not configured
@@ -35,6 +36,7 @@ export async function getLeads(): Promise<Record<string, string>[]> {
   const now = Date.now();
   if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
     console.log("Returning cached leads data from leadService.");
+    console.timeEnd("getLeads called");
     return cachedData;
   }
   // --- End Cache Check ---
@@ -55,6 +57,7 @@ export async function getLeads(): Promise<Record<string, string>[]> {
     console.log("leadService cache updated.");
     // --- End Update Cache ---
 
+    console.timeEnd("getLeads called");
     return processedData;
   } catch (error) {
     console.error(
@@ -63,6 +66,7 @@ export async function getLeads(): Promise<Record<string, string>[]> {
     );
     // Optionally: return stale cache if fetch fails?
     // if (cachedData) { return cachedData; }
+    console.timeEnd("getLeads called");
     return []; // Return empty array on error
   }
 }
