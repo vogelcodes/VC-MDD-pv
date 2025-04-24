@@ -67,12 +67,14 @@ if (Astro.request.method === "POST") {
   const phone = data.get("phone") || "";
   const intlPhone = data.get("intl-phone") || "";
   const city = data.get("city") || "";
-  const region = data.get("region") || "";
   const intlPhoneSanitized = intlPhone?.toString().replace("+", "");
   const ph = sha256().update(intlPhoneSanitized).digest("hex");
   const source = data.get("source") || "";
   const cta = data.get("cta") || "";
   const location = data.get("location");
+  const locationInfo = JSON.parse(location?.toString() || "{}");
+  const region = locationInfo.region || "";
+  const countryCode = locationInfo.countryCode || "";
   const clientID = data.get("clientID");
   const fbp = data.get("fbp");
   const fbc = data.get("fbc");
@@ -188,7 +190,7 @@ if (Astro.request.method === "POST") {
     email,
     intlPhone.toString(),
     cta.toString(),
-    country.toString(),
+    countryCode.toString(),
     city.toString(),
     region.toString(),
     agent.toString(),
