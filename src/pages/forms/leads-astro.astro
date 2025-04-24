@@ -175,7 +175,7 @@ if (Astro.request.method === "POST") {
     ).length;
     const telegramMessage = fetch(
       `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
-        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${intlPhone}\n CTA: ${cta ?? ""}\n${country + "-" + city + "-" + region}\n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\nhttps://api.whatsapp.com/send?phone=${intlPhone
+        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${intlPhone}\n${"CTA: " + (cta ?? "")}\n${country + "-" + city + "-" + region}\n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\nhttps://api.whatsapp.com/send?phone=${intlPhone
           .replace("+", "")
           .trim()}&text=${encodeURIComponent(
           `Oi ${firstName}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
