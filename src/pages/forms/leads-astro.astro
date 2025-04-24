@@ -4,6 +4,7 @@ import pkg from "hash.js"; // Correct named import
 const { sha256 } = pkg;
 import { sendToMeta } from "../../utils/metaConversionsAPI";
 import { UAParser } from "ua-parser-js";
+import { getLeads } from "../../utils/leadService"; // Import the new service
 
 // import { GoogleSpreadsheet } from "google-spreadsheet";
 // import { JWT } from "google-auth-library";
@@ -33,9 +34,27 @@ import { UAParser } from "ua-parser-js";
 // Initialize leads cache at build time
 
 const GSHEET_POST_WH_URL = import.meta.env.GSHEET_POST_WH_URL;
-const GSHEET_GET_WH_URL = import.meta.env.GSHEET_GET_WH_URL;
+// GSHEET_GET_WH_URL is now only used within leadService.ts
+// const GSHEET_GET_WH_URL = import.meta.env.GSHEET_GET_WH_URL;
 const TELEGRAM_BOT_URL = import.meta.env.TELEGRAM_BOT_URL;
+const DRY_RUN = import.meta.env.DEBUG === "1";
+
 if (Astro.request.method === "POST") {
+  // This function now just calls the imported service
+  async function fetchLeads() {
+    console.log("Fetching leads via leadService...");
+    try {
+      // Call the imported getLeads function which handles fetching and caching
+      const leadsData = await getLeads();
+      console.log(`Fetched ${leadsData.length} leads via leadService.`);
+      return leadsData;
+    } catch (error) {
+      // Error handling is mostly within getLeads, but catch any potential issues here too
+      console.error("Error calling getLeads from leads-astro.astro:", error);
+      return []; // Return empty array on error
+    }
+  }
+
   console.time("onLeadSubmit");
   const userIP = Astro.clientAddress;
   const agent = Astro.request.headers.get("user-agent") || "";
@@ -52,7 +71,7 @@ if (Astro.request.method === "POST") {
   const ct = sha256().update(data.get("city-lwr")?.toString()).digest("hex");
   const st = sha256().update(data.get("state")?.toString()).digest("hex");
   const country = sha256()
-    .update(data.get("countryName")?.toString())
+    .update(data.get("coutryCode")?.toString().toLowerCase())
     .digest("hex");
   const fn = sha256()
     .update(firstName?.toLowerCase() || "")
@@ -130,7 +149,12 @@ if (Astro.request.method === "POST") {
   console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
 
   // Call the function to send data to Meta
-  sendToMeta(metaEventData);
+  if (!DRY_RUN) {
+    sendToMeta(metaEventData);
+  } else {
+    console.log("DEBUG MODE: Not sending to Meta");
+    console.log(JSON.stringify(metaEventData, null, 2));
+  }
 
   // Do something with the data
   // Redirect to a thank you page
@@ -155,7 +179,9 @@ if (Astro.request.method === "POST") {
     .then((res) => res.json())
     .then((json) => console.log("Google Sheet POST Response:", json));
   console.timeEnd("onLeadSubmit");
+  const leadsList = await fetchLeads();
   async function sendLeadToTelegram(
+    dryRun: boolean,
     email: string,
     intlPhone: string,
     cta: string,
@@ -165,26 +191,26 @@ if (Astro.request.method === "POST") {
     agent: string,
     source: string
   ) {
-    const response = await fetch(GSHEET_GET_WH_URL, {});
-    const leadsList = await response.json();
-    const latestLeads = leadsList.slice(1).sort((a: string[], b: string[]) => {
-      return new Date(b[4]).getTime() - new Date(a[4]).getTime();
-    });
-    const emailCount = latestLeads.filter(
-      (item: string[]) => item[2] === email
-    ).length;
-    const telegramMessage = fetch(
-      `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
-        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${intlPhone}\n${"CTA: " + (cta ?? "")}\n${country + "-" + city + "-" + region}\n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\nhttps://api.whatsapp.com/send?phone=${intlPhone
-          .replace("+", "")
-          .trim()}&text=${encodeURIComponent(
-          `Oi ${firstName}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
-        )}
+    const emailCount = leadsList.filter((item) => item.email === email).length;
+    const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
+      `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${intlPhone}\n${"CTA: " + (cta ?? "")}\n${country + "-" + city + "-" + region}\n${agent ?? ""}\n${decodeURIComponent(source ?? "")}\nhttps://api.whatsapp.com/send?phone=${intlPhone
+        .replace("+", "")
+        .trim()}&text=${encodeURIComponent(
+        `Oi ${firstName}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
+      )}
             `
-      )}`
-    );
+    )}`;
+
+    if (!dryRun) {
+      const telegramMessage = fetch(telegramURL);
+    } else {
+      console.log("DEBUG MODE: Not sending to Telegram");
+      console.log(telegramURL);
+    }
   }
+
   sendLeadToTelegram(
+    DRY_RUN,
     email,
     intlPhone.toString(),
     cta.toString(),
@@ -194,14 +220,19 @@ if (Astro.request.method === "POST") {
     userAgent.os.name || "",
     source.toString()
   );
-  const isCheckoutActive = true;
-  if (isCheckoutActive) {
+
+  if (!DRY_RUN) {
     return new Response(null, {
       status: 302,
       headers: {
         Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
       },
     });
+  } else {
+    console.log("DEBUG MODE: Not redirecting to Hotmart");
+    console.log(
+      `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+    );
   }
 
   return new Response(

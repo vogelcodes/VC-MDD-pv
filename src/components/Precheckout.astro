@@ -26,6 +26,7 @@ console.log(userIp);
 console.time("location");
 const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
 const locationInfo: LocationInfo = await ipResponse.json();
+
 console.timeEnd("location");
 
 console.log(locationInfo);
@@ -91,7 +92,7 @@ console.log(locationInfo);
           type="text"
           name="city"
           hidden
-          value={JSON.stringify(locationInfo.city).replaceAll('\"', "")}
+          value={locationInfo.city?.toString().replaceAll('\"', "")}
         />
         <input
           type="text"
@@ -113,7 +114,13 @@ console.log(locationInfo);
           type="text"
           name="countryName"
           hidden
-          value={JSON.stringify(locationInfo.country).replaceAll('\"', "")}
+          value={locationInfo.country?.toString().replaceAll('\"', "")}
+        />
+        <input
+          type="text"
+          name="countryCode"
+          hidden
+          value={locationInfo.country_code?.toString().replaceAll('\"', "")}
         />
         <input type="text" name="clientID" hidden value={clientID} />
         <button
