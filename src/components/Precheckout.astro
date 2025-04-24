@@ -28,7 +28,7 @@ const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
 const locationInfo: LocationInfo = await ipResponse.json();
 console.timeEnd("location");
 
-console.log(locationInfo.city);
+console.log(locationInfo);
 ---
 
 <div id="container" class="bg-green">
