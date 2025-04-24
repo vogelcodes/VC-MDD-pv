@@ -3,6 +3,8 @@ import { date } from "astro:schema";
 import pkg from "hash.js"; // Correct named import
 const { sha256 } = pkg;
 import { sendToMeta } from "../../utils/metaConversionsAPI";
+import { UAParser } from "ua-parser-js";
+
 // import { GoogleSpreadsheet } from "google-spreadsheet";
 // import { JWT } from "google-auth-library";
 
@@ -37,6 +39,8 @@ if (Astro.request.method === "POST") {
   console.time("onLeadSubmit");
   const userIP = Astro.clientAddress;
   const agent = Astro.request.headers.get("user-agent") || "";
+  const userAgent = UAParser(agent) || "";
+
   console.log(agent, userIP);
   const data = await Astro.request.formData();
   const name = data.get("name");
@@ -194,7 +198,7 @@ if (Astro.request.method === "POST") {
     countryCode.toString(),
     city.toString(),
     region.toString(),
-    agent.toString(),
+    userAgent.os.name || "",
     source.toString()
   );
   const isCheckoutActive = true;
