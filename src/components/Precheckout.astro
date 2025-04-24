@@ -91,7 +91,7 @@ console.log(locationInfo);
           type="text"
           name="city"
           hidden
-          value={JSON.stringify(locationInfo.city).replace('\"', "")}
+          value={JSON.stringify(locationInfo.city).replaceAll('\"', "")}
         />
         <input
           type="text"
@@ -113,7 +113,7 @@ console.log(locationInfo);
           type="text"
           name="countryName"
           hidden
-          value={JSON.stringify(locationInfo.country)}
+          value={JSON.stringify(locationInfo.country).replaceAll('\"', "")}
         />
         <input type="text" name="clientID" hidden value={clientID} />
         <button
