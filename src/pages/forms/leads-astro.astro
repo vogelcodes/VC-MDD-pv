@@ -77,6 +77,7 @@ if (Astro.request.method === "POST") {
   const fbp = data.get("fbp");
   const fbc = data.get("fbc");
   const fields: { [key: string]: any } = {};
+  console.log(name, email, intlPhone, source, cta);
   data.forEach((value, key) => {
     fields[key] = value;
   });
@@ -147,15 +148,6 @@ if (Astro.request.method === "POST") {
     .then((res) => res.json())
     .then((json) => console.log("Google Sheet POST Response:", json));
   console.timeEnd("onLeadSubmit");
-  const isCheckoutActive = true;
-  if (isCheckoutActive) {
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
-      },
-    });
-  }
   async function sendLeadToTelegram(
     email: string,
     intlPhone: string,
@@ -171,11 +163,9 @@ if (Astro.request.method === "POST") {
     const latestLeads = leadsList.slice(1).sort((a: string[], b: string[]) => {
       return new Date(b[4]).getTime() - new Date(a[4]).getTime();
     });
-    console.log(latestLeads);
     const emailCount = latestLeads.filter(
       (item: string[]) => item[2] === email
     ).length;
-    console.log(emailCount);
     const telegramMessage = fetch(
       `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
         `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${name}\n${email}\n${
@@ -204,6 +194,15 @@ if (Astro.request.method === "POST") {
     agent.toString(),
     source.toString()
   );
+  const isCheckoutActive = true;
+  if (isCheckoutActive) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+      },
+    });
+  }
 
   return new Response(
     JSON.stringify({
