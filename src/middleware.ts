@@ -40,6 +40,10 @@ const middleware = async (
     clientUuid = createId(); // Generate CUID if no cookie
     // Set cookie in the response later
   }
+  if (url.pathname.startsWith("/api/wh")) {
+    console.log("WH API call detected");
+    return next();
+  }
   // console.log("clientUuid determined:", clientUuid); // Debug CUID
 
   // Admin check (keep as is)
