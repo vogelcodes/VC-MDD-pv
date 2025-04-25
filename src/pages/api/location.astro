@@ -1,0 +1,26 @@
+---
+import { date } from "astro:schema";
+import pkg from "hash.js"; // Correct named import
+const { sha256 } = pkg;
+
+import { decryptData } from "../../utils/crypto";
+
+if (Astro.request.method === "GET") {
+  const token = Astro.url.searchParams.get("token") || "";
+
+  const decryptedData = JSON.parse(decryptData(token) || "{}");
+
+  return new Response(
+    JSON.stringify({
+      message: "Location data decrypted successfully",
+      decryptedData,
+    }),
+    {
+      headers: {
+        "content-type": "application/json",
+      },
+      status: 200,
+    }
+  );
+}
+---

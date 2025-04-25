@@ -1,10 +1,6 @@
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-console.log(
-  "LOCATION_ENCRYPTION_KEY: ",
-  import.meta.env.LOCATION_ENCRYPTION_KEY
-);
 // Ensure LOCATION_ENCRYPTION_KEY is a 32-byte secure key set in your environment variables
 const ENCRYPTION_KEY = Buffer.from(
   import.meta.env.LOCATION_ENCRYPTION_KEY || "",

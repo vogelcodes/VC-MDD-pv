@@ -1,6 +1,8 @@
 import { sendToMeta } from "./utils/metaConversionsAPI";
 import { v4 as uuidv4 } from "uuid"; // For random number generation
 import { encryptData, decryptData, type LocationInfo } from "./utils/crypto";
+import { hashUserData, type RawUserData } from "./utils/hashing"; // Import the new hashing utility
+import { createId } from "@paralleldrive/cuid2";
 
 const ADMIN_USERNAME = import.meta.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
@@ -28,6 +30,13 @@ export const onRequest = async (
   const url = new URL(request.url);
   const fbclid = url.searchParams.get("fbclid");
   console.log("fbclid", fbclid);
+
+  let uuid = createId();
+  if (!cookies.get("uuid")) {
+    cookies.set("uuid", uuid);
+  }
+  let clientUuid = cookies.get("uuid");
+  console.log(clientUuid);
 
   // Check if the request is for an admin route
   if (url.pathname.startsWith("/admin")) {
@@ -59,7 +68,10 @@ export const onRequest = async (
   // --- Location Cookie / Lookup Logic ---
   let locationInfo: LocationInfo | null = null;
   let needsLocationCookieUpdate = false;
+  const clientIp = getClientIp(request); // Get IP early
+  console.log("clientIp determined as:", clientIp);
 
+  // Try getting info from cookie first
   const locationCookie = cookies.get(LOCATION_COOKIE_NAME);
   if (locationCookie?.value) {
     console.log("Existing location cookie found.");
@@ -68,66 +80,104 @@ export const onRequest = async (
       try {
         const parsedData: LocationInfo = JSON.parse(decryptedData);
         // Check if the IP in the cookie matches the current request IP
-        const clientIp = getClientIp(request);
-        if (parsedData.query === clientIp) {
+        // Allow cookie use even if current IP is null (e.g., initial load in dev)
+        if (clientIp && parsedData.query === clientIp) {
           console.log(
             "Decrypted location data matches current IP:",
             parsedData
           );
           locationInfo = parsedData;
+        } else if (!clientIp && parsedData.query) {
+          // If we couldn't get current IP but have cookie, use cookie for now
+          console.log(
+            "Could not determine current IP, using location data from cookie based on previous IP:",
+            parsedData.query
+          );
+          locationInfo = parsedData;
         } else {
           console.log(
-            "IP mismatch in location cookie. Old:",
-            parsedData.query,
-            "New:",
-            clientIp
+            "IP mismatch or invalid data in location cookie. Current IP:",
+            clientIp,
+            "Cookie IP:",
+            parsedData.query
           );
-          // Invalidate cookie data if IP changed
-          cookies.delete(LOCATION_COOKIE_NAME, { path: "/" }); // Delete old cookie
+          cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
         }
       } catch (e) {
         console.error("Error parsing decrypted location data:", e);
-        cookies.delete(LOCATION_COOKIE_NAME, { path: "/" }); // Delete corrupted cookie
+        cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
       }
     } else {
       console.log("Failed to decrypt location cookie.");
-      cookies.delete(LOCATION_COOKIE_NAME, { path: "/" }); // Delete undecryptable cookie
+      cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
     }
   } else {
     console.log("No location cookie found.");
   }
 
-  // Perform lookup if locationInfo is still null and we have an IP
-  const clientIp = getClientIp(request);
-  if (!locationInfo && clientIp) {
-    console.log(`Performing IP geolocation lookup for ${clientIp}...`);
-    try {
-      // Request specific fields from ip-api
-      const geoResponse = await fetch(
-        `http://ip-api.com/json/${clientIp}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`
+  // If we still don't have location info, proceed to lookup or mock
+  if (!locationInfo) {
+    // ---> START DEV MODE CHECK <---
+    // Use DEBUG env variable (compare as string)
+    if (import.meta.env.DEBUG === "1") {
+      console.log(`DEBUG MODE: Using mock geolocation data.`);
+      // Use a default mock IP if clientIp is null, otherwise use clientIp
+      const mockQueryIp = clientIp || "127.0.0.1";
+      locationInfo = {
+        status: "success",
+        country: "United States",
+        countryCode: "US",
+        region: "CA",
+        regionName: "California",
+        city: "Los Angeles",
+        zip: "90038",
+        lat: 33.9533,
+        lon: -43.1883,
+        timezone: "America/Sao_Paulo",
+        isp: "Mock ISP (Dev Mode)", // Indicate mock
+        org: "Mock Org (Dev Mode)",
+        as: "Mock AS (Dev Mode)",
+        query: mockQueryIp, // Store the IP used for the mock query
+      };
+      needsLocationCookieUpdate = true;
+    } else if (clientIp) {
+      // ---> PRODUCTION LOGIC (Only if clientIp exists) <---
+      console.log(
+        `PRODUCTION MODE: Performing IP geolocation lookup for ${clientIp}...`
       );
-      const geoData: LocationInfo = await geoResponse.json();
-
-      if (geoData.status === "success" && geoData.query) {
-        console.log("Geolocation lookup successful:", geoData);
-        locationInfo = geoData; // Use fetched data
-        needsLocationCookieUpdate = true; // Mark that we need to set the cookie later
-      } else {
-        console.error(
-          "Geolocation lookup failed:",
-          geoData.status,
-          geoData.message
+      try {
+        const geoResponse = await fetch(
+          `http://ip-api.com/json/${clientIp}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`
         );
+        const geoData: LocationInfo = await geoResponse.json();
+
+        if (geoData.status === "success" && geoData.query) {
+          console.log("Geolocation lookup successful:", geoData);
+          locationInfo = geoData; // Use fetched data
+          needsLocationCookieUpdate = true;
+        } else {
+          console.error(
+            "Geolocation lookup failed:",
+            geoData.status,
+            geoData.message
+          );
+        }
+      } catch (error) {
+        console.error("Error during IP geolocation lookup:", error);
       }
-    } catch (error) {
-      console.error("Error during IP geolocation lookup:", error);
+      // ---> END PRODUCTION LOGIC <---
+    } else {
+      // Production mode but clientIp is null/undefined
+      console.log(
+        "PRODUCTION MODE: Skipping geolocation lookup as client IP could not be determined."
+      );
     }
-  } else if (locationInfo) {
-    console.log("Using location info from cookie/cache.");
+    // ---> END DEV MODE CHECK <---
   } else {
-    console.log("Skipping geolocation lookup (no IP or already have info).");
+    console.log("Using location info from cookie.");
   }
-  // Store location info in locals for potential use in pages/endpoints
+
+  // Store final location info (might be null) in locals
   locals.locationInfo = locationInfo;
 
   let fbcCookie = cookies.get("_fbc"); // Use Astro's cookies object
@@ -138,9 +188,16 @@ export const onRequest = async (
   let needsFbcCookieUpdate = false;
   let needsFbpCookieUpdate = false;
 
+  const rawData: RawUserData = {
+    city: locationInfo?.city,
+    state: locationInfo?.region,
+    countryCode: locationInfo?.countryCode,
+  };
+  const hashedUserData = hashUserData(rawData);
+  console.log("hashedUserData", hashedUserData);
   if (fbclid) {
     console.log("fbclid found:", fbclid);
-    const subdomainIndex = 1; // As per Meta docs for server-side generation
+    const subdomainIndex = 2; // As per Meta docs for server-side generation
     const newFbcValue = `fb.${subdomainIndex}.${currentTimestamp}.${fbclid}`;
 
     // Check if we need to update fbc
@@ -179,8 +236,10 @@ export const onRequest = async (
             user_data: {
               fbc: fbcValue,
               fbp: fbpValue,
+              ...hashedUserData,
               client_ip_address: clientIp,
               client_user_agent: request.headers.get("User-Agent"),
+              external_id: clientUuid,
             },
             custom_data: {},
           },
@@ -206,10 +265,13 @@ export const onRequest = async (
             action_source: "website",
             event_source_url: request.url,
             user_data: {
+              ...hashedUserData,
               ...(fbcValue && { fbc: fbcValue }),
               ...(fbpValue && { fbp: fbpValue }),
               client_ip_address: clientIp,
+
               client_user_agent: request.headers.get("User-Agent"),
+              external_id: clientUuid,
             },
             custom_data: {},
           },

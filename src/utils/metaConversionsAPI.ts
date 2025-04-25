@@ -2,6 +2,7 @@ const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
 const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
 
 export const sendToMeta = async (metaEventData: any) => {
+  console.log("metaEventData", JSON.stringify(metaEventData, null, 2));
   try {
     if (!META_PIXEL_ACCESS_TOKEN || !META_PIXEL_ID) {
       console.error(
