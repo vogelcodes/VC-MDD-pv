@@ -88,7 +88,7 @@ if (Astro.request.method === "POST") {
   }
 
   const country = sha256() // Directly use sha256()
-    .update(address?.country_iso || "")
+    .update(address?.country_iso.toString().toLowerCase() || "")
     .digest("hex");
   const fn = sha256() // Directly use sha256()
     .update(firstName?.toLowerCase() || "")
