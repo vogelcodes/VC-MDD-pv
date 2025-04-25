@@ -122,8 +122,6 @@ if (Astro.request.method === "POST") {
           external_id: clientID,
         },
         custom_data: {
-          source,
-          city: city, // Use parsed city
           cta: data.get("cta"),
         },
       },
