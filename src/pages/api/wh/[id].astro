@@ -2,6 +2,7 @@
 import { date } from "astro:schema";
 import pkg from "hash.js"; // Correct named import
 const { sha256 } = pkg;
+import { getLeads } from "../../../utils/leadService"; // Import getLeads
 
 const { id } = Astro.params;
 
@@ -77,6 +78,27 @@ if (Astro.request.method === "POST") {
     .update(phone?.toString() || "")
     .digest("hex"); // Directly use sha256()
 
+  // Fetch leads data
+  console.time("fetchLeads");
+  const leads = await getLeads();
+  console.timeEnd("fetchLeads");
+
+  // Find the lead matching the buyer's email
+  const matchingLead = leads.find(
+    (lead) => lead.email?.toLowerCase() === email?.toLowerCase()
+  );
+
+  let fbp = null;
+  let fbc = null;
+
+  if (matchingLead) {
+    fbp = matchingLead.fbp || null; // Get fbp or null if missing
+    fbc = matchingLead.fbc || null; // Get fbc or null if missing
+    console.log(`Found matching lead for ${email}: fbp=${fbp}, fbc=${fbc}`);
+  } else {
+    console.log(`No matching lead found for email: ${email}`);
+  }
+
   const metaEventData = {
     data: [
       {
@@ -96,6 +118,8 @@ if (Astro.request.method === "POST") {
           country: country, // hashed country name
           client_ip_address: userIP,
           client_user_agent: agent,
+          fbp: fbp, // Add fbp
+          fbc: fbc, // Add fbc
         },
         custom_data: {
           currency: full_price.currency_value,
