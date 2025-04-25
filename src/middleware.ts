@@ -273,26 +273,26 @@ const middleware = async (
 
   // Set Location Cookie if needed
   // Use locationCookie?.value check here
-  if (needsLocationCookieUpdate && locationInfo && !locationCookie?.value) {
-    try {
-      const dataToEncrypt = JSON.stringify(locationInfo);
-      const encryptedLocation = encryptData(dataToEncrypt);
-      if (encryptedLocation) {
-        // console.log("Setting encrypted location cookie."); // Informational
-        response.headers.append(
-          "Set-Cookie",
-          cookies.serialize(LOCATION_COOKIE_NAME, encryptedLocation, {
-            ...baseCookieOptions,
-            maxAge: LOCATION_COOKIE_MAX_AGE_SECONDS,
-          })
-        );
-      } else {
-        console.error("Failed to encrypt location data. Cookie not set.");
-      }
-    } catch (error) {
-      console.error("Error encrypting or setting location cookie:", error);
-    }
-  }
+  // if (needsLocationCookieUpdate && locationInfo && !locationCookie?.value) {
+  //   try {
+  //     const dataToEncrypt = JSON.stringify(locationInfo);
+  //     const encryptedLocation = encryptData(dataToEncrypt);
+  //     if (encryptedLocation) {
+  //       // console.log("Setting encrypted location cookie."); // Informational
+  //       response.headers.append(
+  //         "Set-Cookie",
+  //         cookies.serialize(LOCATION_COOKIE_NAME, encryptedLocation, {
+  //           ...baseCookieOptions,
+  //           maxAge: LOCATION_COOKIE_MAX_AGE_SECONDS,
+  //         })
+  //       );
+  //     } else {
+  //       console.error("Failed to encrypt location data. Cookie not set.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error encrypting or setting location cookie:", error);
+  //   }
+  // }
 
   // Set FBC Cookie if needed
   // if (needsFbcCookieUpdate && fbcValue) {
