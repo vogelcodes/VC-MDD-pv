@@ -261,78 +261,7 @@ const middleware = async (
   }
 
   // --- Process Request and Get Response ---
-  const response = await next();
-
-  // --- Set Cookies on the Response ---
-  const baseCookieOptions = {
-    path: "/",
-    httpOnly: true,
-    secure: import.meta.env.PROD, // True in production
-    sameSite: "Lax" as const,
-  };
-
-  // Set UUID cookie if it wasn't present on request
-  if (!cookies.get("uuid")) {
-    response.headers.append(
-      "Set-Cookie",
-      cookies.serialize("uuid", clientUuid, {
-        ...baseCookieOptions,
-        maxAge: 60 * 60 * 24 * 365,
-      }) // 1 year
-    );
-  }
-
-  // Set Location Cookie if needed
-  // Use locationCookie?.value check here
-  // if (needsLocationCookieUpdate && locationInfo && !locationCookie?.value) {
-  //   try {
-  //     const dataToEncrypt = JSON.stringify(locationInfo);
-  //     const encryptedLocation = encryptData(dataToEncrypt);
-  //     if (encryptedLocation) {
-  //       // console.log("Setting encrypted location cookie."); // Informational
-  //       response.headers.append(
-  //         "Set-Cookie",
-  //         cookies.serialize(LOCATION_COOKIE_NAME, encryptedLocation, {
-  //           ...baseCookieOptions,
-  //           maxAge: LOCATION_COOKIE_MAX_AGE_SECONDS,
-  //         })
-  //       );
-  //     } else {
-  //       console.error("Failed to encrypt location data. Cookie not set.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error encrypting or setting location cookie:", error);
-  //   }
-  // }
-
-  // Set FBC Cookie if needed
-  // if (needsFbcCookieUpdate && fbcValue) {
-  //   // console.log("Setting _fbc cookie in response:", fbcValue); // Informational
-  //   response.headers.append(
-  //     "Set-Cookie",
-  //     cookies.serialize("_fbc", fbcValue, {
-  //       ...baseCookieOptions,
-  //       httpOnly: false, // Needs to be readable by client-side JS
-  //       maxAge: 90 * 24 * 60 * 60, // 90 days
-  //     })
-  //   );
-  // }
-
-  // // Set FBP Cookie if needed
-  // if (needsFbpCookieUpdate && fbpValue) {
-  //   // console.log("Setting _fbp cookie in response:", fbpValue); // Informational
-  //   response.headers.append(
-  //     "Set-Cookie",
-  //     cookies.serialize("_fbp", fbpValue, {
-  //       ...baseCookieOptions,
-  //       httpOnly: false, // Needs to be readable by client-side JS
-  //       maxAge: 90 * 24 * 60 * 60, // 90 days
-  //     })
-  //   );
-  // }
-
-  // console.timeEnd("onRequest - start"); // Debug timing
-  return response;
+  return next();
 };
 
 export const onRequest = defineMiddleware(middleware);
