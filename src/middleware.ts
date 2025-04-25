@@ -9,7 +9,7 @@ const LOCATION_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60; // 1 day
 
 // Helper function to get client IP
 function getClientIp(request: Request): string | null {
-  // Standard headers, including Cloudflare
+  // Standard headers, including Cloudflarew
   const ip =
     request.headers.get("cf-connecting-ip") ||
     request.headers.get("X-Forwarded-For")?.split(",")[0].trim() ||
@@ -22,6 +22,8 @@ export const onRequest = async (
   next: () => Promise<Response>
 ) => {
   console.time("onRequest - start");
+  console.log("ENCRYPTION_KEY: ", import.meta.env.LOCATION_ENCRYPTION_KEY);
+  console.log("encryptData('test'): ", encryptData("test"));
 
   const url = new URL(request.url);
   const fbclid = url.searchParams.get("fbclid");
