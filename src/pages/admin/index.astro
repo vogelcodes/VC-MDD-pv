@@ -3,9 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import { getLeads } from "../../utils/leadService"; // Import the service
 
 // Fetch leads using the service, which handles caching and transformation
-const leads: Record<string, string>[] = await getLeads();
-
-console.log(`Fetched ${leads.length} leads for admin page.`);
+const leads = await getLeads();
+// console.log(`Fetched ${leads.length} leads for admin page.`);
 
 // show every lead as a card, sorted by date (assuming 'Date' is the key)
 // Sort based on the 'Date' property of the objects

@@ -4,13 +4,16 @@ import Layout from "../../layouts/Layout.astro";
 import { createId } from "@paralleldrive/cuid2";
 
 const { id } = Astro.params;
+// console.log(id);
+// const clientUuid = id;
+// console.log(clientUuid);
 
 let uuid = createId();
 if (!Astro.cookies.get("uuid")) {
   Astro.cookies.set("uuid", uuid);
 }
 let clientUuid = Astro.cookies.get("uuid");
-console.log(clientUuid);
+// console.log(clientUuid);
 
 // Precheckout to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
 // Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.

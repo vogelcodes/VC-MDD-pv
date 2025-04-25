@@ -32,16 +32,16 @@ export async function getLeads(): Promise<Record<string, string>[]> {
     return []; // Return empty array if URL is not configured
   }
 
-  // --- Cache Check ---
+  // Check cache first
   const now = Date.now();
   if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
-    console.log("Returning cached leads data from leadService.");
+    // console.log("Returning cached leads data from leadService.");
     console.timeEnd("getLeads called");
     return cachedData;
   }
-  // --- End Cache Check ---
 
-  console.log("Fetching fresh leads data via leadService...");
+  // console.log("Fetching fresh leads data via leadService...");
+  // If not in cache, fetch fresh data
   try {
     const response = await fetch(sheetUrl);
     if (!response.ok) {
@@ -54,7 +54,7 @@ export async function getLeads(): Promise<Record<string, string>[]> {
     // --- Update Cache ---
     cachedData = processedData;
     lastFetchTime = now;
-    console.log("leadService cache updated.");
+    // console.log("leadService cache updated.");
     // --- End Update Cache ---
 
     console.timeEnd("getLeads called");

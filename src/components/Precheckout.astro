@@ -1,12 +1,38 @@
 ---
 import ReactPhoneInput from "./react-phone";
 import { formatPhoneNumber } from "react-phone-number-input";
+import { sendToMeta } from "../utils/metaConversionsAPI";
+import { encryptData, decryptData } from "../utils/crypto";
+import type { LocationInfo } from "../types/locationInfo";
 
-const { clientID, pcId } = Astro.props;
+export interface Props {
+  pcId?: string;
+  clientID?: string;
+}
+
+const { pcId = "", clientID = "" } = Astro.props;
+
+// Get query params
+const search = Astro.url.searchParams;
+
+// Get user IP
+const userIp = Astro.clientAddress;
+
+// Attempt to get location info from middleware
+const locationData = Astro.locals.locationInfo;
+
+const fbc = Astro.cookies.get("_fbc")?.value;
+const fbp = Astro.cookies.get("_fbp")?.value;
+
+const formAction = `/forms/leads-astro`;
+
+const encryptedLocation = locationData
+  ? encryptData(JSON.stringify(locationData))
+  : "";
 
 type LocationInfo = {
   country_code: string;
-
+  status: string;
   country: string;
   region_code: string;
   region: string;
@@ -18,18 +44,35 @@ type LocationInfo = {
   longitude: number;
 };
 
-const search = Astro.url.pathname + Astro.url.search;
-console.log(search);
-const userIp = Astro.clientAddress;
-console.log(userIp);
 //time how long it takes to get location info
 console.time("location");
 const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
-const locationInfo: LocationInfo = await ipResponse.json();
+let locationInfo: LocationInfo = await ipResponse.json();
 
 console.timeEnd("location");
 
 console.log(locationInfo);
+if (locationInfo.status === "fail") {
+  const locationMock = {
+    status: "success",
+    country: "United States",
+    countryCode: "US",
+    region: "CA",
+    regionName: "California",
+    city: "Los Angeles",
+    zip: "90038",
+    lat: 33.9533,
+    lon: -43.1883,
+    timezone: "America/Sao_Paulo",
+    isp: "Mock ISP (Dev Mode)", // Indicate mock
+    org: "Mock Org (Dev Mode)",
+    as: "Mock AS (Dev Mode)",
+  };
+  locationInfo.city = locationMock.city;
+  locationInfo.region = locationMock.region;
+  locationInfo.country = locationMock.country;
+  locationInfo.country_code = locationMock.countryCode;
+}
 ---
 
 <div id="container" class="bg-green">
@@ -40,12 +83,12 @@ console.log(locationInfo);
       .find((row) => row.startsWith("_fbc"))
       ?.split("=")[1];
     //get _fbp cookie from browser
-    console.log(fbc);
+    // console.log(fbc);
     const fbp = document.cookie
       .split("; ")
       .find((row) => row.startsWith("_fbp"))
       ?.split("=")[1];
-    console.log(fbp);
+    // console.log(fbp);
     //set _fbc cookie value to hidden input
     const fbcInput = document.querySelector('input[name="fbc"]');
     if (fbcInput) {
@@ -78,7 +121,7 @@ console.log(locationInfo);
           Whatsapp:
           <ReactPhoneInput client:idle />
         </label>
-        <input type="text" name="source" hidden value={search} />
+        <input type="text" name="source" hidden value={search.toString()} />
         <input type="text" name="cta" hidden value="" />
         <input type="text" name="fbc" hidden />
         <input type="text" name="fbp" hidden />

@@ -10,25 +10,13 @@ const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
 
 if (Astro.request.method === "POST") {
   const userIP = Astro.clientAddress;
-  const agent = Astro.request.headers.get("user-agent");
-  console.log("Agent:", agent);
+  const agent = Astro.request.headers.get("user-agent") || "";
   const requestBody = await Astro.request.json();
   console.log("Received payload:", JSON.stringify(requestBody, null, 2));
 
   // Check if the event is PURCHASE_APPROVED
-  if (requestBody.event !== "PURCHASE_APPROVED") {
-    console.log("Event is not PURCHASE_APPROVED, skipping Meta event.");
-    return new Response(
-      JSON.stringify({
-        message: "Event is not PURCHASE_APPROVED, skipping Meta event.",
-      }),
-      {
-        headers: {
-          "content-type": "application/json",
-        },
-        status: 200,
-      }
-    );
+  if (requestBody?.data?.event !== "PURCHASE_APPROVED") {
+    return new Response(null, { status: 204 }); // Return success but do nothing
   }
 
   const { data } = requestBody;
@@ -84,7 +72,6 @@ if (Astro.request.method === "POST") {
     .update(email?.toString().trim().toLowerCase() || "")
     .digest("hex");
   const phone = "+55" + checkout_phone.toString();
-  console.log(phone);
 
   const ph = sha256()
     .update(phone?.toString() || "")

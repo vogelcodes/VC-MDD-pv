@@ -43,11 +43,11 @@ const DRY_RUN = import.meta.env.DEBUG === "1";
 if (Astro.request.method === "POST") {
   // This function now just calls the imported service
   async function fetchLeads() {
-    console.log("Fetching leads via leadService...");
+    // console.log("Fetching leads via leadService...");
     try {
       // Call the imported getLeads function which handles fetching and caching
       const leadsData = await getLeads();
-      console.log(`Fetched ${leadsData.length} leads via leadService.`);
+      // console.log(`Fetched ${leadsData.length} leads via leadService.`);
       return leadsData;
     } catch (error) {
       // Error handling is mostly within getLeads, but catch any potential issues here too
@@ -56,14 +56,14 @@ if (Astro.request.method === "POST") {
     }
   }
 
-  console.time("onLeadSubmit");
+  // console.time("onLeadSubmit");
   const userIP = Astro.clientAddress;
   const agent = Astro.request.headers.get("user-agent") || "";
   const userAgentInfo = UAParser(agent) || ""; // Rename for clarity
 
-  console.log(agent, userIP);
+  // console.log(agent, userIP);
   const data = await Astro.request.formData();
-  console.log(data);
+  console.log(data); // Keep: Lead form submission data
   const name = data.get("name")?.toString() || ""; // Ensure string
   const firstName = name.split(" ")[0];
   const lastName = name.slice(name.indexOf(" ") + 1);
@@ -101,7 +101,7 @@ if (Astro.request.method === "POST") {
   const hashedUserData = hashUserData(rawData);
 
   const fields: { [key: string]: any } = {};
-  console.log(name, email, intlPhone, source, cta);
+  // console.log(name, email, intlPhone, source, cta); // Comment out: Redundant info shown in 'data' log
   data.forEach((value, key) => {
     fields[key] = value;
   });
@@ -139,7 +139,7 @@ if (Astro.request.method === "POST") {
   //   country: data.get("countryName")?.toString() || "",
   // });
 
-  console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData));
+  console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData)); // Keep: Meta Event Data
 
   // Call the function to send data to Meta
   if (!DRY_RUN) {
@@ -183,8 +183,8 @@ if (Astro.request.method === "POST") {
     if (!dryRun) {
       const telegramMessage = fetch(telegramURL);
     } else {
-      console.log("DEBUG MODE: Not sending to Telegram");
-      console.log(telegramURL);
+      console.log("DEBUG MODE: Not sending to Telegram"); // Keep: Debug info
+      console.log(telegramURL); // Keep: Debug info
     }
     const response = fetch(GSHEET_POST_WH_URL, {
       method: "POST",
@@ -207,8 +207,9 @@ if (Astro.request.method === "POST") {
       }),
     })
       .then((res) => res.json())
-      .then((json) => console.log("Google Sheet POST Response:", json));
-    console.timeEnd("onLeadSubmit");
+      // .then((json) => console.log("Google Sheet POST Response:", json)); // Comment out: GSheet response
+      .then((json) => {}); // Keep the .then chain, just remove the log
+    // console.timeEnd("onLeadSubmit"); // Comment out: Timing info
   }
 
   // Call sendLeadToTelegram with correct variables

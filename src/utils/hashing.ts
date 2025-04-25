@@ -53,9 +53,9 @@ export function hashUserData(data: RawUserData): HashedUserData {
     hashed.st = sha256().update(data.state.toLowerCase()).digest("hex");
   }
   if (data.countryCode) {
-    console.log("data.countryCode", data.countryCode);
+    // Normalize country code to lowercase 'us'
     hashed.country = sha256()
-      .update(data.countryCode.toLowerCase())
+      .update(data.countryCode?.toLowerCase() || "")
       .digest("hex");
   }
 
