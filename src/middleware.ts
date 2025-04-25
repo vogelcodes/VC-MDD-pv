@@ -20,7 +20,7 @@ function getClientIp(request: Request): string | null {
 }
 
 export const onRequest = async (
-  { locals, request, cookies }: { locals: any; request: Request; cookies: any }, // Add cookies to context
+  { locals, request, cookies }: { locals: any; request: Request; cookies: any },
   next: () => Promise<Response>
 ) => {
   console.time("onRequest - start");
@@ -180,31 +180,33 @@ export const onRequest = async (
   // Store final location info (might be null) in locals
   locals.locationInfo = locationInfo;
 
-  let fbcCookie = cookies.get("_fbc"); // Use Astro's cookies object
-  let fbpCookie = cookies.get("_fbp"); // Use Astro's cookies object
+  let fbcCookie = cookies.get("_fbc");
+  let fbpCookie = cookies.get("_fbp"); // Read existing fbp cookie
   let fbcValue: string | undefined = fbcCookie?.value;
-  let fbpValue: string | undefined = fbpCookie?.value;
+  let fbpValue: string | undefined = fbpCookie?.value; // Use value if pixel set it
   const currentTimestamp = Date.now();
   let needsFbcCookieUpdate = false;
-  let needsFbpCookieUpdate = false;
 
-  const rawData: RawUserData = {
+  // Hashing based on location - This should ideally use data available *here*.
+  // If locationInfo is needed for hashing, it's available. Email/phone/name aren't.
+  const rawLocationData: RawUserData = {
     city: locationInfo?.city,
     state: locationInfo?.region,
     countryCode: locationInfo?.countryCode,
   };
-  const hashedUserData = hashUserData(rawData);
-  console.log("hashedUserData", hashedUserData);
+  const hashedLocationData = hashUserData(rawLocationData); // Rename for clarity
+  console.log("hashedLocationData", hashedLocationData);
+
   if (fbclid) {
     console.log("fbclid found:", fbclid);
-    const subdomainIndex = 2; // As per Meta docs for server-side generation
+    const subdomainIndex = 2;
     const newFbcValue = `fb.${subdomainIndex}.${currentTimestamp}.${fbclid}`;
 
     // Check if we need to update fbc
     const existingFbclid = fbcValue ? fbcValue.split(".").pop() : null;
     if (!fbcValue || existingFbclid !== fbclid) {
       console.log("Setting/updating fbc value for event/cookie:", newFbcValue);
-      fbcValue = newFbcValue; // Update fbcValue to be used in event and potentially set in cookie later
+      fbcValue = newFbcValue;
       needsFbcCookieUpdate = true;
     } else {
       console.log(
@@ -212,90 +214,74 @@ export const onRequest = async (
       );
     }
 
-    // Generate fbp if it doesn't exist
-    if (!fbpValue) {
-      const randomNumber = uuidv4().replace(/-/g, "").slice(0, 16); // Generate and limit random part
-      const newFbpValue = `fb.${subdomainIndex}.${currentTimestamp}.${randomNumber}`;
-      console.log("Generating fbp value for event/cookie:", newFbpValue);
-      fbpValue = newFbpValue; // Update fbpValue to be used in event and potentially set in cookie later
-      needsFbpCookieUpdate = true;
-    } else {
-      console.log("Existing fbp cookie found. Using existing value for event.");
-    }
+    // --- REMOVED FBP GENERATION LOGIC ---
+    // console.log("Existing fbp cookie found. Using existing value for event.");
 
-    // Prepare and send PageView event
-    if (fbcValue && fbpValue) {
-      // Ensure we have values before sending
-      const eventData = {
-        data: [
-          {
-            event_name: "PageView",
-            event_time: Math.floor(currentTimestamp / 1000), // Meta expects seconds
-            action_source: "website",
-            event_source_url: request.url,
-            user_data: {
-              fbc: fbcValue,
-              fbp: fbpValue,
-              ...hashedUserData,
-              client_ip_address: clientIp,
-              client_user_agent: request.headers.get("User-Agent"),
-              external_id: clientUuid,
-            },
-            custom_data: {},
+    // --- Prepare and send PageView event (if fbclid present) ---
+    const eventData = {
+      data: [
+        {
+          event_name: "PageView",
+          event_time: Math.floor(currentTimestamp / 1000),
+          action_source: "website",
+          event_source_url: request.url,
+          user_data: {
+            fbc: fbcValue, // Use existing or generated fbc
+            fbp: fbpValue, // Use existing fbp from client-side pixel (if any)
+            ...hashedLocationData, // Include hashed location data
+            client_ip_address: clientIp,
+            client_user_agent: request.headers.get("User-Agent"),
+            external_id: clientUuid?.value, // Pass CUID value
           },
-        ],
-        // test_event_code: 'YOUR_TEST_EVENT_CODE' // Add if testing
-      };
-
-      console.log(
-        "Sending PageView event to Meta:",
-        JSON.stringify(eventData, null, 2)
-      );
-      sendToMeta(eventData); // Send event (fire and forget)
-    }
+          custom_data: {},
+        },
+      ],
+    };
+    console.log(
+      "Sending PageView event to Meta (fbclid):",
+      JSON.stringify(eventData, null, 2)
+    );
+    sendToMeta(eventData);
   } else {
     console.log("No fbclid found in URL.");
-    // Optionally: Send PageView event even without fbclid, using existing cookies if available
-    if (fbcValue || fbpValue) {
-      const eventData = {
-        data: [
-          {
-            event_name: "PageView",
-            event_time: Math.floor(currentTimestamp / 1000),
-            action_source: "website",
-            event_source_url: request.url,
-            user_data: {
-              ...hashedUserData,
-              ...(fbcValue && { fbc: fbcValue }),
-              ...(fbpValue && { fbp: fbpValue }),
-              client_ip_address: clientIp,
-
-              client_user_agent: request.headers.get("User-Agent"),
-              external_id: clientUuid,
-            },
-            custom_data: {},
+    // --- Send PageView event (if *no* fbclid) ---
+    // Include fbp if it exists from client-side pixel
+    const eventData = {
+      data: [
+        {
+          event_name: "PageView",
+          event_time: Math.floor(currentTimestamp / 1000),
+          action_source: "website",
+          event_source_url: request.url,
+          user_data: {
+            ...hashedLocationData, // Include hashed location data
+            ...(fbcValue && { fbc: fbcValue }), // Include fbc if it exists
+            ...(fbpValue && { fbp: fbpValue }), // Include fbp if it exists
+            client_ip_address: clientIp,
+            client_user_agent: request.headers.get("User-Agent"),
+            external_id: clientUuid?.value, // Pass CUID value
           },
-        ],
-      };
-      console.log(
-        "Sending PageView event to Meta (no fbclid):",
-        JSON.stringify(eventData, null, 2)
-      );
-      sendToMeta(eventData);
-    }
+          custom_data: {},
+        },
+      ],
+    };
+    console.log(
+      "Sending PageView event to Meta (no fbclid):",
+      JSON.stringify(eventData, null, 2)
+    );
+    sendToMeta(eventData);
   }
 
-  // --- Process request and modify response ---
+  // --- Process request and get response ---
   console.time("next()");
   const response = await next();
   console.timeEnd("next()");
 
-  // Set cookies on the response if they were generated/updated
-  const cookieOptions = {
+  // --- Set Cookies on the Response ---
+  const baseCookieOptions = {
     path: "/",
-    maxAge: 90 * 24 * 60 * 60, // 90 days in seconds
-    httpOnly: true, // Recommended for security
-    secure: import.meta.env.PROD, // Use Astro's env variable for production check
+    httpOnly: true,
+    secure: import.meta.env.PROD,
     sameSite: "Lax" as const,
   };
 
@@ -306,7 +292,7 @@ export const onRequest = async (
     if (encryptedLocation) {
       console.log("Setting encrypted location cookie.");
       cookies.set(LOCATION_COOKIE_NAME, encryptedLocation, {
-        ...cookieOptions,
+        ...baseCookieOptions,
         maxAge: LOCATION_COOKIE_MAX_AGE_SECONDS,
       });
     } else {
@@ -318,20 +304,13 @@ export const onRequest = async (
   if (needsFbcCookieUpdate && fbcValue) {
     console.log("Setting _fbc cookie in response:", fbcValue);
     cookies.set("_fbc", fbcValue, {
-      ...cookieOptions,
+      ...baseCookieOptions,
       maxAge: 90 * 24 * 60 * 60, // 90 days
     });
   }
 
-  // Set FBP Cookie if needed
-  if (needsFbpCookieUpdate && fbpValue) {
-    console.log("Setting _fbp cookie in response:", fbpValue);
-    cookies.set("_fbp", fbpValue, {
-      ...cookieOptions,
-      maxAge: 90 * 24 * 60 * 60, // 90 days
-    });
-  }
+  // --- REMOVED FBP COOKIE SETTING BLOCK ---
 
   console.timeEnd("onRequest - start");
-  return response; // Return the original or modified response
+  return response;
 };

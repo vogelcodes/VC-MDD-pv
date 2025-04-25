@@ -1,35 +1,24 @@
 ---
 import ReactPhoneInput from "./react-phone";
 import { formatPhoneNumber } from "react-phone-number-input";
+// Import LocationInfo type from the central definition
+import type { LocationInfo } from "../utils/crypto";
 
 const { clientID, pcId } = Astro.props;
 
-type LocationInfo = {
-  country_code: string;
+// Remove the old LocationInfo type definition here
 
-  country: string;
-  region_code: string;
-  region: string;
-  city: string;
-  isp: string;
-  zip_code: string;
-  time_zone: string;
-  latitude: number;
-  longitude: number;
-};
+// Get location info from middleware
+// const locationInfo = Astro.locals.locationInfo as LocationInfo | null;
+const locationInfo = Astro.cookies.get("loc_info");
+console.log("Location info from middleware:", locationInfo);
 
 const search = Astro.url.pathname + Astro.url.search;
 console.log(search);
-const userIp = Astro.clientAddress;
+const userIp = Astro.clientAddress; // Keep userIp if needed elsewhere, but not for fetch
 console.log(userIp);
-//time how long it takes to get location info
-console.time("location");
-const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
-const locationInfo: LocationInfo = await ipResponse.json();
 
-console.timeEnd("location");
-
-console.log(locationInfo);
+// REMOVED fetch to ip-api.com
 ---
 
 <div id="container" class="bg-green">
@@ -82,47 +71,12 @@ console.log(locationInfo);
         <input type="text" name="cta" hidden value="" />
         <input type="text" name="fbc" hidden />
         <input type="text" name="fbp" hidden />
-        <input
-          type="text"
-          name="location"
-          hidden
-          value={JSON.stringify(locationInfo)}
-        />
-        <input
-          type="text"
-          name="city"
-          hidden
-          value={locationInfo.city?.toString().replaceAll('\"', "")}
-        />
-        <input
-          type="text"
-          name="city-lwr"
-          hidden
-          value={locationInfo.city
-            ?.toString()
-            .replace(/\s+/g, "")
-            .toLowerCase()}
-        />
-        <input
-          type="text"
-          name="state"
-          hidden
-          value={locationInfo.region?.toLowerCase()}
-        />
-
-        <input
-          type="text"
-          name="countryName"
-          hidden
-          value={locationInfo.country?.toString().replaceAll('\"', "")}
-        />
-        <input
-          type="text"
-          name="countryCode"
-          hidden
-          value={locationInfo.country_code?.toString().replaceAll('\"', "")}
-        />
         <input type="text" name="clientID" hidden value={clientID} />
+        <input
+          type="hidden"
+          name="location"
+          value={JSON.stringify(locationInfo?.value ?? {})}
+        />
         <button
           class="mx-auto mt-4 w-full rounded-lg border-b-4 border-b-[#236C0F] bg-[#40C351] px-2 py-3 text-[13.6px] font-extrabold uppercase text-cream hover:scale-[104%] hover:border-b-[#44972d] hover:bg-[#236C0F] lg:py-5 lg:text-[22.6px]"
         >
