@@ -82,7 +82,7 @@ if (Astro.request.method === "POST") {
           ""
       )
       .digest("hex"); // Directly use sha256()
-    console.log(`Found matching lead for ${email}: fbp=${fbp}, fbc=${fbc}`);
+    console.log(`Found matching lead  for ${email}: fbp=${fbp}, fbc=${fbc}`);
   } else {
     console.log(`No matching lead found for email: ${email}`);
   }
