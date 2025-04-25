@@ -16,7 +16,7 @@ if (Astro.request.method === "POST") {
   console.log("Received payload:", JSON.stringify(requestBody, null, 2));
 
   // Check if the event is PURCHASE_APPROVED
-  if (requestBody?.data?.event !== "PURCHASE_APPROVED") {
+  if (requestBody?.event !== "PURCHASE_APPROVED") {
     return new Response(null, { status: 204 }); // Return success but do nothing
   }
 
