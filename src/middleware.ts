@@ -238,15 +238,22 @@ const middleware = async (
   ); // Keep: PageView Event Data
 
   // --- Send PageView Event to Meta (Server-Side) ---
-  if (import.meta.env.DEBUG !== "1") {
+  // Only send if not in DEBUG mode AND fbclid is present
+  if (import.meta.env.DEBUG !== "1" && fbclid) {
     try {
       // Don't await, let it run in the background
+
       sendToMeta({ data: [pageViewEventData] });
     } catch (error) {
       console.error("Error sending server-side PageView event to Meta:", error);
     }
-  } else {
+  } else if (import.meta.env.DEBUG === "1") {
     console.log("DEBUG MODE: Not sending server-side PageView event to Meta"); // Keep: Debug mode
+  } else {
+    // Log why it wasn't sent (missing fbclid)
+    console.log(
+      "Not sending server-side PageView event to Meta: Missing fbclid"
+    );
   }
 
   // --- Process Request and Get Response ---
