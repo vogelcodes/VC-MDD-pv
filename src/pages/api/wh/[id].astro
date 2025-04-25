@@ -51,15 +51,42 @@ if (Astro.request.method === "POST") {
 
   const firstName = first_name;
   const lastName = last_name;
+  console.time("fetchLeads");
+  const leads = await getLeads();
+  console.timeEnd("fetchLeads");
 
-  const ct = sha256() // Directly use sha256()
-    .update(address?.city?.toString().replace(/\s+/g, "").toLowerCase() || "") //using country as city for this implementation
-    .digest("hex");
-  const st = sha256()
-    .update(address?.state || "")
-    .digest("hex"); // Directly use sha256()
+  // Find the lead matching the buyer's email
+  const matchingLead = leads.find(
+    (lead) => lead.email?.toLowerCase() === email?.toLowerCase()
+  );
+
+  let fbp = null;
+  let fbc = null;
+
+  if (matchingLead) {
+    fbp = matchingLead.fbp || null; // Get fbp or null if missing
+    fbc = matchingLead.fbc || null; // Get fbc or null if missing
+    const ct = sha256() // Directly use sha256()
+      .update(
+        matchingLead?.["city-lwr"]
+          .toString()
+          .replace(/\s+/g, "")
+          .toLowerCase() || ""
+      ) //using country as city for this implementation
+      .digest("hex");
+    const st = sha256()
+      .update(
+        matchingLead?.["state"].toString().replace(/\s+/g, "").toLowerCase() ||
+          ""
+      )
+      .digest("hex"); // Directly use sha256()
+    console.log(`Found matching lead for ${email}: fbp=${fbp}, fbc=${fbc}`);
+  } else {
+    console.log(`No matching lead found for email: ${email}`);
+  }
+
   const country = sha256() // Directly use sha256()
-    .update(address?.country || "")
+    .update(address?.country_iso || "")
     .digest("hex");
   const fn = sha256() // Directly use sha256()
     .update(firstName?.toLowerCase() || "")
@@ -79,25 +106,6 @@ if (Astro.request.method === "POST") {
     .digest("hex"); // Directly use sha256()
 
   // Fetch leads data
-  console.time("fetchLeads");
-  const leads = await getLeads();
-  console.timeEnd("fetchLeads");
-
-  // Find the lead matching the buyer's email
-  const matchingLead = leads.find(
-    (lead) => lead.email?.toLowerCase() === email?.toLowerCase()
-  );
-
-  let fbp = null;
-  let fbc = null;
-
-  if (matchingLead) {
-    fbp = matchingLead.fbp || null; // Get fbp or null if missing
-    fbc = matchingLead.fbc || null; // Get fbc or null if missing
-    console.log(`Found matching lead for ${email}: fbp=${fbp}, fbc=${fbc}`);
-  } else {
-    console.log(`No matching lead found for email: ${email}`);
-  }
 
   const metaEventData = {
     data: [
