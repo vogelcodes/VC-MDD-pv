@@ -2,11 +2,9 @@
 import { date } from "astro:schema";
 import { sendToMeta } from "../../utils/metaConversionsAPI";
 import { UAParser } from "ua-parser-js";
-import { getLeads } from "../../utils/leadService";
-import { hashUserData, type RawUserData } from "../../utils/hashing";
-// Import LocationInfo type directly for parsing
-import type { LocationInfo } from "../../utils/crypto";
-import { decryptData } from "../../utils/crypto";
+import { getLeads } from "../../utils/leadService"; // Import the new service
+import { hashUserData, type RawUserData } from "../../utils/hashing"; // Import the new hashing utility
+
 // import { GoogleSpreadsheet } from "google-spreadsheet";
 // import { JWT } from "google-auth-library";
 
@@ -40,8 +38,7 @@ const GSHEET_POST_WH_URL = import.meta.env.GSHEET_POST_WH_URL;
 const TELEGRAM_BOT_URL = import.meta.env.TELEGRAM_BOT_URL;
 const DRY_RUN = import.meta.env.DEBUG === "1";
 
-// REMOVED retrieval from Astro.locals
-// const locationInfoFromMiddleware = Astro.locals.locationInfo as LocationInfo | null;
+// Retrieve location info potentially set by middleware
 
 if (Astro.request.method === "POST") {
   // This function now just calls the imported service
@@ -66,77 +63,68 @@ if (Astro.request.method === "POST") {
 
   console.log(agent, userIP);
   const data = await Astro.request.formData();
-  console.log("Form Data Received:", data);
-
-  // --- Basic Form Data ---
-  const name = data.get("name")?.toString() || "";
+  console.log(data);
+  const name = data.get("name")?.toString() || ""; // Ensure string
   const firstName = name.split(" ")[0];
   const lastName = name.slice(name.indexOf(" ") + 1);
   const email = data.get("email")?.toString().trim().toLowerCase() || "";
-  const phoneac = data.get("phoneac") || "";
-  const phone = data.get("phone") || "";
-  const intlPhone = data.get("intl-phone")?.toString() || "";
+
+  const phoneac = data.get("phoneac") || ""; // Area code if needed separately
+  const phone = data.get("phone") || ""; // Local part of phone if needed separately
+  const intlPhone = data.get("intl-phone")?.toString() || ""; // Full international number
+  const city = data.get("city")?.toString() || "";
   const source = data.get("source") || "";
   const cta = data.get("cta") || "";
-  const clientID = data.get("clientID"); // From hidden client-side generated field
-  const fbp = data.get("fbp"); // From hidden client-side JS field
-  const fbc = data.get("fbc"); // From hidden client-side JS field
 
-  // --- Location Data (from hidden input set by Precheckout) ---
-  const locationHashed =
-    data.get("location")?.toString().replaceAll('"', "") || "";
-  console.log("locationHashed", locationHashed);
-  const locationDecrypted = JSON.parse(decryptData(locationHashed) || "{}");
-  console.log("locationDecrypted", locationDecrypted);
+  // Use location info from middleware if available, otherwise maybe from form data as fallback?
+  const locationData = JSON.parse(data.get("location")?.toString() || "{}");
+  const stateOrRegion = locationData?.region || data.get("state")?.toString(); // Use state/region from middleware or form
+  const countryCode =
+    locationData?.countryCode || data.get("countryCode")?.toString(); // Use country code from middleware or form
 
-  let locationData: LocationInfo | null = locationDecrypted;
+  const clientID = data.get("clientID"); // Assuming this comes from client-side
+  const fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
+  const fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
 
-  // Use parsed location data directly for city, state, country
-  const city = locationData?.city || ""; // Get city from parsed data
-  const stateOrRegion = locationData?.region; // Get region/state code (e.g., RJ, CA)
-  const countryCode = locationData?.countryCode; // Get country code (e.g., BR, US)
-  const regionName = locationData?.regionName; // Full region name for display/sheets
-  const countryName = locationData?.country; // Full country name for display/sheets
-
-  // --- Prepare raw data for hashing ---
+  // Prepare raw data for hashing
   const rawData: RawUserData = {
     email: email,
-    phone: intlPhone?.replace(/[^0-9]/g, ""),
+    phone: intlPhone?.replace(/[^0-9]/g, ""), // Pass only digits to hashing function
     firstName: firstName,
     lastName: lastName,
     city: city,
     state: stateOrRegion,
     countryCode: countryCode,
   };
+
+  // Generate hashes using the utility
   const hashedUserData = hashUserData(rawData);
 
-  // --- Collect all original form fields for potential logging/storage ---
   const fields: { [key: string]: any } = {};
+  console.log(name, email, intlPhone, source, cta);
   data.forEach((value, key) => {
     fields[key] = value;
   });
-  console.log("Original Form Fields:", fields);
 
-  // --- Prepare Meta Event Data ---
   const metaEventData = {
     data: [
       {
         event_name: "Lead",
         event_time: Math.floor(Date.now() / 1000),
         action_source: "website",
-        event_id: clientID?.toString(), // Ensure string
+        event_id: clientID,
         user_data: {
-          ...hashedUserData,
-          client_ip_address: userIP,
-          client_user_agent: agent,
-          fbc: fbc?.toString() || undefined,
-          fbp: fbp?.toString() || undefined,
-          external_id: clientID?.toString(), // Ensure string
+          ...hashedUserData, // Spread the generated hashes
+          client_ip_address: userIP, // IP from Astro
+          client_user_agent: agent, // Agent from Astro
+          fbc: fbc || undefined, // Use client-side value if available
+          fbp: fbp || undefined, // Use client-side value if available
+          external_id: clientID,
         },
         custom_data: {
-          source: source?.toString(),
-          city: city, // Use city from parsed location
-          cta: cta?.toString(),
+          source,
+          city: city, // Use parsed city
+          cta: data.get("cta"),
         },
       },
     ],
@@ -169,101 +157,74 @@ if (Astro.request.method === "POST") {
   // );
   async function sendLeadToTelegram(
     dryRun: boolean,
-    leadName: string,
+    leadName: string, // Pass name explicitly
     leadEmail: string,
     leadIntlPhone: string,
     leadCta: string,
-    leadCountryCode: string | undefined,
+    leadCountryCode: string | undefined, // Use potentially undefined values
     leadCity: string,
-    leadRegionName: string | undefined, // Use full region name for display
-    leadUserAgentOS: string | undefined,
+    leadRegion: string | undefined, // Use potentially undefined values
+    leadUserAgentOS: string | undefined, // Use potentially undefined value
     leadSource: string
   ) {
     const leadsList = await fetchLeads();
     const emailCount = leadsList.filter(
       (item) => item.email === leadEmail
     ).length;
-    const whatsappLink = `https://api.whatsapp.com/send?phone=${leadIntlPhone.replace(/[^0-9]/g, "")}&text=${encodeURIComponent(
-      `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?`
+    const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
+      `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
+        .replace("+", "")
+        .trim()}&text=${encodeURIComponent(
+        `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?` // Use first name from passed name
+      )}
+      `
     )}`;
-    const telegramText = `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}
-Name: ${leadName}
-Email: ${leadEmail}
-Phone: ${leadIntlPhone}
-CTA: ${leadCta || "N/A"}
-Location: ${leadCity || "N/A"}, ${leadRegionName || "N/A"}, ${leadCountryCode || "N/A"}
-OS: ${leadUserAgentOS || "N/A"}
-Source: ${decodeURIComponent(leadSource || "N/A")}
-WA Link: ${whatsappLink}`;
-    const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(telegramText)}`;
 
     if (!dryRun) {
-      fetch(telegramURL).catch((e) =>
-        console.error("Telegram fetch error:", e)
-      ); // Fire and forget, but log errors
+      const telegramMessage = fetch(telegramURL);
     } else {
-      console.log("DEBUG MODE: Telegram URL:");
+      console.log("DEBUG MODE: Not sending to Telegram");
       console.log(telegramURL);
     }
-
-    // Send to Google Sheet
-    const sheetPayload = {
-      Date: new Date().toISOString(),
-      ...fields, // Send original form fields
-      // Add extracted/processed data explicitly
-      client_ip_address: userIP,
-      client_user_agent: agent,
-      firstName: leadName.split(" ")[0],
-      lastName: leadName.slice(leadName.indexOf(" ") + 1),
-      lead_count: emailCount + 1,
-      is_returning_lead: emailCount > 0 ? "true" : "false",
-      geo_country_code: locationData?.countryCode,
-      geo_country_name: locationData?.country,
-      geo_region_code: locationData?.region,
-      geo_region_name: locationData?.regionName,
-      geo_city: locationData?.city,
-      geo_zip: locationData?.zip,
-      geo_lat: locationData?.lat,
-      geo_lon: locationData?.lon,
-      geo_timezone: locationData?.timezone,
-      geo_isp: locationData?.isp,
-    };
-
-    fetch(GSHEET_POST_WH_URL, {
+    const response = fetch(GSHEET_POST_WH_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(sheetPayload),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        Date: new Date().toISOString(),
+        ...fields, // Use original form fields for sheet
+        client_ip_address: userIP, // Add IP
+        client_user_agent: agent, // Add full user agent
+        firstName: leadName.split(" ")[0], // Add firstName
+        lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
+        lead_count: emailCount + 1,
+        is_returning_lead: emailCount > 0 ? "true" : "false",
+        // Add location details if needed in sheet
+        geo_country: locationData?.countryCode,
+        geo_region: locationData?.regionName,
+        geo_city: locationData?.city,
+      }),
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          console.error(
-            `Google Sheet POST Error: ${res.status} ${res.statusText}`,
-            await res.text()
-          );
-        } else {
-          console.log("Google Sheet POST Success:", await res.json());
-        }
-      })
-      .catch((e) => console.error("Google Sheet fetch error:", e));
-
+      .then((res) => res.json())
+      .then((json) => console.log("Google Sheet POST Response:", json));
     console.timeEnd("onLeadSubmit");
   }
 
   // Call sendLeadToTelegram with correct variables
   sendLeadToTelegram(
     DRY_RUN,
-    name,
+    name, // Pass the full name
     email,
     intlPhone,
     cta.toString(),
-    countryCode, // Pass parsed country code
-    city, // Pass parsed city
-    regionName, // Pass parsed full region name
-    userAgentInfo.os.name,
+    countryCode, // Pass potentially updated country code
+    city,
+    stateOrRegion, // Pass potentially updated state/region
+    userAgentInfo.os.name, // Pass OS name
     source.toString()
   );
 
-  // --- Redirect or Respond ---
   if (!DRY_RUN) {
     return new Response(null, {
       status: 302,
@@ -272,21 +233,25 @@ WA Link: ${whatsappLink}`;
       },
     });
   } else {
-    const redirectUrl = `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`;
-    console.log("DEBUG MODE: Not redirecting. Would redirect to:");
-    console.log(redirectUrl);
-    // Fallback response for debugging
-    return new Response(
-      JSON.stringify({
-        message: "Lead processed in DEBUG mode.",
-        submitted_data: fields,
-        parsed_location: locationData,
-        hashed_data: hashedUserData,
-        meta_payload: metaEventData, // Include payload sent to Meta
-        redirect_url: redirectUrl,
-      }),
-      { headers: { "content-type": "application/json" } }
+    console.log("DEBUG MODE: Not redirecting to Hotmart");
+    console.log(
+      `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
     );
   }
+
+  // Fallback response if not redirecting
+  return new Response(
+    JSON.stringify({
+      message: "Lead processed in DEBUG mode.",
+      submitted_data: fields,
+      hashed_data: hashedUserData,
+      redirect_url: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+    }),
+    {
+      headers: {
+        "content-type": "application/json", // Return JSON for debug
+      },
+    }
+  );
 }
 ---
