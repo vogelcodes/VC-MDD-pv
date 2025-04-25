@@ -62,11 +62,13 @@ if (Astro.request.method === "POST") {
 
   let fbp = null;
   let fbc = null;
+  let ct = null;
+  let st = null;
 
   if (matchingLead) {
     fbp = matchingLead.fbp || null; // Get fbp or null if missing
     fbc = matchingLead.fbc || null; // Get fbc or null if missing
-    const ct = sha256() // Directly use sha256()
+    ct = sha256() // Directly use sha256()
       .update(
         matchingLead?.["city-lwr"]
           .toString()
@@ -74,7 +76,7 @@ if (Astro.request.method === "POST") {
           .toLowerCase() || ""
       ) //using country as city for this implementation
       .digest("hex");
-    const st = sha256()
+    st = sha256()
       .update(
         matchingLead?.["state"].toString().replace(/\s+/g, "").toLowerCase() ||
           ""
