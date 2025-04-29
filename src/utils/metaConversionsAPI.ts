@@ -13,6 +13,7 @@ export const sendToMeta = async (metaEventData: any) => {
 
     const accessTokens = META_PIXEL_ACCESS_TOKENS_CSV.split(",");
     const pixelIds = META_PIXEL_IDS_CSV.split(",");
+    console.log("pixelIds", pixelIds);
 
     if (accessTokens.length !== pixelIds.length) {
       console.error(
