@@ -1,35 +1,66 @@
-const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
-const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
+const META_PIXEL_ACCESS_TOKENS_CSV = import.meta.env.META_PIXEL_ACCESS_TOKEN;
+const META_PIXEL_IDS_CSV = import.meta.env.META_PIXEL_ID;
 
 export const sendToMeta = async (metaEventData: any) => {
   console.log("metaEventData", JSON.stringify(metaEventData, null, 2));
   try {
-    if (!META_PIXEL_ACCESS_TOKEN || !META_PIXEL_ID) {
+    if (!META_PIXEL_ACCESS_TOKENS_CSV || !META_PIXEL_IDS_CSV) {
       console.error(
         "META_PIXEL_ACCESS_TOKEN or META_PIXEL_ID are not set in environment variables"
       );
       return;
     }
-    const response = await fetch(
-      `https://graph.facebook.com/v18.0/${META_PIXEL_ID}/events?access_token=${META_PIXEL_ACCESS_TOKEN}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(metaEventData),
+
+    const accessTokens = META_PIXEL_ACCESS_TOKENS_CSV.split(",");
+    const pixelIds = META_PIXEL_IDS_CSV.split(",");
+
+    if (accessTokens.length !== pixelIds.length) {
+      console.error(
+        "Mismatch between the number of Meta Pixel Access Tokens and IDs."
+      );
+      return;
+    }
+
+    for (let i = 0; i < pixelIds.length; i++) {
+      const pixelId = pixelIds[i].trim();
+      const accessToken = accessTokens[i].trim();
+
+      if (!accessToken || !pixelId) {
+        console.error(
+          `Missing Access Token or Pixel ID for index ${i}. Skipping.`
+        );
+        continue;
       }
-    );
 
-    const result = await response.json();
-    console.log("Meta Conversion API Response:", result);
+      console.log(`Sending event to Pixel ID: ${pixelId}`);
 
-    if (result.error) {
-      console.error("Meta Conversion API Error:", result.error);
+      const response = await fetch(
+        `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(metaEventData),
+        }
+      );
+
+      const result = await response.json();
+      console.log(
+        `Meta Conversion API Response for Pixel ID ${pixelId}:`,
+        result
+      );
+
+      if (result.error) {
+        console.error(
+          `Meta Conversion API Error for Pixel ID ${pixelId}:`,
+          result.error
+        );
+      }
     }
   } catch (error) {
     console.error("Error sending data to Meta Conversion API:", error);
   }
 };
 
-// Call the function to send data to Meta
+// Removed the example call to the function

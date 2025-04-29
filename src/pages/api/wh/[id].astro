@@ -10,8 +10,8 @@ const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
 const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
 
 if (Astro.request.method === "POST") {
-  const userIP = Astro.clientAddress;
-  const agent = Astro.request.headers.get("user-agent") || "";
+  let userIP = null;
+  let agent = null;
   const requestBody = await Astro.request.json();
   console.log("Received payload:", JSON.stringify(requestBody, null, 2));
 
@@ -82,6 +82,8 @@ if (Astro.request.method === "POST") {
           ""
       )
       .digest("hex"); // Directly use sha256()
+    userIP = matchingLead?.["client_ip_address"] || null;
+    agent = matchingLead?.["client_user_agent"] || null;
     console.log(`Found matching lead  for ${email}: fbp=${fbp}, fbc=${fbc}`);
   } else {
     console.log(`No matching lead found for email: ${email}`);
