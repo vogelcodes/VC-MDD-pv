@@ -1,0 +1,301 @@
+---
+import About from "../components/About.astro";
+import Bonus from "../components/Bonus.astro";
+import CTA from "../components/CTA.astro";
+import Depos from "../components/Depos.astro";
+import FAQ from "../components/FAQ.astro";
+import Furadeira from "../components/Furadeira.astro";
+import PreCheckout from "../components/Precheckout.astro";
+import YoutubePlayer from "../components/yt-player";
+import Layout from "../layouts/Layout.astro";
+import { createId } from "@paralleldrive/cuid2";
+
+let uuid = createId();
+if (!Astro.cookies.get("uuid")) {
+  Astro.cookies.set("uuid", uuid);
+}
+let clientUuid = Astro.cookies.get("uuid");
+// console.log(clientUuid);
+---
+
+<Layout>
+  <main class="max-w-[1080px] mx-auto">
+    <section class="w-full bg-blue p-4 text-cream rounded-lg shadow-lg">
+      <div class="card-body flex flex-col items-center text-center gap-4">
+        <div class="w-[180px] sm:w-[300px]">
+          <img
+            src="/logo-portrait-v2.svg"
+            alt="logo"
+            width={300}
+            height={120}
+          />
+        </div>
+        <div class="text-6xl">
+          <h1
+            class="text-3xl sm:text-5xl font-extrabold text-amber-100 uppercase text-cream"
+          >
+            Oferta Especial de <br />
+            <span class="text-red-400 sm:text-7xl"> Dia das Mães </span>
+            <br />
+            <span class="text-green sm:text-7xl"> LactoFlow </span>
+          </h1>
+        </div>
+
+        <div class="mt-4">
+          <h2 class="text-2xl font-semibold mb-2">
+            👶 Você não precisa de mais flores nesse Dia das Mães
+          </h2>
+          <div class="card bg-cream text-blue font-black shadow-lg">
+            <div class="card-body flex flex-col items-center">
+              <p class="text-lg">Precisa de confiança.</p>
+              <p class="text-lg">Precisa de leite.</p>
+              <p class="text-lg">Precisa de apoio real.</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="w-1/2 border-cream my-4" />
+
+        <div class="mt-4">
+          <h2 class="text-2xl font-semibold mb-2">
+            🧡 Por isso eu criei a{" "}
+            <span class="font-bold">
+              Oferta Especial de Dia das Mães do LactoFlow
+            </span>
+          </h2>
+          <div class="card bg-cream text-blue shadow-lg">
+            <div class="card-body flex flex-col items-start">
+              <p class="text-left text-2xl mb-2">Para mães que:</p>
+              <ul class="list-none text-left text-lg space-y-1">
+                <li>– Estão usando fórmula, mas querem parar</li>
+                <li>– Querem produzir mais leite</li>
+                <li>– Estão voltando ao trabalho e querem montar um estoque</li>
+                <li>– Ou estão grávidas e querem se preparar com segurança</li>
+              </ul>
+            </div>
+          </div>
+
+          <hr class="w-1/2 border-cream my-4" />
+
+          <div class="mt-4">
+            <div class="card bg-cream text-blue shadow-lg">
+              <div class="card-body flex flex-col items-start">
+                <h2 class="text-left text-2xl font-semibold mb-2">
+                  ✅ O que você vai receber ao entrar no LactoFlow:
+                </h2>
+                <ul class="list-none text-left text-lg space-y-1">
+                  <li>- Curso completo com plano claro e direto</li>
+                  <li>- Suporte diário comigo na comunidade exclusiva</li>
+                  <li>- 2 encontros ao vivo por mês</li>
+                  <li>- Acompanhamento durante toda a jornada</li>
+                  <li>- Apoio de outras mães que vivem o mesmo que você</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <hr class="w-1/2 border-cream my-4" />
+
+          <div class="mt-4">
+            <div class="card bg-cream text-blue shadow-lg">
+              <div class="card-body flex flex-col items-start">
+                <h2 class="text-left text-2xl font-semibold mb-2">
+                  🎁 BÔNUS EXCLUSIVOS dessa edição especial:
+                </h2>
+                <ul
+                  class="list-none text-lg space-y-1 text-left max-w-lg mx-auto pl-4"
+                >
+                  <li>
+                    🎓{" "}
+                    <span class="font-semibold">
+                      Aula ao vivo: Plano Anti-Fórmula
+                    </span>
+                    <br /> Como eliminar a fórmula com segurança e recuperar sua
+                    produção
+                  </li>
+                  <li class="mt-2">
+                    👩‍🍼 <span class="font-semibold">Workshop para Gestantes</span
+                    >
+                    <br /> Preparação emocional, prática e segura antes do bebê nascer
+                  </li>
+                  <li class="mt-2">
+                    📦{" "}
+                    <span class="font-semibold">
+                      Workshop de Estoque de Leite Materno
+                    </span>
+                    <br /> Como organizar a rotina, iniciar o estoque e se preparar
+                    pra volta ao trabalho sem desmamar
+                  </li>
+                  <li class="mt-2">
+                    🌙 <span class="font-semibold"
+                      >Workshop de Desmame Noturno</span
+                    >
+                    <br /> Pra mães que querem continuar amamentando e também dormir
+                    melhor
+                  </li>
+                  <li class="mt-2">
+                    🧘‍♀️{" "}
+                    <span class="font-semibold"
+                      >Meditação Guiada – Meu Corpo Produz</span
+                    >
+                    <br /> Pra se conectar com seu corpo e confiar na sua produção
+                  </li>
+                  <li class="mt-2">
+                    📄 <span class="font-semibold">PDFs bônus:</span>
+                    <ul class="list-disc pl-5 mt-1">
+                      <li>Como saber se o bebê está mamando bem</li>
+                      <li>Diário de fraldas do recém-nascido</li>
+                      <li>Manual da pega correta e posições</li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <hr class="w-1/2 border-cream my-4" />
+
+          <div class="mt-4">
+            <div class="card bg-cream text-blue shadow-lg">
+              <div class="card-body flex flex-col items-center">
+                <h2 class="text-2xl font-semibold mb-2">
+                  💰 Investimento com valor especial de Dia das Mães:
+                </h2>
+                <p class="text-lg">
+                  De <span class="line-through">R$297</span> por{" "}
+                  <span class="text-green font-bold text-2xl"
+                    >R$227 à vista</span
+                  >
+                </p>
+                <p class="text-lg">ou 12x de R$22,43</p>
+                <p class="text-md mt-2">📆 Oferta válida de 6 a 12 de maio</p>
+                <p class="text-md">
+                  📦 Os bônus saem do ar após esse período e o valor volta ao
+                  original
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <hr class="w-1/2 border-cream my-4" />
+
+          <div class="mt-4">
+            <h2 class="text-2xl font-semibold mb-2">
+              💬 Esse é o presente que você merece:
+            </h2>
+            <div class="card bg-cream text-blue shadow-lg">
+              <div class="card-body flex flex-col items-center">
+                <p class="text-lg">Não é mais uma flor.</p>
+                <p class="text-lg">É um plano.</p>
+                <p class="text-lg">É apoio.</p>
+                <p class="text-lg">É autonomia.</p>
+                <p class="text-lg">É o seu leite. Com confiança.</p>
+              </div>
+            </div>
+          </div>
+
+          <hr class="w-1/2 border-cream my-4" />
+
+          <div class="mt-4">
+            <a
+              href="https://pay.hotmart.com/N78863754E?checkoutMode=10&off=3l10q98l&offDiscount=DIADASMAES"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-block bg-green hover:bg-green-dark text-blue font-bold py-3 px-6 rounded-lg text-xl transition duration-300"
+            >
+              👉 QUERO ENTRAR NO LACTOFLOW AGORA
+            </a>
+            <p class="text-md mt-2">
+              Garanta sua vaga e receba todos os bônus da campanha especial.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- <YoutubePlayer client:load /> -->
+
+      <script>
+        import { isModalOpen, ctaValue } from "../store";
+
+        const modal = document.getElementById("modal") as HTMLDivElement;
+
+        function openModal(cta: string) {
+          // add cta to url params
+          //add cta to input hidden
+          const form = document.querySelector("form");
+          if (form) {
+            const ctaInput = form.querySelector('input[name="cta"]');
+            if (ctaInput) {
+              ctaInput.setAttribute("value", cta);
+            }
+          }
+
+          ctaValue.set(cta);
+          if (!modal) return;
+
+          modal.classList.remove("hidden");
+        }
+        function closeModal() {
+          if (!modal) return;
+          modal.classList.add("hidden");
+        }
+        isModalOpen.set(false);
+
+        const cta1 = document.getElementById("1");
+        if (cta1) cta1.addEventListener("click", () => openModal("1"));
+
+        const cta2 = document.getElementById("2");
+        if (cta2) cta2.addEventListener("click", () => openModal("2"));
+
+        const cta3 = document.getElementById("3");
+        if (cta3) cta3.addEventListener("click", () => openModal("3"));
+
+        const cta4 = document.getElementById("4");
+        if (cta4) cta4.addEventListener("click", () => openModal("4"));
+
+        const closeBtn = document.getElementById("close");
+        if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
+      </script>
+
+      <div class="flex flex-col items-center space-y-4">
+        <!-- <CTA ctaOption="1" /> -->
+        <Depos />
+        <CTA
+          ctaOption="2"
+          price
+          label="Você também pode aumentar a sua produção"
+        />
+        <Furadeira />
+        <Bonus />
+        <CTA ctaOption="3" price label="Tenha acesso a tudo isso agora" />
+        <About />
+        <FAQ />
+        <CTA
+          ctaOption="4"
+          price
+          label="Quero aumentar minha produção de leite"
+        />
+        <div class="flex flex-col text-center sm:flex-row sm:text-left">
+          <span>Copyright © {new Date().getFullYear()}</span>
+          <span class="mx-3 hidden sm:block">|</span>
+          <span>Todos os direitos reservados.</span>
+        </div>
+      </div>
+
+      <div
+        id="modal"
+        class="hidden fixed inset-0 flex items-start justify-center bg-blue/70 z-10"
+      >
+        <div
+          class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl transition-all"
+        >
+          <button
+            id="close"
+            class="text-gray-500 absolute top-2 text-2xl right-6">✖</button
+          >
+          <PreCheckout clientID={clientUuid?.value} />
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>

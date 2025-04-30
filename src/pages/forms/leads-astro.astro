@@ -150,7 +150,7 @@ if (Astro.request.method === "POST") {
   // Do something with the data
   // Redirect to a thank you page
   // return Astro.redirect(
-  //   // `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+  //   // `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
   //   `/thank-you`
   // );
   async function sendLeadToTelegram(
@@ -228,13 +228,13 @@ if (Astro.request.method === "POST") {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+        Location: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
       },
     });
   } else {
     console.log("DEBUG MODE: Not redirecting to Hotmart");
     console.log(
-      `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+      `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
     );
   }
 
@@ -244,7 +244,7 @@ if (Astro.request.method === "POST") {
       message: "Lead processed in DEBUG mode.",
       submitted_data: fields,
       hashed_data: hashedUserData,
-      redirect_url: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+      redirect_url: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     }),
     {
       headers: {

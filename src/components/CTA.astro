@@ -3,8 +3,11 @@ interface Props {
   ctaOption?: string;
   price?: boolean;
   label?: string;
+  installments?: number;
+  total?: number;
+  installmentValue?: number;
 };
-const { ctaOption, price = false , label ="Quero aumentar minha produção de leite" } = Astro.props;
+const { ctaOption, price = false , label ="Quero aumentar minha produção de leite", installments = 12, total = 296, installmentValue = 30.72 } = Astro.props;
 
 ---
     <div class="flex w-full flex-col items-center rounded-sm bg-cream text-blue">
@@ -33,11 +36,11 @@ const { ctaOption, price = false , label ="Quero aumentar minha produção de le
       </div>
       {price ? (
         <p class="pt-4">
-          12x
+          {installments}x
           <span class="mb-[14.4px] ml-1 mt-6 text-center text-[25px] font-extrabold uppercase lg:text-[31.25px]">
-            R$30,72
+            R${installmentValue}
           </span>{" "}
-          <br /> ou R$296,00 à vista
+          <br /> ou R${total} à vista
         </p>
       ) : (
         <></>
