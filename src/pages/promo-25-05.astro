@@ -21,7 +21,7 @@ let clientUuid = Astro.cookies.get("uuid");
 <Layout>
   <main class="max-w-[1080px] mx-auto">
     <section class="w-full bg-blue p-4 text-cream rounded-lg shadow-lg">
-      <div class="card-body flex flex-col items-center text-center gap-4">
+      <div class="flex flex-col items-center text-center gap-4">
         <div class="w-[180px] sm:w-[300px]">
           <img
             src="/logo-portrait-v2.svg"
@@ -54,9 +54,7 @@ let clientUuid = Astro.cookies.get("uuid");
           </div>
         </div>
 
-        <hr class="w-1/2 border-cream my-4" />
-
-        <div class="mt-4">
+        <div class="mt-4 flex flex-col items-center">
           <h2 class="text-2xl font-semibold mb-2">
             🧡 Por isso eu criei a{" "}
             <span class="font-bold">
@@ -65,17 +63,30 @@ let clientUuid = Astro.cookies.get("uuid");
           </h2>
           <div class="card bg-cream text-blue shadow-lg">
             <div class="card-body flex flex-col items-start">
-              <p class="text-left text-2xl mb-2">Para mães que:</p>
+              <p class="text-left text-2xl font-semibold mb-2">
+                Para mães que:
+              </p>
               <ul class="list-none text-left text-lg space-y-1">
-                <li>– Estão usando fórmula, mas querem parar</li>
-                <li>– Querem produzir mais leite</li>
-                <li>– Estão voltando ao trabalho e querem montar um estoque</li>
-                <li>– Ou estão grávidas e querem se preparar com segurança</li>
+                <li>
+                  – Querem produzir mais <span class="font-semibold">leite</span
+                  >
+                </li>
+                <li>
+                  – Estão usando <span class="font-semibold">fórmula</span>, mas
+                  querem parar
+                </li>
+                <li>
+                  – Estão voltando ao <span class="font-semibold">trabalho</span
+                  > e querem montar um
+                  <span class="font-semibold">estoque</span>
+                </li>
+                <li>
+                  – Ou estão <span class="font-semibold">grávidas</span> e querem
+                  se preparar com <span class="font-semibold">segurança</span>
+                </li>
               </ul>
             </div>
           </div>
-
-          <hr class="w-1/2 border-cream my-4" />
 
           <div class="mt-4">
             <div class="card bg-cream text-blue shadow-lg">
@@ -84,35 +95,50 @@ let clientUuid = Astro.cookies.get("uuid");
                   ✅ O que você vai receber ao entrar no LactoFlow:
                 </h2>
                 <ul class="list-none text-left text-lg space-y-1">
-                  <li>- Curso completo com plano claro e direto</li>
-                  <li>- Suporte diário comigo na comunidade exclusiva</li>
-                  <li>- 2 encontros ao vivo por mês</li>
-                  <li>- Acompanhamento durante toda a jornada</li>
-                  <li>- Apoio de outras mães que vivem o mesmo que você</li>
+                  <li>
+                    - Acesso imediato ao <span class="font-semibold"
+                      >curso completo</span
+                    >, sem pegadinhas
+                  </li>
+                  <li>
+                    - Um plano claro e direto para você <span
+                      class="font-semibold">recuperar sua produção</span
+                    >
+                  </li>
+                  <li>
+                    - Suporte diário comigo na <span class="font-semibold"
+                      >comunidade exclusiva</span
+                    >
+                  </li>
+                  <li>
+                    - 2 encontros <span class="font-semibold">ao vivo</span> por
+                    mês
+                  </li>
+                  <li>
+                    - Acompanhamento durante toda a <span class="font-semibold"
+                      >jornada</span
+                    >
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <hr class="w-1/2 border-cream my-4" />
-
-          <div class="mt-4">
-            <div class="card bg-cream text-blue shadow-lg">
-              <div class="card-body flex flex-col items-start">
-                <h2 class="text-left text-2xl font-semibold mb-2">
-                  🎁 BÔNUS EXCLUSIVOS dessa edição especial:
-                </h2>
-                <ul
-                  class="list-none text-lg space-y-1 text-left max-w-lg mx-auto pl-4"
-                >
-                  <li>
-                    🎓{" "}
-                    <span class="font-semibold">
-                      Aula ao vivo: Plano Anti-Fórmula
-                    </span>
-                    <br /> Como eliminar a fórmula com segurança e recuperar sua
-                    produção
-                  </li>
+          <div class="mt-4 card bg-cream text-blue shadow-lg">
+            <div class="card-body flex flex-col items-start">
+              <h2 class="text-left text-2xl font-semibold mb-2">
+                🎁 BÔNUS EXCLUSIVOS dessa edição especial:
+              </h2>
+              <ul
+                class="list-none text-lg space-y-1 text-left max-w-lg mx-auto pl-4"
+              >
+                <li>
+                  🎓{" "}
+                  <span class="font-semibold">
+                    Aula ao vivo: Plano Anti-Fórmula
+                  </span>
+                  <br /> Como eliminar a fórmula com segurança e recuperar sua
+                  <div class="mt-4"></div>
                   <li class="mt-2">
                     👩‍🍼 <span class="font-semibold">Workshop para Gestantes</span
                     >
@@ -126,6 +152,7 @@ let clientUuid = Astro.cookies.get("uuid");
                     <br /> Como organizar a rotina, iniciar o estoque e se preparar
                     pra volta ao trabalho sem desmamar
                   </li>
+
                   <li class="mt-2">
                     🌙 <span class="font-semibold"
                       >Workshop de Desmame Noturno</span
@@ -148,12 +175,10 @@ let clientUuid = Astro.cookies.get("uuid");
                       <li>Manual da pega correta e posições</li>
                     </ul>
                   </li>
-                </ul>
-              </div>
+                </li>
+              </ul>
             </div>
           </div>
-
-          <hr class="w-1/2 border-cream my-4" />
 
           <div class="mt-4">
             <div class="card bg-cream text-blue shadow-lg">
@@ -164,41 +189,39 @@ let clientUuid = Astro.cookies.get("uuid");
                 <p class="text-lg">
                   De <span class="line-through">R$297</span> por{" "}
                   <span class="text-green font-bold text-2xl"
-                    >R$227 à vista</span
+                    >R$197 à vista</span
                   >
                 </p>
-                <p class="text-lg">ou 12x de R$22,43</p>
-                <p class="text-md mt-2">📆 Oferta válida de 6 a 12 de maio</p>
-                <p class="text-md">
+                <p class="text-lg">ou 12x de R$20,37</p>
+                <p class="text-md mt-2">
+                  📆 Oferta válida apenas neste 1º de Maio
+                </p>
+                <!-- <p class="text-md">
                   📦 Os bônus saem do ar após esse período e o valor volta ao
                   original
-                </p>
+                </p> -->
               </div>
             </div>
-          </div>
 
-          <hr class="w-1/2 border-cream my-4" />
-
-          <div class="mt-4">
-            <h2 class="text-2xl font-semibold mb-2">
-              💬 Esse é o presente que você merece:
-            </h2>
-            <div class="card bg-cream text-blue shadow-lg">
-              <div class="card-body flex flex-col items-center">
-                <p class="text-lg">Não é mais uma flor.</p>
-                <p class="text-lg">É um plano.</p>
-                <p class="text-lg">É apoio.</p>
-                <p class="text-lg">É autonomia.</p>
+            <div class="mt-4">
+              <h2 class="text-2xl font-semibold mb-2">
+                💬 Esse é o presente que você merece:
+              </h2>
+              <div class="card bg-cream text-blue shadow-lg">
+                <div class="card-body flex flex-col items-center">
+                  <p class="text-lg">Não é mais uma flor.</p>
+                  <p class="text-lg">É um plano.</p>
+                  <p class="text-lg">É apoio.</p>
+                  <p class="text-lg">É autonomia.</p>
+                </div>
                 <p class="text-lg">É o seu leite. Com confiança.</p>
               </div>
             </div>
           </div>
 
-          <hr class="w-1/2 border-cream my-4" />
-
           <div class="mt-4">
             <a
-              href="https://pay.hotmart.com/N78863754E?checkoutMode=10&off=3l10q98l&offDiscount=DIADASMAES"
+              href="https://pay.hotmart.com/O84147403X?off=iz9e8l99&bid=1746040212378"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-block bg-green hover:bg-green-dark text-blue font-bold py-3 px-6 rounded-lg text-xl transition duration-300"
@@ -209,6 +232,7 @@ let clientUuid = Astro.cookies.get("uuid");
               Garanta sua vaga e receba todos os bônus da campanha especial.
             </p>
           </div>
+          <hr class="w-7/8 border-cream my-4" />
         </div>
       </div>
 
@@ -240,18 +264,22 @@ let clientUuid = Astro.cookies.get("uuid");
           modal.classList.add("hidden");
         }
         isModalOpen.set(false);
+        function redirectToHotmart() {
+          window.location.href =
+            "https://pay.hotmart.com/O84147403X?off=iz9e8l99";
+        }
 
         const cta1 = document.getElementById("1");
-        if (cta1) cta1.addEventListener("click", () => openModal("1"));
+        if (cta1) cta1.addEventListener("click", () => redirectToHotmart());
 
         const cta2 = document.getElementById("2");
-        if (cta2) cta2.addEventListener("click", () => openModal("2"));
+        if (cta2) cta2.addEventListener("click", () => redirectToHotmart());
 
         const cta3 = document.getElementById("3");
-        if (cta3) cta3.addEventListener("click", () => openModal("3"));
+        if (cta3) cta3.addEventListener("click", () => redirectToHotmart());
 
         const cta4 = document.getElementById("4");
-        if (cta4) cta4.addEventListener("click", () => openModal("4"));
+        if (cta4) cta4.addEventListener("click", () => redirectToHotmart());
 
         const closeBtn = document.getElementById("close");
         if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
@@ -264,16 +292,29 @@ let clientUuid = Astro.cookies.get("uuid");
           ctaOption="2"
           price
           label="Você também pode aumentar a sua produção"
+          installments={12}
+          installmentValue={20.37}
+          total={197.0}
         />
         <Furadeira />
         <Bonus />
-        <CTA ctaOption="3" price label="Tenha acesso a tudo isso agora" />
+        <CTA
+          ctaOption="3"
+          price
+          label="Tenha acesso a tudo isso agora"
+          installments={12}
+          installmentValue={20.37}
+          total={197.0}
+        />
         <About />
         <FAQ />
         <CTA
           ctaOption="4"
           price
           label="Quero aumentar minha produção de leite"
+          installments={12}
+          installmentValue={20.37}
+          total={197.0}
         />
         <div class="flex flex-col text-center sm:flex-row sm:text-left">
           <span>Copyright © {new Date().getFullYear()}</span>
