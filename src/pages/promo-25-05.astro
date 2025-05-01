@@ -16,6 +16,14 @@ if (!Astro.cookies.get("uuid")) {
 }
 let clientUuid = Astro.cookies.get("uuid");
 // console.log(clientUuid);
+let today = new Date();
+let expirationDate = new Date("2025-05-02T10:00:00-03:00");
+let warningText =
+  today.getDate() === 1
+    ? "Oferta válida até às 10:00 de amanhã (horário de Brasília)"
+    : today.getDate() === 2
+      ? "Oferta válida até às 10:00 de hoje (horário de Brasília)"
+      : "";
 ---
 
 <Layout>
@@ -194,7 +202,7 @@ let clientUuid = Astro.cookies.get("uuid");
                 </p>
                 <p class="text-lg">ou 12x de R$20,37</p>
                 <p class="text-md mt-2">
-                  📆 Oferta válida apenas neste 1º de Maio
+                  📆 {warningText}
                 </p>
                 <!-- <p class="text-md">
                   📦 Os bônus saem do ar após esse período e o valor volta ao
@@ -234,6 +242,27 @@ let clientUuid = Astro.cookies.get("uuid");
             </p>
           </div>
           <hr class="w-7/8 border-cream my-4" />
+        </div>
+      </div>
+      <div class="flex flex-col items-center">
+        <p
+          class="mx-auto w-[80%] max-w-[600px] text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+        >
+          Assista a essa aula gratuita e comece a aumentar a sua produção de
+          leite HOJE MESMO
+        </p>
+        <div class="flex flex-col items-center lg:flex-row">
+          <div class="flex items-center">
+            <div class="m-2">
+              <img
+                class="ml-2 animate-bounce"
+                src="/arrow-down.svg"
+                alt="one"
+                height={36}
+                width={36}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
