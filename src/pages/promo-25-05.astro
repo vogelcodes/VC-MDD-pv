@@ -18,12 +18,7 @@ let clientUuid = Astro.cookies.get("uuid");
 // console.log(clientUuid);
 let today = new Date();
 let expirationDate = new Date("2025-05-02T10:00:00-03:00");
-let warningText =
-  today.getDate() === 1
-    ? "Oferta válida até às 10:00 de amanhã (horário de Brasília)"
-    : today.getDate() === 2
-      ? "Oferta válida até às 10:00 de hoje (horário de Brasília)"
-      : "";
+let warningText = "Oferta válida até às 23:59 de 12 de Maio";
 ---
 
 <Layout>
