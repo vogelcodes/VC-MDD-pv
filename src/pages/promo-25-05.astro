@@ -233,14 +233,12 @@ console.log(sckValues);
 
         <hr class="w-7/8 border-cream my-4" />
         <div class="mt-4">
-          <a
-            href=`https://pay.hotmart.com/O84147403X?off=iz9e8l99&bid=1746040212378&sck=${sckValues}`
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            id="promo"
             class="inline-block bg-green hover:bg-green-dark text-blue font-bold py-3 px-6 rounded-lg text-xl transition duration-300"
           >
             👉 QUERO ENTRAR NO LACTOFLOW AGORA
-          </a>
+          </button>
           <p class="text-md mt-2">
             Garanta sua vaga e receba todos os bônus da campanha especial.
           </p>
@@ -307,17 +305,21 @@ console.log(sckValues);
           sck?.innerHTML;
       }
 
+      const ctaPromo = document.getElementById("promo");
+      if (ctaPromo)
+        ctaPromo.addEventListener("click", () => openModal("promo"));
+
       const cta1 = document.getElementById("1");
-      if (cta1) cta1.addEventListener("click", () => redirectToHotmart());
+      if (cta1) cta1.addEventListener("click", () => openModal("1"));
 
       const cta2 = document.getElementById("2");
-      if (cta2) cta2.addEventListener("click", () => redirectToHotmart());
+      if (cta2) cta2.addEventListener("click", () => openModal("2"));
 
       const cta3 = document.getElementById("3");
-      if (cta3) cta3.addEventListener("click", () => redirectToHotmart());
+      if (cta3) cta3.addEventListener("click", () => openModal("3"));
 
       const cta4 = document.getElementById("4");
-      if (cta4) cta4.addEventListener("click", () => redirectToHotmart());
+      if (cta4) cta4.addEventListener("click", () => openModal("4"));
 
       const closeBtn = document.getElementById("close");
       if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
