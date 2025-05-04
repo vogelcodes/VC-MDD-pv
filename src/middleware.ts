@@ -36,6 +36,8 @@ const middleware = async (
   // console.log("fbclid", fbclid); // Debug fbclid
 
   let clientUuid = cookies.get("uuid")?.value; // Use existing cookie value
+  let clientUserAgent = request.headers.get("user-agent");
+  console.log("clientUserAgent", clientUserAgent);
   if (!clientUuid) {
     clientUuid = createId(); // Generate CUID if no cookie
     // Set cookie in the response later
@@ -71,6 +73,13 @@ const middleware = async (
         },
       });
     }
+  }
+  if (
+    clientUserAgent ==
+    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  ) {
+    console.log("Facebook Bot detected");
+    return next();
   }
 
   // --- Location Cookie / Lookup Logic ---
