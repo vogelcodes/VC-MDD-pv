@@ -19,12 +19,6 @@ export const POST: APIRoute = async ({ request }) => {
     const phone = data.get("phone");
     const source = data.get("source");
     console.log(data, userIP);
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: `https://pay.hotmart.com/O84147403X?off=32k5pbhv&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
-      },
-    });
 
     // Do something with the data
   } catch (error) {

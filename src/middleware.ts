@@ -33,10 +33,22 @@ const middleware = async (
 
   const url = new URL(request.url);
   const fbclid = url.searchParams.get("fbclid");
+  let clientUserAgent = request.headers.get("user-agent");
+  let skipGeolocation = false;
+  if (
+    clientUserAgent ==
+    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
+  ) {
+    console.log("Facebook Bot detected, skipping geolocation");
+    skipGeolocation = true;
+  }
+  if (url.pathname.startsWith("/_astro")) {
+    console.log("Astro public folder detected, skipping geolocation");
+    skipGeolocation = true;
+  }
   // console.log("fbclid", fbclid); // Debug fbclid
 
   let clientUuid = cookies.get("uuid")?.value; // Use existing cookie value
-  let clientUserAgent = request.headers.get("user-agent");
   console.log("clientUserAgent", clientUserAgent);
   if (!clientUuid) {
     clientUuid = createId(); // Generate CUID if no cookie
@@ -125,10 +137,10 @@ const middleware = async (
       cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
     }
   } else {
-    // console.log("No location cookie found."); // Informational
+    console.log("No location cookie found."); // Informational
   }
 
-  if (!locationInfo) {
+  if (!locationInfo && !skipGeolocation) {
     if (import.meta.env.DEBUG === "1") {
       console.log(`DEBUG MODE: Using mock geolocation data.`); // Keep: Debug mode
       const mockQueryIp = clientIp || "127.0.0.1";
@@ -185,7 +197,8 @@ const middleware = async (
     // console.log("Using location info from cookie."); // Informational
   }
 
-  // Store final location info in locals
+  // Store final location info in locals and cookies
+
   locals.locationInfo = locationInfo;
   locals.clientUuid = clientUuid; // Pass CUID via locals
 
