@@ -20,8 +20,7 @@ let clientUuid = Astro.cookies.get("uuid");
 // console.log(clientUuid);
 let today = new Date();
 let expirationDate = new Date("2025-05-02T10:00:00-03:00");
-let warningText =
-  "Oferta válida até às 23:59 de 12 de Maio (horário de Brasília)";
+let warningText = "Oferta válida até às 23:59 de HOJE";
 let searchParams = Astro.url.searchParams;
 const utmTags = [
   "utm_source",
@@ -46,6 +45,11 @@ console.log(sckValues);
   <main class="max-w-[1080px] mx-auto">
     <div class="hidden" id="sck">{sckValues}</div>
   </main>
+  <div
+    class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
+  >
+    Último Dia
+  </div>
   <section class="w-full bg-blue p-4 text-cream rounded-lg shadow-lg">
     <div class="flex flex-col items-center text-center gap-4">
       <div class="w-[180px] sm:w-[300px]">
@@ -207,7 +211,7 @@ console.log(sckValues);
                 <span class="text-green font-bold text-2xl">R$227 à vista</span>
               </p>
               <p class="text-lg">ou 12x de R$23,48</p>
-              <p class="text-md mt-2">
+              <p class="text-2xl font-bold mt-2">
                 📆 {warningText}
               </p>
               <!-- <p class="text-md">
