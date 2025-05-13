@@ -22,10 +22,12 @@ function transformSheetData(data: string[][]): Record<string, string>[] {
 // --- Cache Implementation ---
 let cachedData: Record<string, string>[] | null = null;
 let lastFetchTime: number = 0;
-const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_DURATION_MS = 30 * 1000; // 30 seconds in milliseconds
 // --- End Cache Implementation ---
 
-export async function getLeads(): Promise<Record<string, string>[]> {
+export async function getLeads(
+  forceRefetch = false
+): Promise<Record<string, string>[]> {
   console.time("getLeads called");
   if (!sheetUrl) {
     console.error("GSHEET_GET_WH_URL environment variable is not set.");
@@ -34,7 +36,7 @@ export async function getLeads(): Promise<Record<string, string>[]> {
 
   // Check cache first
   const now = Date.now();
-  if (cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
+  if (!forceRefetch && cachedData && now - lastFetchTime < CACHE_DURATION_MS) {
     // console.log("Returning cached leads data from leadService.");
     console.timeEnd("getLeads called");
     return cachedData;

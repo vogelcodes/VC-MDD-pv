@@ -46,7 +46,7 @@ if (Astro.request.method === "POST") {
     // console.log("Fetching leads via leadService...");
     try {
       // Call the imported getLeads function which handles fetching and caching
-      const leadsData = await getLeads();
+      const leadsData = await getLeads(true);
       // console.log(`Fetched ${leadsData.length} leads via leadService.`);
       return leadsData;
     } catch (error) {
@@ -153,6 +153,11 @@ if (Astro.request.method === "POST") {
   //   // `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
   //   `/thank-you`
   // );
+  const leadsList = await fetchLeads();
+  console.log(leadsList);
+  const emailCount = leadsList.filter(
+    (item) => item.email.toLowerCase() === email.toLowerCase()
+  ).length;
   async function sendLeadToTelegram(
     dryRun: boolean,
     leadName: string, // Pass name explicitly
@@ -165,10 +170,6 @@ if (Astro.request.method === "POST") {
     leadUserAgentOS: string | undefined, // Use potentially undefined value
     leadSource: string
   ) {
-    const leadsList = await fetchLeads();
-    const emailCount = leadsList.filter(
-      (item) => item.email === leadEmail
-    ).length;
     const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
       `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
         .replace("+", "")
@@ -244,6 +245,7 @@ if (Astro.request.method === "POST") {
       message: "Lead processed in DEBUG mode.",
       submitted_data: fields,
       hashed_data: hashedUserData,
+      numberOfInteractions: emailCount + 1,
       redirect_url: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     }),
     {

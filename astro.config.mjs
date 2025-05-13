@@ -10,7 +10,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://astro.build/config
 export default defineConfig({
   redirects: {
-    "/": "/promo-25-05",
+    "/promo-25-05": "/",
   },
   output: "server",
 
