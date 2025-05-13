@@ -166,7 +166,6 @@ if (Astro.request.method === "POST") {
     leadSource: string
   ) {
     const leadsList = await fetchLeads();
-    console.log(leadsList);
     const emailCount = leadsList.filter(
       (item) => item.email.toLowerCase() === email.toLowerCase()
     ).length;
