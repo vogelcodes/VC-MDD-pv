@@ -9,6 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://prog.lactoflow.com.br",
   redirects: {
     "/promo-25-05": "/",
   },
