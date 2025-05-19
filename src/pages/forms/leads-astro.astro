@@ -115,7 +115,7 @@ if (Astro.request.method === "POST") {
         event_id: clientID,
         user_data: {
           ...hashedUserData, // Spread the generated hashes
-          client_ip_address: userIP, // IP from Astro
+          client_ip_address: userIP ? String(userIP) : undefined, // Ensure IP is a string
           client_user_agent: agent, // Agent from Astro
           fbc: fbc || undefined, // Use client-side value if available
           fbp: fbp || undefined, // Use client-side value if available
@@ -167,7 +167,7 @@ if (Astro.request.method === "POST") {
   ) {
     const leadsList = await fetchLeads();
     const emailCount = leadsList.filter(
-      (item) => item.email.toLowerCase() === email.toLowerCase()
+      (item) => item.email?.trim().toLowerCase() === email?.trim().toLowerCase()
     ).length;
     const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
       `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone

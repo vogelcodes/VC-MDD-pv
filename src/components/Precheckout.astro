@@ -14,6 +14,7 @@ const { pcId = "", clientID = "" } = Astro.props;
 
 // Get query params
 const search = Astro.url.searchParams;
+const path = Astro.url.pathname;
 
 // Get user IP
 const userIp = Astro.clientAddress;
@@ -121,7 +122,12 @@ if (locationInfo.status === "fail") {
           Whatsapp:
           <ReactPhoneInput client:idle />
         </label>
-        <input type="text" name="source" hidden value={search.toString()} />
+        <input
+          type="text"
+          name="source"
+          hidden
+          value={path + "?" + search.toString()}
+        />
         <input type="text" name="cta" hidden value="" />
         <input type="text" name="fbc" hidden />
         <input type="text" name="fbp" hidden />

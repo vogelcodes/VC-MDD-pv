@@ -249,7 +249,7 @@ const middleware = async (
     event_id: clientUuid + "_" + currentTimestamp, // Unique event ID
     user_data: {
       ...hashedLocationData,
-      client_ip_address: clientIp || undefined, // Pass IP if available
+      client_ip_address: clientIp ? String(clientIp) : undefined, // Ensure IP is a string
       client_user_agent: request.headers.get("user-agent") || "",
       fbc: fbcValue || undefined,
       fbp: fbpValue || undefined,

@@ -58,7 +58,7 @@ if (Astro.request.method === "POST") {
 
   // Find the lead matching the buyer's email
   const matchingLead = leads.find(
-    (lead) => lead.email?.toLowerCase() === email?.toLowerCase()
+    (lead) => lead.email?.trim().toLowerCase() === email?.trim().toLowerCase()
   );
 
   let fbp = null;
@@ -129,7 +129,7 @@ if (Astro.request.method === "POST") {
           ct: ct, //hashed city
           st: st, // hashed state
           country: country, // hashed country name
-          client_ip_address: userIP,
+          client_ip_address: userIP ? String(userIP) : undefined, // Ensure IP is a string
           client_user_agent: agent,
           fbp: fbp, // Add fbp
           fbc: fbc, // Add fbc
