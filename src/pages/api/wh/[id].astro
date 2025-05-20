@@ -57,35 +57,45 @@ if (Astro.request.method === "POST") {
   console.timeEnd("fetchLeads");
 
   // Find the lead matching the buyer's email
-  const matchingLead = leads.find(
+  // Let's find all the matching leads and then we'll use the latest fbp and fbc
+  const matchingLeads = leads.filter(
     (lead) => lead.email?.trim().toLowerCase() === email?.trim().toLowerCase()
   );
+
+  // First try to find the latest lead with non-null fbc and fbp
+  const leadWithFbData = matchingLeads
+    .filter((lead) => lead.fbc && lead.fbp)
+    .sort((a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime())[0];
+
+  // If no lead with fb data found, use the latest lead
+  const latestLead =
+    leadWithFbData ||
+    matchingLeads.sort(
+      (a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime()
+    )[0];
 
   let fbp = null;
   let fbc = null;
   let ct = null;
   let st = null;
 
-  if (matchingLead) {
-    fbp = matchingLead.fbp || null; // Get fbp or null if missing
-    fbc = matchingLead.fbc || null; // Get fbc or null if missing
+  if (latestLead) {
+    fbp = latestLead.fbp || null; // Get fbp or null if missing
+    fbc = latestLead.fbc || null; // Get fbc or null if missing
     ct = sha256() // Directly use sha256()
       .update(
-        matchingLead?.["city-lwr"]
-          .toString()
-          .replace(/\s+/g, "")
-          .toLowerCase() || ""
+        latestLead?.["city-lwr"].toString().replace(/\s+/g, "").toLowerCase() ||
+          ""
       ) //using country as city for this implementation
       .digest("hex");
     st = sha256()
       .update(
-        matchingLead?.["state"].toString().replace(/\s+/g, "").toLowerCase() ||
-          ""
+        latestLead?.["state"].toString().replace(/\s+/g, "").toLowerCase() || ""
       )
       .digest("hex"); // Directly use sha256()
-    userIP = matchingLead?.["client_ip_address"] || null;
-    agent = matchingLead?.["client_user_agent"] || null;
-    console.log(`Found matching lead  for ${email}: fbp=${fbp}, fbc=${fbc}`);
+    userIP = latestLead?.["client_ip_address"] || null;
+    agent = latestLead?.["client_user_agent"] || null;
+    console.log(`Found matching lead for ${email}: fbp=${fbp}, fbc=${fbc}`);
   } else {
     console.log(`No matching lead found for email: ${email}`);
   }
