@@ -74,6 +74,13 @@ if (Astro.request.method === "POST") {
   const intlPhone = data.get("intl-phone")?.toString() || ""; // Full international number
   const city = data.get("city")?.toString() || "";
   const source = data.get("source") || "";
+  const searchParams = new URLSearchParams(source.toString().split("?")[1]);
+  //lets concatanate all search params values with "|"
+  const sck = Array.from(searchParams.entries())
+    .map(([key, value]) =>
+      !["fbclid", "mcp_token"].includes(key) ? `${value}` : ""
+    )
+    .join("|");
   const cta = data.get("cta") || "";
 
   // Use location info from middleware if available, otherwise maybe from form data as fallback?
@@ -228,7 +235,7 @@ if (Astro.request.method === "POST") {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+        Location: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
       },
     });
   } else {
@@ -244,7 +251,7 @@ if (Astro.request.method === "POST") {
       message: "Lead processed in DEBUG mode.",
       submitted_data: fields,
       hashed_data: hashedUserData,
-      redirect_url: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+      redirect_url: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     }),
     {
       headers: {
