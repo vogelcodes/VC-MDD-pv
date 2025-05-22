@@ -90,8 +90,17 @@ if (Astro.request.method === "POST") {
     locationData?.countryCode || data.get("countryCode")?.toString(); // Use country code from middleware or form
 
   const clientID = data.get("clientID"); // Assuming this comes from client-side
-  const fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
-  const fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
+  let fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
+  let fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
+  const creationTime = Math.floor(Date.now() / 1000);
+  if (fbc == "" && searchParams.get("fbclid")) {
+    fbc = `fb.2.${creationTime}.${searchParams.get("fbclid")}`;
+  }
+  if (fbp == "" && searchParams.get("fbclid")) {
+    // console.log("No existing fbp cookie found, generating new one."); // Informational
+    const randomNumber = Math.floor(Math.random() * 10000000000);
+    fbp = `fb.1.${creationTime}.${randomNumber}`;
+
 
   // Prepare raw data for hashing
   const rawData: RawUserData = {
