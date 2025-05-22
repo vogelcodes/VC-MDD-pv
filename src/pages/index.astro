@@ -148,5 +148,24 @@ let clientUuid = Astro.cookies.get("uuid");
         <PreCheckout clientID={clientUuid?.value} />
       </div>
     </div>
+    <div class="fixed bottom-5 right-5 cursor-pointer">
+      <div class="relative h-[60px] w-[60px]">
+        <a
+          target="_blank"
+          href="https://wa.me/5521978001294?text=Oi%2C+tudo+bem%3F+Eu+tenho+uma+pergunta+sobre+o+curso+LactoFlow."
+        >
+          <span>
+            <img
+              width={60}
+              height={60}
+              alt="whats logo"
+              src="/whatsapp-logo.svg"
+              decoding="async"
+              data-nimg="fill"
+            />
+          </span>
+        </a>
+      </div>
+    </div>
   </main>
 </Layout>
