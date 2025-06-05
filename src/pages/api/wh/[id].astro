@@ -13,6 +13,7 @@ const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
 if (Astro.request.method === "POST") {
   let userIP = null;
   let agent = null;
+  let clientID = null;
   const requestBody = await Astro.request.json();
   console.log("Received payload:", JSON.stringify(requestBody, null, 2));
 
@@ -78,6 +79,7 @@ if (Astro.request.method === "POST") {
   let fbc = null;
   let ct = null;
   let st = null;
+  let zp = null;
 
   if (latestLead) {
     fbp = latestLead.fbp || null; // Get fbp or null if missing
@@ -93,8 +95,12 @@ if (Astro.request.method === "POST") {
         latestLead?.["state"].toString().replace(/\s+/g, "").toLowerCase() || ""
       )
       .digest("hex"); // Directly use sha256()
+    zp = sha256()
+      .update(address?.zipcode.toString() || "")
+      .digest("hex");
     userIP = latestLead?.["client_ip_address"] || null;
     agent = latestLead?.["client_user_agent"] || null;
+    clientID = latestLead?.["clientID"] || null;
     console.log(`Found matching lead for ${email}: fbp=${fbp}, fbc=${fbc}`);
   } else {
     console.log(`No matching lead found for email: ${email}`);
@@ -138,11 +144,13 @@ if (Astro.request.method === "POST") {
           ln: ln, // hashed last name
           ct: ct, //hashed city
           st: st, // hashed state
+          zp: zp, // hashed zipcode
           country: country, // hashed country name
           client_ip_address: userIP ? String(userIP) : undefined, // Ensure IP is a string
           client_user_agent: agent,
           fbp: fbp, // Add fbp
           fbc: fbc, // Add fbc
+          external_id: clientID,
         },
         custom_data: {
           currency: full_price.currency_value,
