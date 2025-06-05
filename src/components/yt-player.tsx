@@ -10,7 +10,7 @@ export default function YoutubePlayer() {
       <LiteYouTubeEmbed
         data-umami-event="Watch Video"
         id="eXp3-bclWPs"
-        title="Método LactoFlow®️"
+        title="Método LactoFlow®"
         poster="maxresdefault"
         webp
       />
