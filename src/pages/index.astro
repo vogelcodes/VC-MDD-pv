@@ -5,6 +5,7 @@ import CTA from "../components/CTA.astro";
 import Depos from "../components/Depos.astro";
 import FAQ from "../components/FAQ.astro";
 import Furadeira from "../components/Furadeira.astro";
+import Posthog from "../components/posthog.astro";
 import PreCheckout from "../components/Precheckout.astro";
 import YoutubePlayer from "../components/yt-player";
 import Layout from "../layouts/Layout.astro";
@@ -15,11 +16,15 @@ if (!Astro.cookies.get("uuid")) {
   Astro.cookies.set("uuid", uuid);
 }
 let clientUuid = Astro.cookies.get("uuid");
+
 // console.log(clientUuid);
 ---
 
 <Layout>
   <main class="max-w-[1080px] mx-auto">
+    <script is:inline>
+      window.posthog.capture("pageview");
+    </script>
     <header class="flex flex-col items-center">
       <div class="w-[180px] sm:w-[300px]">
         <img src="/logo-portrait-v2.svg" alt="logo" width={300} height={120} />
