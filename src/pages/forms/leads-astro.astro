@@ -60,6 +60,7 @@ if (Astro.request.method === "POST") {
   const userIP = Astro.clientAddress;
   const agent = Astro.request.headers.get("user-agent") || "";
   const userAgentInfo = UAParser(agent) || ""; // Rename for clarity
+  const clarityID = decodeURIComponent(Astro.cookies.get("_clck")?.value || "");
 
   // console.log(agent, userIP);
   const data = await Astro.request.formData();
@@ -220,6 +221,7 @@ if (Astro.request.method === "POST") {
         geo_region: locationData?.regionName,
         geo_city: locationData?.city,
         phid: phid,
+        clarityID: clarityID,
       }),
     })
       .then((res) => res.json())
