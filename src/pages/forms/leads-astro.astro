@@ -92,6 +92,7 @@ if (Astro.request.method === "POST") {
   const clientID = data.get("clientID"); // Assuming this comes from client-side
   let fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
   let fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
+  let phid = data.get("phid"); // Assuming this comes from client-side cookie reading
   const creationTime = Math.floor(Date.now() / 1000);
   if (fbc == "" && searchParams.get("fbclid")) {
     fbc = `fb.2.${creationTime}.${searchParams.get("fbclid")}`;
@@ -218,6 +219,7 @@ if (Astro.request.method === "POST") {
         geo_country: locationData?.countryCode,
         geo_region: locationData?.regionName,
         geo_city: locationData?.city,
+        phid: phid,
       }),
     })
       .then((res) => res.json())
