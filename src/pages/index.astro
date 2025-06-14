@@ -13,7 +13,10 @@ import { createId } from "@paralleldrive/cuid2";
 
 let uuid = createId();
 if (!Astro.cookies.get("uuid")) {
-  Astro.cookies.set("uuid", uuid);
+  Astro.cookies.set("uuid", uuid, {
+    maxAge: 365 * 24 * 60 * 60,
+    path: "/",
+  });
 }
 let clientUuid = Astro.cookies.get("uuid");
 
