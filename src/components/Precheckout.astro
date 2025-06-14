@@ -83,12 +83,17 @@ if (locationInfo.status === "fail") {
       .split("; ")
       .find((row) => row.startsWith("ph_phc"))
       ?.split("=")[1];
-    //post hog cookie: %7B%22distinct_id%22%3A%2201974853-09d3-724e-87b8-546b020511aa%22%2C%22%24sesid%22%3A%5B1749872997206%2C%2201976c8e-d89e-724c-9f87-995e59cd95fb%22%2C1749872990365%5D%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22http%3A%2F%2Flocalhost%3A4321%2F%22%7D%7D
-    //and we want this: 01974853-09d3-724e-87b8-546b020511aa
-    let phSessionId = posthog
-      ?.split("sesid%22%3A%5B")[1]
-      ?.split("%2C%22")[1]
-      ?.split("%22")[0];
+
+    let phSessionId;
+    if (posthog) {
+      try {
+        const decodedPosthog = decodeURIComponent(posthog);
+        const posthogData = JSON.parse(decodedPosthog);
+        phSessionId = posthogData.$sesid?.[1];
+      } catch (error) {
+        console.error("Error parsing PostHog cookie:", error);
+      }
+    }
     console.log("Frontend: posthog-" + phSessionId);
 
     //get _fbc cookie from browser
