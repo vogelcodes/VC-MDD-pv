@@ -262,7 +262,9 @@ const middleware = async (
     "Final PageView Event Data (Server-Side):",
     JSON.stringify(pageViewEventData, null, 2)
   ); // Keep: PageView Event Data
-  cookies.set("pv_ts", currentTimestamp.toString());
+  if (url.pathname == "/") {
+    cookies.set("pv_ts", currentTimestamp.toString());
+  }
   // --- Send PageView Event to Meta (Server-Side) ---
   // Only send if not in DEBUG mode AND fbclid is present
   if (import.meta.env.DEBUG !== "1" && fbclid) {
