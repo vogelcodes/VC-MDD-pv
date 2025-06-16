@@ -84,14 +84,6 @@ if (locationInfo.status === "fail") {
       .find((row) => row.startsWith("ph_phc"))
       ?.split("=")[1];
     //posthog tracking cookie is not set yet, so lets wait and check again
-    while (!posthog) {
-      setTimeout(() => {
-        posthog = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("ph_phc"))
-          ?.split("=")[1];
-      }, 1000);
-    }
     let phSessionId;
     if (posthog) {
       try {
