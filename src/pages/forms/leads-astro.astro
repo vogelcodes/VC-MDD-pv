@@ -61,6 +61,21 @@ if (Astro.request.method === "POST") {
   const agent = Astro.request.headers.get("user-agent") || "";
   const userAgentInfo = UAParser(agent) || ""; // Rename for clarity
   const clarityID = decodeURIComponent(Astro.cookies.get("_clck")?.value || "");
+  let phid = "";
+  const phIdCookie = decodeURIComponent(
+    Astro.cookies.get(
+      "ph_phc_4DIZK7fR8ZBfhTUf8TQSt2WNMFwFvDsBUOUQ05kMu01_posthog"
+    )?.value || ""
+  );
+  if (phIdCookie) {
+    try {
+      const decodedPosthog = decodeURIComponent(phIdCookie);
+      const posthogData = JSON.parse(decodedPosthog);
+      phid = posthogData.$sesid?.[1];
+    } catch (error) {
+      console.error("Error parsing PostHog cookie:", error);
+    }
+  }
 
   // console.log(agent, userIP);
   const data = await Astro.request.formData();
@@ -93,7 +108,6 @@ if (Astro.request.method === "POST") {
   const clientID = data.get("clientID"); // Assuming this comes from client-side
   let fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
   let fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
-  let phid = data.get("phid"); // Assuming this comes from client-side cookie reading
   const creationTime = Math.floor(Date.now() / 1000);
   if (fbc == "" && searchParams.get("fbclid")) {
     fbc = `fb.2.${creationTime}.${searchParams.get("fbclid")}`;
