@@ -49,7 +49,8 @@ if (Astro.request.method === "POST") {
     checkout_phone,
     address,
   } = buyer;
-  const { full_price, transaction, order_date, payment, offer } = purchase;
+  const { full_price, transaction, order_date, payment, offer, price } =
+    purchase;
 
   const firstName = first_name;
   const lastName = last_name;
@@ -153,8 +154,8 @@ if (Astro.request.method === "POST") {
           external_id: clientID,
         },
         custom_data: {
-          currency: full_price.currency_value,
-          value: full_price.value,
+          currency: price.currency_value,
+          value: (price.value * 0, 9),
         },
       },
     ],
