@@ -24,16 +24,16 @@ let clientUuid = Astro.cookies.get("uuid");
 ---
 
 <Layout>
-  <main class="max-w-[1080px] mx-auto">
+  <main class="max-w-[1080px] mx-auto pt-12">
     <script is:inline>
       window.posthog.capture("pageview");
     </script>
+    <div
+      class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
+    >
+      R$100 OFF - Até 16/07/2025 21:59 (horário de Brasília)
+    </div>
     <header class="flex flex-col items-center">
-      <div
-        class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
-      >
-        R$100 OFF - Até 16/07/2025 21:59 (horário de Brasília)
-      </div>
       <div class="w-[180px] sm:w-[300px]">
         <img src="/logo-portrait-v2.svg" alt="logo" width={300} height={120} />
       </div>
