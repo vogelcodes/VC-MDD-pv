@@ -290,7 +290,29 @@ const middleware = async (
   }
 
   // --- Process Request and Get Response ---
-  return next();
+  const response = await next();
+
+  try {
+    const contentType = response.headers.get("content-type");
+    if (!contentType && response.headers) {
+      // If not explicitly set and looks like HTML by URL, set UTF-8
+      const looksHtml = url.pathname.endsWith(".html") || url.pathname === "/";
+      if (looksHtml) {
+        response.headers.set("content-type", "text/html; charset=utf-8");
+      }
+    } else if (
+      contentType &&
+      contentType.startsWith("text/html") &&
+      !/charset=/i.test(contentType)
+    ) {
+      // Ensure charset if missing for HTML
+      response.headers.set("content-type", "text/html; charset=utf-8");
+    }
+  } catch (e) {
+    // noop: don't break request pipeline for header setting issues
+  }
+
+  return response;
 };
 
 export const onRequest = defineMiddleware(middleware);

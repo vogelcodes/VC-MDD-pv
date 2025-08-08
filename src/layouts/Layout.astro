@@ -13,10 +13,20 @@ import MetaPixel from "../components/MetaPixel.astro";
 <!doctype html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Método para aumentar a produção de leite materno"
+    />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+    <title>LactoFlow®</title>
+
     <PostHog />
 
     <MetaPixel />
-
 
     <script type="text/javascript">
       (function (c, l, a, r, i, t, y) {
@@ -32,17 +42,6 @@ import MetaPixel from "../components/MetaPixel.astro";
         y.parentNode.insertBefore(t, y);
       })(window, document, "clarity", "script", "r95xzttid8");
     </script>
-
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta
-      name="description"
-      content="Método para aumentar a produção de leite materno"
-    />
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="generator" content={Astro.generator} />
-    <title>LactoFlow®</title>
   </head>
   <body class="bg-blue">
     <slot />
