@@ -1,0 +1,26 @@
+---
+const pixelIds = import.meta.env.META_PIXEL_ID?.split(",").map(id => id.trim()).filter(Boolean) ?? [];
+---
+<script is:inline>
+  (function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)})(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  const pixelIds = ${JSON.stringify(pixelIds)};
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+  pixelIds.forEach(id => fbq('init', id, {fbc: getCookie('_fbc'), fbp: getCookie('_fbp')}));
+  const getEventId = () => document.cookie.split('; ').find(row => row.startsWith('event_id='))?.split('=')[1];
+  window.fbqTrack = function(event, data = {}) {
+    const eventId = getEventId();
+    fbq('track', event, data, { eventID: eventId });
+  };
+  window.fbqTrack('PageView');
+</script>
+<noscript>
+  {pixelIds.map(id => (
+    <img src={`https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1`} height="1" width="1" style="display:none" />
+  ))}
+</noscript>
