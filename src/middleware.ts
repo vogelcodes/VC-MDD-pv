@@ -213,14 +213,15 @@ const middleware = async (
   let fbpCookie = cookies.get("_fbp");
   let fbcValue: string | undefined = fbcCookie?.value;
   let fbpValue: string | undefined = fbpCookie?.value;
-  const currentTimestamp = Date.now();
+  const currentTimestampMs = Date.now();
+  const currentTimestampSec = Math.floor(currentTimestampMs / 1000);
   let needsFbcCookieUpdate = false;
   let needsFbpCookieUpdate = false;
 
   if (fbclid) {
     // console.log("fbclid found:", fbclid); // Informational
-    const creationTime = Math.floor(currentTimestamp / 1000);
-    const newFbcValue = `fb.1.${creationTime}.${fbclid}`;
+    const creationTimeMs = currentTimestampMs; // Meta expects ms in _fbc/_fbp cookie format
+    const newFbcValue = `fb.1.${creationTimeMs}.${fbclid}`;
     if (fbcValue !== newFbcValue) {
       // console.log("Setting/updating fbc value for event/cookie:", newFbcValue); // Informational
       fbcValue = newFbcValue;
@@ -230,11 +231,27 @@ const middleware = async (
 
   if (!fbpValue) {
     // console.log("No existing fbp cookie found, generating new one."); // Informational
-    const creationTime = Math.floor(currentTimestamp / 1000);
+    const creationTimeMs = currentTimestampMs; // ms since epoch
     const randomNumber = Math.floor(Math.random() * 10000000000);
-    fbpValue = `fb.1.${creationTime}.${randomNumber}`;
+    fbpValue = `fb.1.${creationTimeMs}.${randomNumber}`;
     needsFbpCookieUpdate = true;
   } // else { console.log("Using existing fbp cookie value:", fbpValue); } // Informational
+
+  // Persist cookies if we generated/updated them
+  if (needsFbcCookieUpdate && fbcValue) {
+    cookies.set("_fbc", fbcValue, {
+      path: "/",
+      httpOnly: false,
+      maxAge: 90 * 24 * 60 * 60, // 90 days
+    });
+  }
+  if (needsFbpCookieUpdate && fbpValue) {
+    cookies.set("_fbp", fbpValue, {
+      path: "/",
+      httpOnly: false,
+      maxAge: 90 * 24 * 60 * 60, // 90 days
+    });
+  }
 
   // --- Hashing Data for Meta --- NOTE: Only location data is available here
   const rawLocationData: RawUserData = {
@@ -247,13 +264,13 @@ const middleware = async (
 
   // --- Prepare Meta PageView Event Data ---
   // Generate and store event ID for deduplication
-  eventId = fbclid || `${clientUuid}_${currentTimestamp}`;
+  eventId = fbclid || `${clientUuid}_${currentTimestampMs}`;
   cookies.set("event_id", eventId, { path: "/", httpOnly: false });
   locals.eventId = eventId;
   // Declare pageViewEventData *before* using it in logs
   const pageViewEventData = {
     event_name: "PageView",
-    event_time: Math.floor(currentTimestamp / 1000),
+    event_time: currentTimestampSec,
     action_source: "website",
     event_source_url: url.href,
 
@@ -275,7 +292,7 @@ const middleware = async (
     JSON.stringify(pageViewEventData, null, 2)
   ); // Keep: PageView Event Data
   if (url.pathname == "/") {
-    cookies.set("pv_ts", currentTimestamp.toString());
+    cookies.set("pv_ts", currentTimestampMs.toString());
   }
   // --- Send PageView Event to Meta (Server-Side) ---
   if (import.meta.env.DEBUG !== "1") {

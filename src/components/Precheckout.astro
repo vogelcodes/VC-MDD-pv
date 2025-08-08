@@ -3,7 +3,6 @@ import ReactPhoneInput from "./react-phone";
 import { formatPhoneNumber } from "react-phone-number-input";
 import { sendToMeta } from "../utils/metaConversionsAPI";
 import { encryptData, decryptData } from "../utils/crypto";
-import type { LocationInfo } from "../types/locationInfo";
 
 export interface Props {
   pcId?: string;
@@ -20,7 +19,7 @@ const path = Astro.url.pathname;
 const userIp = Astro.clientAddress;
 
 // Attempt to get location info from middleware
-const locationData = Astro.locals.locationInfo;
+const locationData = (Astro.locals as any)?.locationInfo;
 
 const fbc = Astro.cookies.get("_fbc")?.value;
 const fbp = Astro.cookies.get("_fbp")?.value;
@@ -111,32 +110,40 @@ if (locationInfo.status === "fail") {
       //get fbclid from url
       const fbclid = new URLSearchParams(window.location.search).get("fbclid");
       if (fbclid) {
-        fbc = `fb.2.${Math.floor(Date.now() / 1000)}.${fbclid}`;
+        fbc = `fb.1.${Date.now()}.${fbclid}`;
+        // persist a browser cookie so fbq picks it up
+        document.cookie = `_fbc=${fbc}; path=/; max-age=${90 * 24 * 60 * 60}`;
       }
+    }
+    if (!fbp) {
+      const rnd = Math.floor(Math.random() * 10000000000);
+      fbp = `fb.1.${Date.now()}.${rnd}`;
+      document.cookie = `_fbp=${fbp}; path=/; max-age=${90 * 24 * 60 * 60}`;
     }
 
     // console.log(fbp);
     //set _fbc cookie value to hidden input
-      const fbcInput = document.querySelector('input[name="fbc"]');
-      if (fbcInput) {
-        fbcInput.setAttribute("value", fbc ?? "");
-      }
-      const fbpInput = document.querySelector('input[name="fbp"]');
-      if (fbpInput) {
-        fbpInput.setAttribute("value", fbp ?? "");
-      }
-      const phidInput = document.querySelector('input[name="phid"]');
-      if (phidInput) {
-        phidInput.setAttribute("value", phSessionId ?? "");
-      }
-      const leadForm = document.querySelector('form');
-      if (leadForm) {
-        leadForm.addEventListener('submit', () => {
-          if (window.fbqTrack) {
-            window.fbqTrack('Lead');
-          }
-        });
-      }
+    const fbcInput = document.querySelector('input[name="fbc"]');
+    if (fbcInput) {
+      fbcInput.setAttribute("value", fbc ?? "");
+    }
+    const fbpInput = document.querySelector('input[name="fbp"]');
+    if (fbpInput) {
+      fbpInput.setAttribute("value", fbp ?? "");
+    }
+    const phidInput = document.querySelector('input[name="phid"]');
+    if (phidInput) {
+      phidInput.setAttribute("value", phSessionId ?? "");
+    }
+    const leadForm = document.querySelector("form");
+    if (leadForm) {
+      leadForm.addEventListener("submit", () => {
+        const fbqTrack = (window as any)["fbqTrack"];
+        if (typeof fbqTrack === "function") {
+          fbqTrack("Lead");
+        }
+      });
+    }
   </script>
   <main>
     <div class="flex flex-col gap-2 items-center px-3 text-blue">

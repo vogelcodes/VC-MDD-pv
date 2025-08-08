@@ -129,12 +129,21 @@ if (Astro.request.method === "POST") {
 
   // Fetch leads data
 
+  const eventTimeSec = purchase?.order_date
+    ? Math.floor(Number(purchase.order_date) / 1000)
+    : Math.floor(Date.now() / 1000);
+
+  const purchaseValue = (() => {
+    const raw = price?.value ?? full_price;
+    const asNumber = Number(raw);
+    return Number.isFinite(asNumber) ? asNumber : undefined;
+  })();
+
   const metaEventData = {
     data: [
       {
         event_name: "Purchase", // Standard event name for a purchase
-        //        event_time: Math.floor(order_date / 1000), // Current timestamp in seconds
-        event_time: Math.floor(Date.now() / 1000), // Current timestamp in seconds
+        event_time: eventTimeSec, // Prefer order_date from webhook if available
         action_source: "website",
         event_id: transaction, // Using the transaction as the event id
         event_source_url: offer.code,
@@ -155,7 +164,7 @@ if (Astro.request.method === "POST") {
         },
         custom_data: {
           currency: price.currency_value,
-          value: (price.value * 0, 9),
+          value: purchaseValue,
         },
       },
     ],

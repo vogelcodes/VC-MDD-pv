@@ -105,18 +105,20 @@ if (Astro.request.method === "POST") {
   const countryCode =
     locationData?.countryCode || data.get("countryCode")?.toString(); // Use country code from middleware or form
 
-    const clientID = data.get("clientID"); // Assuming this comes from client-side
-    const eventId = Astro.cookies.get("event_id")?.value;
-    let fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
-    let fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
-  const creationTime = Math.floor(Date.now() / 1000);
-  if (fbc == "" && searchParams.get("fbclid")) {
-    fbc = `fb.2.${creationTime}.${searchParams.get("fbclid")}`;
+  const clientID = data.get("clientID"); // Assuming this comes from client-side
+  const eventId = Astro.cookies.get("event_id")?.value;
+  let fbp = data.get("fbp"); // Assuming this comes from client-side cookie reading
+  let fbc = data.get("fbc"); // Assuming this comes from client-side cookie reading
+  const nowMs = Date.now();
+  const creationTimeSec = Math.floor(nowMs / 1000);
+  if ((fbc == "" || !fbc) && searchParams.get("fbclid")) {
+    // Use fb.1 and ms timestamp inside cookie value
+    fbc = `fb.1.${nowMs}.${searchParams.get("fbclid")}`;
   }
-  if (fbp == "" && searchParams.get("fbclid")) {
-    // console.log("No existing fbp cookie found, generating new one."); // Informational
+  if ((fbp == "" || !fbp) && searchParams.get("fbclid")) {
+    // Generate fbp with ms timestamp
     const randomNumber = Math.floor(Math.random() * 10000000000);
-    fbp = `fb.1.${creationTime}.${randomNumber}`;
+    fbp = `fb.1.${nowMs}.${randomNumber}`;
   }
 
   // Prepare raw data for hashing
@@ -143,9 +145,9 @@ if (Astro.request.method === "POST") {
     data: [
       {
         event_name: "Lead",
-        event_time: Math.floor(Date.now() / 1000),
+        event_time: creationTimeSec,
         action_source: "website",
-          event_id: eventId,
+        event_id: eventId,
         user_data: {
           ...hashedUserData, // Spread the generated hashes
           client_ip_address: userIP ? String(userIP) : undefined, // Ensure IP is a string
