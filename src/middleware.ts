@@ -247,7 +247,7 @@ const middleware = async (
 
   // --- Prepare Meta PageView Event Data ---
   // Generate and store event ID for deduplication
-  const eventId = fbclid || `${clientUuid}_${currentTimestamp}`;
+  eventId = fbclid || `${clientUuid}_${currentTimestamp}`;
   cookies.set("event_id", eventId, { path: "/", httpOnly: false });
   locals.eventId = eventId;
   // Declare pageViewEventData *before* using it in logs
