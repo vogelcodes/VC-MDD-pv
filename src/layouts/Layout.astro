@@ -6,25 +6,21 @@ import "@fontsource/metropolis/700.css";
 
 import "@fontsource/metropolis/400.css";
 import PostHog from "../components/posthog.astro";
+
+const META_PIXEL_IDS_CSV = import.meta.env.META_PIXEL_ID || "";
+const META_PIXEL_IDS = META_PIXEL_IDS_CSV.split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
+const META_PIXEL_INIT = META_PIXEL_IDS.map(
+  (id) =>
+    `fbq('init', '${id}', {fbc: getCookie('_fbc'), fbp: getCookie('_fbp')});`
+).join("\n      ");
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <PostHog />
-    <!-- Google Tag Manager -->
-    <script is:inline>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-5PRQSVZ5");
-    </script>
     <script type="text/javascript">
       (function (c, l, a, r, i, t, y) {
         c[a] =
@@ -39,7 +35,34 @@ import PostHog from "../components/posthog.astro";
         y.parentNode.insertBefore(t, y);
       })(window, document, "clarity", "script", "r95xzttid8");
     </script>
-    <!-- End Google Tag Manager -->
+    <script is:inline>
+      function getCookie(name) {
+        const match = document.cookie.match(
+          new RegExp("(^|; )" + name + "=([^;]*)")
+        );
+        return match ? decodeURIComponent(match[2]) : null;
+      }
+      !function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = 1;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+      {META_PIXEL_INIT}
+      fbq("track", "PageView");
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta
@@ -52,15 +75,6 @@ import PostHog from "../components/posthog.astro";
     <title>LactoFlow®</title>
   </head>
   <body class="bg-blue">
-    <!-- Google Tag Manager (noscript) -->
-    <noscript
-      ><iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5PRQSVZ5"
-        height="0"
-        width="0"
-        style="display:none;visibility:hidden"></iframe></noscript
-    >
-    <!-- End Google Tag Manager (noscript) -->
     <slot />
   </body>
 </html>
