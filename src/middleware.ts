@@ -54,6 +54,12 @@ const middleware = async (
     clientUuid = createId(); // Generate CUID if no cookie
     // Set cookie in the response later
   }
+  let eventId = cookies.get("event_id")?.value;
+  if (!eventId) {
+    eventId = createId();
+    cookies.set("event_id", eventId, { path: "/", httpOnly: false });
+  }
+  locals.eventId = eventId;
   if (url.pathname.startsWith("/api/wh")) {
     console.log("WH API call detected");
     return next();
@@ -246,7 +252,7 @@ const middleware = async (
     event_time: Math.floor(currentTimestamp / 1000),
     action_source: "website",
     event_source_url: url.href,
-    event_id: clientUuid + "_" + currentTimestamp, // Unique event ID
+    event_id: eventId, // Unique event ID per visit
     user_data: {
       ...hashedLocationData,
       client_ip_address: clientIp ? String(clientIp) : undefined, // Ensure IP is a string
