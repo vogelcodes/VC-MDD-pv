@@ -3,9 +3,27 @@ const pixelIds = (import.meta.env.META_PIXEL_ID ?? "")
   .split(",")
   .map((id: string) => id.trim())
   .filter(Boolean) as string[];
+// Sanitize to digits only to avoid accidental injection/misparse by extensions
+const safePixelIds: string[] = pixelIds
+  .map((id: string) => id.replace(/\D/g, ""))
+  .filter(Boolean);
+
+const noscriptHtml: string = safePixelIds
+  .map(
+    (id: string) =>
+      `<img src="https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1" height="1" width="1" style="display:none" />`
+  )
+  .join("");
+
+const initCode: string = safePixelIds
+  .map(
+    (id: string) =>
+      `fbq("init", "${id}", { fbc: getCookie("_fbc"), fbp: getCookie("_fbp") });`
+  )
+  .join("\n");
 ---
 
-<script is:inline data-pixels={JSON.stringify(pixelIds)}>
+<script is:inline>
   (function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
     n = f.fbq = function () {
@@ -28,25 +46,17 @@ const pixelIds = (import.meta.env.META_PIXEL_ID ?? "")
     "https://connect.facebook.net/en_US/fbevents.js"
   );
 
-  var pixelsAttr =
-    (document.currentScript &&
-      document.currentScript.getAttribute("data-pixels")) ||
-    "[]";
-  var pixelIds = [];
-  try {
-    pixelIds = JSON.parse(pixelsAttr) || [];
-  } catch (e) {
-    pixelIds = [];
-  }
-
   function getCookie(name) {
     var match = document.cookie.match(new RegExp("(^|; )" + name + "=([^;]*)"));
     return match ? decodeURIComponent(match[2]) : null;
   }
 
-  pixelIds.forEach(function (id) {
-    fbq("init", id, { fbc: getCookie("_fbc"), fbp: getCookie("_fbp") });
-  });
+  if (!window.__fbqInited) {
+    window.__fbqInited = true;
+    {
+      initCode;
+    }
+  }
 
   var getEventId = function () {
     var row = (document.cookie || "").split("; ").find(function (r) {
@@ -62,17 +72,9 @@ const pixelIds = (import.meta.env.META_PIXEL_ID ?? "")
     var eventId = getEventId();
     fbq("track", event, data, { eventID: eventId });
   };
-  window.fbqTrack("PageView");
-</script>
-<noscript>
-  {
-    pixelIds.map((id: string) => (
-      <img
-        src={`https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1`}
-        height="1"
-        width="1"
-        style="display:none"
-      />
-    ))
+  if (!window.__fbqPageViewSent) {
+    window.__fbqPageViewSent = true;
+    window.fbqTrack("PageView");
   }
-</noscript>
+</script>
+<noscript set:html={noscriptHtml} />
