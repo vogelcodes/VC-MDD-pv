@@ -117,18 +117,26 @@ if (locationInfo.status === "fail") {
 
     // console.log(fbp);
     //set _fbc cookie value to hidden input
-    const fbcInput = document.querySelector('input[name="fbc"]');
-    if (fbcInput) {
-      fbcInput.setAttribute("value", fbc ?? "");
-    }
-    const fbpInput = document.querySelector('input[name="fbp"]');
-    if (fbpInput) {
-      fbpInput.setAttribute("value", fbp ?? "");
-    }
-    const phidInput = document.querySelector('input[name="phid"]');
-    if (phidInput) {
-      phidInput.setAttribute("value", phSessionId ?? "");
-    }
+      const fbcInput = document.querySelector('input[name="fbc"]');
+      if (fbcInput) {
+        fbcInput.setAttribute("value", fbc ?? "");
+      }
+      const fbpInput = document.querySelector('input[name="fbp"]');
+      if (fbpInput) {
+        fbpInput.setAttribute("value", fbp ?? "");
+      }
+      const phidInput = document.querySelector('input[name="phid"]');
+      if (phidInput) {
+        phidInput.setAttribute("value", phSessionId ?? "");
+      }
+      const leadForm = document.querySelector('form');
+      if (leadForm) {
+        leadForm.addEventListener('submit', () => {
+          if (window.fbqTrack) {
+            window.fbqTrack('Lead');
+          }
+        });
+      }
   </script>
   <main>
     <div class="flex flex-col gap-2 items-center px-3 text-blue">
