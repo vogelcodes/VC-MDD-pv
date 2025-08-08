@@ -14,16 +14,9 @@ const noscriptHtml: string = safePixelIds
       `<img src="https://www.facebook.com/tr?id=${id}&ev=PageView&noscript=1" height="1" width="1" style="display:none" />`
   )
   .join("");
-
-const initCode: string = safePixelIds
-  .map(
-    (id: string) =>
-      `fbq("init", "${id}", { fbc: getCookie("_fbc"), fbp: getCookie("_fbp") });`
-  )
-  .join("\n");
 ---
 
-<script is:inline>
+<script is:inline data-pixels={JSON.stringify(safePixelIds)}>
   (function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
     n = f.fbq = function () {
@@ -51,10 +44,25 @@ const initCode: string = safePixelIds
     return match ? decodeURIComponent(match[2]) : null;
   }
 
-  if (!window.__fbqInited) {
-    window.__fbqInited = true;
-    {
-      initCode;
+  var pixelsAttr =
+    (document.currentScript &&
+      document.currentScript.getAttribute("data-pixels")) ||
+    "[]";
+  var __pixelIds = [];
+  try {
+    __pixelIds = JSON.parse(pixelsAttr) || [];
+  } catch (e) {
+    __pixelIds = [];
+  }
+
+  if (!window.__fbqInitedIds) {
+    window.__fbqInitedIds = {};
+  }
+  for (var i = 0; i < __pixelIds.length; i++) {
+    var pid = __pixelIds[i];
+    if (pid && !window.__fbqInitedIds[pid]) {
+      window.__fbqInitedIds[pid] = true;
+      fbq("init", pid, { fbc: getCookie("_fbc"), fbp: getCookie("_fbp") });
     }
   }
 
@@ -70,6 +78,7 @@ const initCode: string = safePixelIds
       data = {};
     }
     var eventId = getEventId();
+    // Track to all initialized pixels at once
     fbq("track", event, data, { eventID: eventId });
   };
   if (!window.__fbqPageViewSent) {
