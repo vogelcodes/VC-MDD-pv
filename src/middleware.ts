@@ -246,13 +246,19 @@ const middleware = async (
   // console.log("hashedLocationData", hashedLocationData); // Debug hash
 
   // --- Prepare Meta PageView Event Data ---
+  // Generate and store event ID for deduplication
+  const eventId = fbclid || `${clientUuid}_${currentTimestamp}`;
+  cookies.set("event_id", eventId, { path: "/", httpOnly: false });
+  locals.eventId = eventId;
   // Declare pageViewEventData *before* using it in logs
   const pageViewEventData = {
     event_name: "PageView",
     event_time: Math.floor(currentTimestamp / 1000),
     action_source: "website",
     event_source_url: url.href,
+
     event_id: eventId, // Unique event ID per visit
+
     user_data: {
       ...hashedLocationData,
       client_ip_address: clientIp ? String(clientIp) : undefined, // Ensure IP is a string
@@ -272,22 +278,15 @@ const middleware = async (
     cookies.set("pv_ts", currentTimestamp.toString());
   }
   // --- Send PageView Event to Meta (Server-Side) ---
-  // Only send if not in DEBUG mode AND fbclid is present
-  if (import.meta.env.DEBUG !== "1" && fbclid) {
+  if (import.meta.env.DEBUG !== "1") {
     try {
       // Don't await, let it run in the background
-
       sendToMeta({ data: [pageViewEventData] });
     } catch (error) {
       console.error("Error sending server-side PageView event to Meta:", error);
     }
-  } else if (import.meta.env.DEBUG === "1") {
-    console.log("DEBUG MODE: Not sending server-side PageView event to Meta"); // Keep: Debug mode
   } else {
-    // Log why it wasn't sent (missing fbclid)
-    console.log(
-      "Not sending server-side PageView event to Meta: Missing fbclid"
-    );
+    console.log("DEBUG MODE: Not sending server-side PageView event to Meta"); // Keep: Debug mode
   }
 
   // --- Process Request and Get Response ---
