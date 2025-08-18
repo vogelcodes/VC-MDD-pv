@@ -28,14 +28,15 @@ let clientUuid = Astro.cookies.get("uuid");
     <script is:inline>
       window.posthog.capture("pageview");
     </script>
-    <!-- <div
+    <div
       class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
     >
-      R$100 OFF - Até 16/07/2025 21:59 (horário de Brasília)
-    </div> -->
-    <header class="flex flex-col items-center">
+      Agosto Dourado - R$150 OFF + BÔNUS <br /> Somente hoje 18/08/2025
+    </div>
+    <header class="flex flex-col items-center pt-12">
       <div class="w-[180px] sm:w-[300px]">
-        <img src="/logo-portrait-v2.svg" alt="logo" width={300} height={120} />
+        <!-- <img src="/logo-portrait-v2.svg" alt="logo" width={300} height={120} /> -->
+        <img src="/logo-ago-25.webp" alt="logo" width={300} height={120} />
       </div>
 
       <h1
@@ -128,9 +129,13 @@ let clientUuid = Astro.cookies.get("uuid");
     </script>
 
     <div class="flex flex-col items-center space-y-4 my-4">
-      <CTA ctaOption="1" />
+      <CTA ctaOption="1" price />
       <Depos />
-      <CTA ctaOption="2" label="Você também pode aumentar a sua produção" />
+      <CTA
+        ctaOption="2"
+        price
+        label="Você também pode aumentar a sua produção"
+      />
       <Furadeira />
       <Bonus />
       <CTA ctaOption="3" price label="Tenha acesso a tudo isso agora" />

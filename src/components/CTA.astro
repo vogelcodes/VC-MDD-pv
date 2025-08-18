@@ -9,7 +9,7 @@ interface Props {
   total?: string;
   installmentValue?: string;
 };
-const { ctaOption, price = false , label ="Quero aumentar minha produção de leite", installments = "12", total = "297", installmentValue = "30,72" } = Astro.props;
+const { ctaOption, price = false , label ="Quero aumentar minha produção de leite", installments = "12", total = "150", installmentValue = "15,51" } = Astro.props;
 import telegram2 from "../assets/img/telegram-2.svg";
 
 ---
@@ -38,12 +38,29 @@ import telegram2 from "../assets/img/telegram-2.svg";
         </div>
       </div>
       {price ? (
-        <p class="pt-4">
-          {installments}x
-          <span class="mb-[14.4px] ml-1 mt-6 text-center text-[25px] font-extrabold uppercase lg:text-[31.25px]">
-            R${installmentValue}
+        <p class="text-center text-lg font-bold pb-1">Agosto Dourado LactoFlow</p>
+        <ul>
+          <li>🙋‍♀️Curso completo COM SUPORTE</li>
+          <li class="text-center">+ BÔNUS EXCLUSIVOS:</li>
+          <li>🎓 Workshop para Gestantes</li>
+          <li>🌙 Workshop de Desmame Noturno</li>
+          <li>📦 Workshop de Estoque de Leite Materno</li>
+          <li>🧘‍♀ Meditação Guiada “Meu Corpo Produz”</li>
+          <li>📄 PDFs:</li>
+          <li>• Como saber se o bebê está mamando bem</li>
+          <li>• Manual da pega correta e posições</li>
+
+        </ul>
+        <p class="font-bold text-left pb-4">
+          Tudo isso por apenas: <br/>          
+        </p>
+        
+        <p class="text-center pb-4">
+                 
+            <span class="line-through font-normal">12x R$30,72</span> <br/>
+            {installments}x <span class="mb-[14.4px] mt-6 text-center text-[25px] font-extrabold uppercase lg:text-[31.25px]">R${installmentValue}
           </span>{" "}
-          <br /> ou R${total} à vista
+          <br /> ou <span class="line-through font-normal">R$297</span> R${total} à vista
         </p>
       ) : (
         <></>
