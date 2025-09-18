@@ -64,8 +64,8 @@ if (Astro.request.method === "POST") {
   let phid = "";
   const phIdCookie = decodeURIComponent(
     Astro.cookies.get(
-      "ph_phc_4DIZK7fR8ZBfhTUf8TQSt2WNMFwFvDsBUOUQ05kMu01_posthog"
-    )?.value || ""
+      "ph_phc_4DIZK7fR8ZBfhTUf8TQSt2WNMFwFvDsBUOUQ05kMu01_posthog",
+    )?.value || "",
   );
   if (phIdCookie) {
     try {
@@ -94,7 +94,7 @@ if (Astro.request.method === "POST") {
   //lets concatanate all search params values with "|"
   const sck = Array.from(searchParams.entries())
     .map(([key, value]) =>
-      !["fbclid", "mcp_token"].includes(key) ? `${value}` : ""
+      !["fbclid", "mcp_token"].includes(key) ? `${value}` : "",
     )
     .join("|");
   const cta = data.get("cta") || "";
@@ -195,19 +195,20 @@ if (Astro.request.method === "POST") {
     leadCity: string,
     leadRegion: string | undefined, // Use potentially undefined values
     leadUserAgentOS: string | undefined, // Use potentially undefined value
-    leadSource: string
+    leadSource: string,
   ) {
     const leadsList = await fetchLeads();
     const emailCount = leadsList.filter(
-      (item) => item.email?.trim().toLowerCase() === email?.trim().toLowerCase()
+      (item) =>
+        item.email?.trim().toLowerCase() === email?.trim().toLowerCase(),
     ).length;
     const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
       `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
         .replace("+", "")
         .trim()}&text=${encodeURIComponent(
-        `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nVocê está com alguma dificuldade com a sua amamentação?` // Use first name from passed name
+        `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nPosso te ajudar a entender se o curso é o melhor caminho pra você.\n\nVocê está com alguma dificuldade com a sua amamentação?`, // Use first name from passed name
       )}
-      `
+      `,
     )}`;
 
     if (!dryRun) {
@@ -255,7 +256,7 @@ if (Astro.request.method === "POST") {
     city,
     stateOrRegion, // Pass potentially updated state/region
     userAgentInfo.os.name, // Pass OS name
-    source.toString()
+    source.toString(),
   );
 
   if (!DRY_RUN) {
@@ -268,7 +269,7 @@ if (Astro.request.method === "POST") {
   } else {
     console.log("DEBUG MODE: Not redirecting to Hotmart");
     console.log(
-      `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`
+      `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     );
   }
 
@@ -284,7 +285,7 @@ if (Astro.request.method === "POST") {
       headers: {
         "content-type": "application/json", // Return JSON for debug
       },
-    }
+    },
   );
 }
 ---
