@@ -33,5 +33,9 @@
   "devDependencies": {
     "@types/react": "^19.0.10",
     "daisyui": "^5.0.4"
+  },
+  "engines": {
+    "node": "18.20.8"
   }
+
 }
