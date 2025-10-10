@@ -39,47 +39,50 @@ let clientUuid = Astro.cookies.get("uuid");
       </div>
 
       <h1
-        class="mt-4 px-4 text-center text-lg uppercase text-amber-100 text-cream sm:w-2/3 sm:px-0 sm:text-[24px]"
+        class="mt-4 px-4 text-center rounded-md text-lg uppercase text-blue bg-cream sm:w-lg sm:px-0 sm:text-[24px]"
       >
         Se você precisa:
       </h1>
-      <h1
-        class="my-4 font-bold pl-2 uppercase text-lg leading-none text-cream text-center sm:text-[24px]"
+      <div
+        class="my-4 font-bold pl-2 flex flex-col items-center gap-4 uppercase text-xl leading-none text-cream text-center sm:text-[24px]"
       >
-        <span class="text-xl uppercase text-green sm:text-[35px]">
-          Aumentar</span
-        >
-        <span class=""> sua <br />produção de leite</span>
-        <br />para <span class="text-xl text-red-400 uppercase sm:text-[35px]">
-          Eliminar</span
-        > a fórmula <br /> ou para criar um <br />
-        <span class="text-xl text-green uppercase sm:text-[35px]">
-          estoque</span
-        >
-        <br /> de leite materno,
-      </h1>
+        <h1>
+          <span class="text-2xl uppercase text-green sm:text-[35px]">
+            Aumentar</span
+          >
+          <span class=""> sua <br class="sm:hidden" />produção de leite</span>
+        </h1>
+
+        <h1>
+          <span class="text-2xl text-red-400 uppercase sm:text-[35px]">
+            Eliminar</span
+          > a fórmula
+        </h1>
+
+        <h1>
+          ou criar um <span class="text-2xl text-green uppercase sm:text-[35px]"
+            >estoque<br class="sm:hidden" /></span
+          >
+          de leite materno
+        </h1>
+      </div>
       <p
-        class="mx-auto w-[80%] max-w-[600px] uppercase text-amber-50 text-center text-sm sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+        class="mx-auto w-[80%] max-w-[600px] p-4 rounded-md text-blue bg-cream text-center text-sm sm:mt-7 sm:px-2 lg:mt-5 sm:text-[20px]"
       >
-        Nesta <span class="text-lg font-bold text-green sm:text-[35px]">
+        Nesta <span class="text-md font-bold text-green sm:text-[24px]">
           AULA GRATUITA
         </span>
-        <br />
-
-        você vai aprender as<span
-          class="text-lg font-bold uppercase text-red-400 sm:text-[35px]"
+        você vai aprender <br class="hidden sm:block" />as<span
+          class="text-md font-bold uppercase no-break text-red-400 sm:text-[24px]"
         >
-          <br />
           4 técnicas</span
-        > que fizeram <br /> MILHARES de mães reais:
-        <br />
-        <span class="text-sm text-blue sm:text-[35px]"> AULA GRATUITA </span>
+        > que ajudaram MILHARES de mães a recuperarem sua produção de leite.
       </p>
-      <ul class="text-cream list-disc text-sm my-2 pl-2 text-left">
+      <!-- <ul class="text-cream list-disc text-sm my-2 pl-2 text-left">
         <li>Recuperarem a produção</li>
         <li>Saírem da fórmula</li>
         <li>Montarem seus estoques de leite materno</li>
-      </ul>
+      </ul> -->
       <p
         class="text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
       >
