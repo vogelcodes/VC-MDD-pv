@@ -39,38 +39,67 @@ let clientUuid = Astro.cookies.get("uuid");
       </div>
 
       <h1
-        class="mb-[14.4px] mt-6 px-4 text-center text-[18px] font-extrabold text-amber-100 uppercase leading-[29px] text-cream sm:w-2/3 sm:px-0 sm:text-[24px] sm:leading-[36px]"
+        class="mt-4 px-4 text-center text-lg uppercase text-amber-100 text-cream sm:w-2/3 sm:px-0 sm:text-[24px]"
       >
-        Aprenda como{" "}
-        <span class="text-[25px] text-red-400 sm:text-[35px]">
-          aumentar a sua produção
-        </span>{" "}
-        de leite e ofereça o{" "}
-        <span class="text-[25px] text-green sm:text-[35px]">
-          melhor alimento do mundo
-        </span>{" "}
-        ao seu bebê.
+        Se você precisa:
+      </h1>
+      <h1
+        class="my-4 font-bold pl-2 uppercase text-lg leading-none text-cream text-center sm:text-[24px]"
+      >
+        <span class="text-xl uppercase text-green sm:text-[35px]">
+          Aumentar</span
+        >
+        <span class=""> sua <br />produção de leite</span>
+        <br />para <span class="text-xl text-red-400 uppercase sm:text-[35px]">
+          Eliminar</span
+        > a fórmula <br /> ou para criar um <br />
+        <span class="text-xl text-green uppercase sm:text-[35px]">
+          estoque</span
+        >
+        <br /> de leite materno,
       </h1>
       <p
-        class="mx-auto w-[80%] max-w-[600px] text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+        class="mx-auto w-[80%] max-w-[600px] uppercase text-amber-50 text-center text-sm sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
       >
-        Assista a essa aula gratuita e comece a aumentar a sua produção de leite
-        HOJE MESMO
+        Nesta <span class="text-lg font-bold text-green sm:text-[35px]">
+          AULA GRATUITA
+        </span>
+        <br />
+
+        você vai aprender as<span
+          class="text-lg font-bold uppercase text-red-400 sm:text-[35px]"
+        >
+          <br />
+          4 técnicas</span
+        > que fizeram <br /> MILHARES de mães reais:
+        <br />
+        <span class="text-sm text-blue sm:text-[35px]"> AULA GRATUITA </span>
       </p>
-      <div class="flex flex-col items-center lg:flex-row">
-        <div class="flex items-center">
-          <div class="m-2">
-            <img
-              class="ml-2 animate-bounce"
-              src="/arrow-down.svg"
-              alt="one"
-              height={36}
-              width={36}
-            />
-          </div>
+      <ul class="text-cream list-disc text-sm my-2 pl-2 text-left">
+        <li>Recuperarem a produção</li>
+        <li>Saírem da fórmula</li>
+        <li>Montarem seus estoques de leite materno</li>
+      </ul>
+      <p
+        class="text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+      >
+      </p>
+    </header>
+
+    <div class="flex flex-col items-center lg:flex-row">
+      <div class="flex items-center">
+        <div class="m-2">
+          <img
+            class="ml-2 animate-bounce"
+            src="/arrow-down.svg"
+            alt="one"
+            height={36}
+            width={36}
+          />
         </div>
       </div>
-      <!-- <div>
+    </div>
+    <!-- <div>
         <iframe
         width="560"
         height="315"
@@ -80,101 +109,111 @@ let clientUuid = Astro.cookies.get("uuid");
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowfullscreen></iframe>
         </div> -->
-    </header>
-
-    <YoutubePlayer client:load />
-
-    <script>
-      import { isModalOpen, ctaValue } from "../store";
-
-      const modal = document.getElementById("modal") as HTMLDivElement;
-
-      function openModal(cta: string) {
-        // add cta to url params
-        //add cta to input hidden
-        const form = document.querySelector("form");
-        if (form) {
-          const ctaInput = form.querySelector('input[name="cta"]');
-          if (ctaInput) {
-            ctaInput.setAttribute("value", cta);
-          }
-        }
-
-        ctaValue.set(cta);
-        if (!modal) return;
-
-        modal.classList.remove("hidden");
-      }
-      function closeModal() {
-        if (!modal) return;
-        modal.classList.add("hidden");
-      }
-      isModalOpen.set(false);
-
-      const cta1 = document.getElementById("1");
-      if (cta1) cta1.addEventListener("click", () => openModal("1"));
-
-      const cta2 = document.getElementById("2");
-      if (cta2) cta2.addEventListener("click", () => openModal("2"));
-
-      const cta3 = document.getElementById("3");
-      if (cta3) cta3.addEventListener("click", () => openModal("3"));
-
-      const cta4 = document.getElementById("4");
-      if (cta4) cta4.addEventListener("click", () => openModal("4"));
-
-      const closeBtn = document.getElementById("close");
-      if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
-    </script>
-
-    <div class="flex flex-col items-center space-y-4 my-4">
-      <CTA ctaOption="1" />
-      <Depos />
-      <CTA ctaOption="2" label="Você também pode aumentar a sua produção" />
-      <Furadeira />
-      <Bonus />
-      <CTA ctaOption="3" price label="Tenha acesso a tudo isso agora" />
-      <About />
-      <FAQ />
-      <CTA ctaOption="4" price label="Quero aumentar minha produção de leite" />
-      <div class="flex flex-col text-center sm:flex-row sm:text-left">
-        <span>Copyright © {new Date().getFullYear()}</span>
-        <span class="mx-3 hidden sm:block">|</span>
-        <span>Todos os direitos reservados.</span>
-      </div>
-    </div>
-
-    <div
-      id="modal"
-      class="hidden fixed inset-0 flex items-start justify-center bg-blue/70 z-10"
-    >
-      <div
-        class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl transition-all"
-      >
-        <button id="close" class="text-gray-500 absolute top-2 text-2xl right-6"
-          >✖</button
-        >
-        <PreCheckout clientID={clientUuid?.value} />
-      </div>
-    </div>
-    <div class="fixed bottom-5 right-5 cursor-pointer">
-      <div class="relative h-[60px] w-[60px]">
-        <a
-          target="_blank"
-          href="https://wa.me/5521978001294?text=Oi%2C+tudo+bem%3F+Eu+tenho+uma+pergunta+sobre+o+curso+LactoFlow."
-        >
-          <span>
-            <img
-              width={60}
-              height={60}
-              alt="whats logo"
-              src="/whatsapp-logo.svg"
-              decoding="async"
-              data-nimg="fill"
-            />
-          </span>
-        </a>
-      </div>
-    </div>
   </main>
+
+  <YoutubePlayer client:load />
+
+  <script>
+    import { isModalOpen, ctaValue } from "../store";
+
+    const modal = document.getElementById("modal") as HTMLDivElement;
+
+    function openModal(cta: string) {
+      // add cta to url params
+      //add cta to input hidden
+      const form = document.querySelector("form");
+      if (form) {
+        const ctaInput = form.querySelector('input[name="cta"]');
+        if (ctaInput) {
+          ctaInput.setAttribute("value", cta);
+        }
+      }
+
+      ctaValue.set(cta);
+      if (!modal) return;
+
+      modal.classList.remove("hidden");
+    }
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.add("hidden");
+    }
+    isModalOpen.set(false);
+
+    const cta1 = document.getElementById("1");
+    if (cta1) cta1.addEventListener("click", () => openModal("1"));
+
+    const cta2 = document.getElementById("2");
+    if (cta2) cta2.addEventListener("click", () => openModal("2"));
+
+    const cta3 = document.getElementById("3");
+    if (cta3) cta3.addEventListener("click", () => openModal("3"));
+
+    const cta4 = document.getElementById("4");
+    if (cta4) cta4.addEventListener("click", () => openModal("4"));
+
+    const closeBtn = document.getElementById("close");
+    if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
+  </script>
+
+  <div class="flex flex-col items-center space-y-4 my-4">
+    <CTA
+      ctaOption="1"
+      label="Quero aumentar minha produção de leite com segurança"
+    />
+    <Depos />
+    <CTA ctaOption="2" label="Você também pode aumentar a sua produção" />
+    <Furadeira />
+    <Bonus />
+    <CTA
+      ctaOption="3"
+      price
+      label="Quero garantir minha vaga no LactoFlow com todos os bônus"
+    />
+    <About />
+    <FAQ />
+    <CTA
+      ctaOption="4"
+      price
+      label="Sim, eu quero começar com apoio e segurança"
+    />
+    <div class="flex flex-col text-center sm:flex-row sm:text-left">
+      <span>Copyright © {new Date().getFullYear()}</span>
+      <span class="mx-3 hidden sm:block">|</span>
+      <span>Todos os direitos reservados.</span>
+    </div>
+  </div>
+
+  <div
+    id="modal"
+    class="hidden fixed inset-0 flex items-start justify-center bg-blue/70 z-10"
+  >
+    <div
+      class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl transition-all"
+    >
+      <button id="close" class="text-gray-500 absolute top-2 text-2xl right-6"
+        >✖</button
+      >
+      <PreCheckout clientID={clientUuid?.value} />
+    </div>
+  </div>
+  <div class="fixed bottom-5 right-5 cursor-pointer">
+    <div class="relative h-[60px] w-[60px]">
+      <a
+        target="_blank"
+        href="https://wa.me/5521978001294?text=Oi%2C+tudo+bem%3F+Eu+tenho+uma+pergunta+sobre+o+curso+LactoFlow."
+      >
+        <span>
+          <img
+            width={60}
+            height={60}
+            alt="whats logo"
+            src="/whatsapp-logo.svg"
+            decoding="async"
+            data-nimg="fill"
+          />
+        </span>
+      </a>
+    </div>
+  </div>
 </Layout>

@@ -8,11 +8,13 @@ import ervasMock from "../assets/img/ervas-mock.webp";
 import receitasMock from "../assets/img/receitas-mock.webp";
 import telegram2 from "../assets/img/telegram-2.svg";
 import telegram2408 from "../assets/img/telegram-24-08.webp";
+import comunidade from "../assets/img/comunidade-1.webp";
+import zoom2509 from "../assets/img/zoom-25-09.webp";
 ---
 
 <section class="mt-2 w-full bg-cream p-2 text-2xl text-blue">
   <p class="text-center font-semibold">
-    Além de todas as aulas gravadas, você ainda tem acesso a:
+    Ao entrar para o LactoFlow, você ainda recebe:
   </p>
   <div
     class="mx-auto my-4 flex max-w-[40rem] flex-col items-center gap-2 text-cream"
@@ -23,18 +25,29 @@ import telegram2408 from "../assets/img/telegram-24-08.webp";
           <div class="flex flex-row items-center gap-2 pt-2">
             <Image height={44} alt="telegram" src={telegram2} />
 
-            <p class="text-2xl">Comunidade de alunas LactoFlow®</p>
+            <p class="text-2xl">
+              <span class="text-2xl w-full text-left font-semibold"
+                >Bônus #1 –
+              </span>Comunidade exclusiva de alunas com meu suporte diário
+            </p>
           </div>
+          <p>
+            Você vai entrar em um espaço acolhedor só para alunas, onde eu mesma
+            tiro dúvidas todos os dias e acompanho de perto cada jornada.
+          </p>
+          <p class="font-bold">
+            Nada de se sentir sozinha: aqui, você será acompanhada de perto.
+          </p>
           <Image
             alt="telegram-comunidade"
-            src={telegram2408}
+            src={comunidade}
             class="w-full rounded-md sm:w-[300px]"
           />
-          <p class="text-justify text-lg">
+          <!-- <p class="text-justify text-lg">
             No Telegram, temos a comunidade LactoFlow® onde você encontra
             acolhimento, um espaço para desabafos e também para tirar dúvidas
             COMIGO sobre o método.
-          </p>
+          </p> -->
         </div>
       </div>
     </div>
@@ -43,25 +56,23 @@ import telegram2408 from "../assets/img/telegram-24-08.webp";
         <div class="flex flex-row items-center gap-2">
           <Image height={44} alt="zoom" src={zoom} />
 
-          <p class="text-2xl">Suporte quinzenal no Zoom</p>
+          <p class="text-2xl">
+            <span class="font-bold"> BÔNUS #2 </span>– Encontros ao vivo duas
+            vezes por mês comigo
+          </p>
         </div>
         <Image alt="telegram-comunidade" src={zoomCall} class="rounded-md" />
-        <p class="text-justify text-lg">
-          Todos os meses, temos dois encontros marcados onde você tem a
-          oportunidade de ligar sua câmera e conversar diretamente COMIGO para
-          tirar todas as suas dúvidas sobre o método.
+        <p class="">
+          São dois encontros mensais: um só para tirar dúvidas ao vivo, e outro
+          com oficinas práticas sobre temas que impactam sua amamentação.
         </p>
-        <Image alt="zoom-comunidade" src={zoom2408} class="rounded-md" />
-        <div class="flex flex-row items-center gap-2 pt-4">
-          <Image height={44} alt="zoom" src={zoom} />
+        <p class="font-bold">
+          É como ter uma consultora de amamentação na sua casa duas vezes por
+          mês.
+        </p>
 
-          <p class="text-2xl">Oficina mensal no Zoom</p>
-        </div>
-        <Image alt="zoom-comunidade" src={oficina} class="rounded-md" />
-
-        <p class="text-justify text-lg">
-          Todos os meses eu faço uma Oficina sobre os mais diversos temas da
-          maternidade a partir de propostas das próprias alunas. <br />
+        <Image alt="zoom-comunidade" src={zoom2509} class="rounded-md" />
+        <p class="text-lg">
           Você terá acesso a todas essas Oficinas que já rolaram:
         </p>
         <ul class="list-disc pl-4 text-lg">
@@ -82,7 +93,7 @@ import telegram2408 from "../assets/img/telegram-24-08.webp";
 
     <div class="card bg-blue px-0.5 shadow-lg">
       <div class="card-body p-1 pt-4">
-        <div class="flex flex-col items-center gap-2">
+        <div class="flex flex-col items-center leading-tight gap-2">
           {
             /* <Image
       alt="wpp"
@@ -92,34 +103,34 @@ import telegram2408 from "../assets/img/telegram-24-08.webp";
       ></Image> */
           }
           <p class="p-3 text-2xl text-center">
-            🌿Guia de Ervas Amigas da Amamentação🌿
+            🌿BÔNUS #3 – E-book: Guia de Ervas para Estimular a Produção de
+            Leite🌿
           </p>
           <Image alt="telegram-comunidade" src={ervasMock} class="rounded-md" />
-          <p class="break-words p-4 text-justify text-lg">
-            Quando usadas da forma correta, as ervas galactagogas podem sim dar
-            um bom gás no seu resultado. E para te ajudar com orientações sobre
-            as funções de cada erva, misturas recomendadas, doses corretas,
-            efeitos colaterais e contraindicações, eu criei um e-book prático
-            com o resumo de todas essas informações. Um verdadeiro guia com tudo
-            o que você precisa saber sobre o mundo das ervas.
+          <p class="break-words p-4 text-justify leading-normal text-md">
+            Descubra quais ervas realmente funcionam e como usar com segurança —
+            tudo com base em evidências científicas e experiência prática.
           </p>
           <p class="text-center text-2xl">
-            👩‍🍳E-book - Receitas Amigas da Amamentação🧁
+            👩‍🍳BÔNUS #4 – E-book de Receitas para Aumentar a Produção de Leite🧁
           </p>
           <Image
             alt="telegram-comunidade"
             src={receitasMock}
             class="rounded-md"
           />
-          <p class="p-4 text-justify text-lg">
-            A estratégia para aumentar sua produção de leite também pode ser
-            gostosa! Eu juntei em um e-book as receitas lactogênicas mais
-            saborosas e fáceis que eu conheço. Nenhum alimento sozinho faz
-            milagre para a sua produção, mas os alimentos corretos podem sim
-            fazer diferença nesse resultado.
+          <p class="p-4 text-justify text-md">
+            Receitas simples, naturais e gostosas que ajudam a turbinar sua
+            produção no dia a dia — com ingredientes acessíveis.
           </p>
         </div>
       </div>
     </div>
+    <p class="text-center text-blue text-xl">
+      Esses bônus foram pensados para <span class="font-bold"
+        >te apoiar de verdade</span
+      >, com conhecimento, acolhimento e ferramentas práticas — porque você não
+      precisa e nem deve passar pela experiência da amamentação sozinha.
+    </p>
   </div>
 </section>
