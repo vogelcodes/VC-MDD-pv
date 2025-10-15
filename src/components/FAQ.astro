@@ -50,7 +50,11 @@ const faq = [
 ---
 
 <section class="p-2">
-  <H1>Perguntas Frequentes - FAQ</H1>
+  <h1
+    class="mb-[14.4px] mt-3 px-4 text-cream text-center text-[25px] font-extrabold sm:px-2 lg:text-[31.25px]"
+  >
+    Perguntas Frequentes - FAQ
+  </h1>
   <div class="mx-auto flex max-w-3xl flex-col gap-2">
     {faq.map((q, i) => <Accordion question={q[0] || ""} answer={q[1] || ""} />)}
   </div>
