@@ -6,6 +6,7 @@ import Depos from "../components/Depos.astro";
 import FAQ from "../components/FAQ.astro";
 import Furadeira from "../components/Furadeira.astro";
 import Furadeira2 from "../components/Furadeira2.astro";
+import Conteudo from "../components/Conteudo.astro";
 import Posthog from "../components/posthog.astro";
 import PreCheckout from "../components/Precheckout.astro";
 import YoutubePlayer from "../components/yt-player";
@@ -170,14 +171,15 @@ let clientUuid = Astro.cookies.get("uuid");
     />
     <Depos />
     <CTA ctaOption="2" label="Você também pode aumentar a sua produção" />
-    <Furadeira2 />
     <Furadeira />
+    <Furadeira2 />
     <Bonus />
     <CTA
       ctaOption="3"
       price
       label="Quero garantir minha vaga no LactoFlow com todos os bônus"
     />
+    <Conteudo />
     <About />
     <FAQ />
     <CTA

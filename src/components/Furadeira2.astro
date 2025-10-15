@@ -7,14 +7,14 @@ import outroscursos from "../assets/img/outros-cursos.jpg";
   <h1
     class="mb-[14.4px] mt-6 px-4 text-center text-cream text-[25px] font-extrabold sm:px-2 lg:text-[31.25px]"
   >
-    Seu Caminho no LactoFlow:
+    📈 Seu Caminho no LactoFlow
   </h1>
-  <p class="mx-auto max-w-[48rem] text-center text-cream text-lg">
+  <!-- <p class="mx-auto max-w-[48rem] text-center text-cream text-lg">
     Conheça o método que já ajudou <span class="font-bold"
       >milhares de mães</span
     > a protegerem sua amamentação — com clareza, acolhimento e um plano prático.
     Veja o que você vai viver dentro do LactoFlow:
-  </p>
+  </p> -->
 
   <div class="mx-auto mt-4 flex max-w-[52rem] flex-col gap-4 sm:text-lg">
     <!-- Fase 1 -->
@@ -107,6 +107,26 @@ import outroscursos from "../assets/img/outros-cursos.jpg";
               Como lidar com diagnósticos apressados e orientações duvidosas.
             </li>
           </ul>
+          <div class="mt-3 rounded-md bg-green/10 p-3 text-sm">
+            <p class="font-bold">📌 Participe dos nossos:</p>
+            <p>
+              🎥 <span class="font-bold">Encontros ao vivo quinzenais</span> — um
+              de tira-dúvidas ao vivo e outro com oficinas práticas:
+            </p>
+            <ul>
+              <li>
+                💧 <span class="font-bold">Relactação</span>
+              </li>
+
+              🍼 <span class="font-bold">Ordenha Exclusiva</span>
+              <li>
+                😴 <span class="font-bold">Sono Seguro</span>
+              </li>
+              <li>
+                👅 <span class="font-bold">Língua presa</span> ... e muito mais!
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -142,26 +162,6 @@ import outroscursos from "../assets/img/outros-cursos.jpg";
             </li>
             <li>O que fazer se o bebê começar a recusar o peito?</li>
           </ul>
-          <div class="mt-3 rounded-md bg-green/10 p-3 text-sm">
-            <p class="font-bold">📌 Participe também de:</p>
-            <p>
-              🎥 <span class="font-bold">Encontros ao vivo quinzenais</span> — um
-              de tira-dúvidas ao vivo e outro com oficinas práticas:
-            </p>
-            <ul>
-              <li>
-                💧 <span class="font-bold">Relactação</span>
-              </li>
-
-              🍼 <span class="font-bold">Ordenha Exclusiva</span>
-              <li>
-                😴 <span class="font-bold">Sono Seguro</span>
-              </li>
-              <li>
-                👅 <span class="font-bold">Língua presa</span> ... e muito mais!
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
@@ -202,7 +202,7 @@ import outroscursos from "../assets/img/outros-cursos.jpg";
               >
             </li>
           </ul>
-          <div class="mt-3 rounded-md bg-green/10 p-3 text-sm">
+          <!-- <div class="mt-3 rounded-md bg-green/10 p-3 text-sm">
             <p class="font-bold">📌 Bônus:</p>
             <p class="mt-1">
               📘 <span class="font-bold">E-book de Receitas Lactogênicas</span> —
@@ -212,7 +212,7 @@ import outroscursos from "../assets/img/outros-cursos.jpg";
               🌿 <span class="font-bold">E-book Guia de Ervas</span> — descubra o
               que realmente pode ajudar a sua produção com segurança.
             </p>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -279,8 +279,29 @@ import outroscursos from "../assets/img/outros-cursos.jpg";
     </ul>
   </div>
 
-  <p class="mx-auto mt-4 max-w-[44rem] text-center text-cream text-lg">
-    👶 Você não precisa viver essa jornada sozinha. O LactoFlow é o caminho
-    estruturado para proteger sua amamentação com segurança, apoio e resultado.
+  <p class="mx-auto mt-6 max-w-[44rem] text-center text-cream text-2xl">
+    <span class="text-2xl">👭</span> Você não precisa viver essa jornada sozinha.
+    O LactoFlow é o caminho estruturado para proteger sua amamentação com segurança,
+    <span class="font-bold">APOIO</span> e resultado.
   </p>
+  <div
+    class="flex flex-col items-center gap-4 md:grid md:grid-cols-2 lg:grid-cols-3"
+  >
+    {
+      [7, 6, 8, 11, 13, 16].map((number) => {
+        return (
+          <div class="">
+            <img
+              class="mx-auto rounded-xl"
+              width={340}
+              height={500}
+              loading="lazy"
+              src={`metodo/25-10/${number}.webp`}
+              alt="depoimento"
+            />
+          </div>
+        );
+      })
+    }
+  </div>
 </section>
