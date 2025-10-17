@@ -33,6 +33,7 @@ import { hashUserData, type RawUserData } from "../../utils/hashing"; // Import 
 // Initialize leads cache at build time
 
 const GSHEET_POST_WH_URL = import.meta.env.GSHEET_POST_WH_URL;
+const n8n_WEBHOOK_URL = import.meta.env.N8N_LEAD_WEBHOOK_URL;
 // GSHEET_GET_WH_URL is now only used within leadService.ts
 // const GSHEET_GET_WH_URL = import.meta.env.GSHEET_GET_WH_URL;
 const TELEGRAM_BOT_URL = import.meta.env.TELEGRAM_BOT_URL;
@@ -176,7 +177,7 @@ if (Astro.request.method === "POST") {
 
   // Call the function to send data to Meta
   if (!DRY_RUN) {
-    sendToMeta(metaEventData);
+    // sendToMeta(metaEventData);
   } else {
     console.log("DEBUG MODE: Not sending to Meta");
     console.log(JSON.stringify(metaEventData, null, 2));
@@ -214,6 +215,29 @@ if (Astro.request.method === "POST") {
       `,
     )}`;
 
+    const n8n_response = fetch(n8n_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...fields,
+        client_ip_address: userIP, // Add IP
+        client_user_agent: agent, // Add full user agent
+        firstName: leadName.split(" ")[0], // Add firstName
+        lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
+        lead_count: emailCount + 1,
+        is_returning_lead: emailCount > 0 ? "true" : "false",
+        // Add location details if needed in sheet
+        geo_country: locationData?.countryCode,
+        geo_region: locationData?.regionName,
+        geo_city: locationData?.city,
+        phid: phid,
+        clarityID: clarityID,
+
+        // Use original form fields for sheet
+      }),
+    });
     if (!dryRun) {
       const telegramMessage = fetch(telegramURL);
     } else {
