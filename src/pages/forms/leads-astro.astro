@@ -223,7 +223,7 @@ if (Astro.request.method === "POST") {
       body: JSON.stringify({
         ...fields,
         client_ip_address: userIP, // Add IP
-        client_user_agent: agent, // Add full user agent
+        uaOs: userAgentInfo.os.name, // Add full user agent
         firstName: leadName.split(" ")[0], // Add firstName
         lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
         lead_count: emailCount + 1,
