@@ -33,7 +33,14 @@ const middleware = async (
 
   const url = new URL(request.url);
   const fbclid = url.searchParams.get("fbclid");
+  
   let clientUserAgent = request.headers.get("user-agent");
+if (url.pathname.startsWith("/_image")) {
+  return next();
+}
+// if (url.pathname.startsWith("/_") && import.meta.env.NODE_ENV === "production") {
+//   return new Response("Not found", { status: 404 });
+// }
   let skipGeolocation = false;
   if (
     clientUserAgent ==
@@ -67,7 +74,9 @@ const middleware = async (
   // console.log("clientUuid determined:", clientUuid); // Debug CUID
 
   // Admin check (keep as is)
-  if (url.pathname.startsWith("/admin")) {
+  //I want to add Auth to a list of paths
+  const authPaths = ["/admin", "/test", "/bf-25"];
+  if (authPaths.includes(url.pathname)) {
     const authHeader = request.headers.get("Authorization");
 
     if (!authHeader || !authHeader.startsWith("Basic ")) {

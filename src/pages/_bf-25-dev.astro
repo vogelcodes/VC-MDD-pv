@@ -1,0 +1,362 @@
+---
+import About from "../components/About.astro";
+import Bonus from "../components/Bonus.astro";
+import CTA from "../components/CTA.astro";
+import Depos from "../components/Depos.astro";
+import FAQ from "../components/FAQ.astro";
+import Furadeira from "../components/Furadeira.astro";
+import PreCheckout from "../components/Precheckout.astro";
+import YoutubePlayer from "../components/yt-player";
+import Layout from "../layouts/Layout.astro";
+import { createId } from "@paralleldrive/cuid2";
+
+let uuid = createId();
+if (!Astro.cookies.get("uuid")) {
+  Astro.cookies.set("uuid", uuid);
+}
+let clientUuid = Astro.cookies.get("uuid");
+// let location = Astro.locals.locationInfo;
+// console.log("location from locals", location);
+// console.log(clientUuid);
+let today = new Date();
+let expirationDate = new Date("2025-05-02T10:00:00-03:00");
+let warningText = "Oferta válida até às 23:59 de HOJE";
+let searchParams = Astro.url.searchParams;
+const utmTags = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+];
+let sckValuesArray = utmTags.map((tag) => {
+  if (searchParams.get(tag) && searchParams.get(tag) !== "") {
+    return searchParams.get(tag);
+  }
+  return null;
+});
+console.log(sckValuesArray);
+
+const sckValues = sckValuesArray.filter((value) => value !== null).join("-");
+console.log(sckValues);
+---
+
+<Layout>
+  <main class="max-w-[1080px] mx-auto">
+    <div class="hidden" id="sck">{sckValues}</div>
+  </main>
+  <div
+    class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
+  >
+    Oferta válida de 28/11 a 01/12
+  </div>
+  <section class="w-full bg-blue p-4 text-cream rounded-lg shadow-lg">
+    <div class="flex flex-col items-center text-center gap-4">
+      <div class="w-[180px] sm:w-[300px]">
+        <img src="/logo-portrait-v2.svg" alt="logo" width={300} height={120} />
+      </div>
+      <div class="text-6xl">
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-cream uppercase">
+          <span class="p-3 rounded-md text-yellow-300 bg-slate-950">
+            LACTOBLACK
+          </span>
+          <br />
+
+          Oferta oficial de <br />
+          <span class="text-red-400 sm:text-5xl">Black Friday do</span>
+          <br />
+          <span class="text-green sm:text-6xl"> LactoFlow <br /> começou </span>
+        </h1>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="card bg-cream text-blue font-black shadow-lg mt-4">
+        <div class="card-body flex flex-col items-center">
+          <p class="text-lg">
+            Se você quer aumentar sua produção de leite, sair da fórmula com
+            segurança ou se preparar para uma amamentação tranquila e confiante,
+            <span class="font-bold">essa é a melhor oportunidade do ano.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 flex flex-col items-center">
+      <h2 class="text-2xl font-semibold mb-2">
+        🚨 NOVIDADE EXCLUSIVA: <br />
+        <span class="font-bold">
+          A chegada da Clara, sua assistente de IA
+        </span>
+      </h2>
+      <div class="card bg-cream text-blue shadow-lg">
+        <div class="card-body flex flex-col items-start">
+          <p class="text-left text-lg mb-4">
+            A Clara é uma inteligência artificial criada especialmente para as
+            alunas do LactoFlow. <br />Ela vai te ajudar a:
+          </p>
+          <ul class="list-none text-left text-lg space-y-1">
+            <li>
+              ✅ Montar uma rotina de ordenhas 100% personalizada e de acordo
+              com as técnicas do curso
+            </li>
+            <li>
+              ✅ Ajustar seus horários com base na sua rotina e no seu bebê
+            </li>
+            <li>
+              ✅ Evitar que você perca tempo testando estratégias que não
+              funcionam
+            </li>
+          </ul>
+          <p class="text-left text-lg mt-4 font-bold">
+            🤖 A Clara será lançada oficialmente na Black Friday
+          </p>
+          <p class="text-left text-lg font-bold text-green">
+            💡 E estará disponível apenas para as alunas do LactoFlow
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="card bg-cream text-blue shadow-lg">
+          <div class="card-body flex flex-col items-start">
+            <h2 class="text-left text-2xl font-semibold mb-2">
+              🎁 E ainda: 5 kits físicos exclusivos para as primeiras alunas
+            </h2>
+            <p class="text-left text-lg mb-2">
+              📦 As 5 primeiras pessoas que se inscreverem no LactoFlow vão
+              receber em casa um Kit LactoFlow com brindes especiais:
+            </p>
+            <div class="text-left">
+              <h3 class="text-xl font-bold mt-2">✨ 2 Kits Premium com:</h3>
+              <ul class="list-disc pl-5 text-lg space-y-1">
+                <li>Joia de leite materno exclusiva</li>
+                <li>Rosquinha de amamentação</li>
+                <li>Absorvente de pano para os seios</li>
+                <li>Saquinhos para armazenar leite</li>
+              </ul>
+
+              <h3 class="text-xl font-bold mt-4">✨ 3 Kits regulares com:</h3>
+              <ul class="list-disc pl-5 text-lg space-y-1">
+                <li>Rosquinha de amamentação</li>
+                <li>Absorvente de pano</li>
+                <li>Saquinhos de armazenamento</li>
+              </ul>
+
+              <p class="mt-4 font-bold text-red-500">
+                ⚠️ Válido somente para endereços no Brasil
+              </p>
+              <p class="font-bold text-red-500">
+                ⚠️ Envio por ordem de inscrição confirmada
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 card bg-cream text-blue shadow-lg">
+        <div class="card-body flex flex-col items-start">
+          <h2 class="text-left text-2xl font-semibold mb-2">
+            💛 Ao se inscrever, você recebe:
+          </h2>
+          <ul
+            class="list-none text-lg space-y-1 text-left max-w-lg mx-auto pl-4"
+          >
+            <li class="mb-2">
+              🎓 <span class="font-bold">Curso completo LactoFlow</span><br />
+              Com o passo a passo para aumentar a produção e proteger sua amamentação
+            </li>
+            <li class="mb-2">
+              💬 <span class="font-bold"
+                >Suporte diário na comunidade exclusiva</span
+              >
+            </li>
+            <li class="mb-2">
+              📆 <span class="font-bold"
+                >2 encontros ao vivo comigo todos os meses</span
+              >
+            </li>
+          </ul>
+
+          <h2 class="text-left text-2xl font-semibold mb-2 mt-6">
+            🎁 Bônus especiais da LactoBlack:
+          </h2>
+          <ul
+            class="list-disc pl-5 text-lg space-y-1 text-left max-w-lg mx-auto"
+          >
+            <li>Workshop para Gestantes</li>
+            <li>Workshop Estoque de Leite Materno</li>
+            <li>Workshop Desmame Noturno Gentil</li>
+            <li>Workshop Desmame Total</li>
+            <li>🎧 Meditação Guiada para ordenha “Meu Corpo Produz”</li>
+            <li>Manual da Pega Correta</li>
+            <li>Diário de Fraldas</li>
+            <li>Guia: “Como saber se o bebê está mamando de verdade?”</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="card bg-cream text-blue shadow-lg">
+          <div class="card-body flex flex-col items-center">
+            <h2 class="text-2xl font-semibold mb-2">⏳ Importante:</h2>
+            <p class="text-lg">
+              Essa oferta é válida apenas de 28 de novembro a 1 de dezembro.
+            </p>
+            <p class="text-lg mt-2 font-bold">Depois disso:</p>
+            <ul class="list-none text-lg text-left space-y-1 mt-2">
+              <li>
+                🚫 O valor do curso sobe para <span class="font-bold"
+                  >R$347</span
+                >
+              </li>
+              <li>🚫 Os bônus e brindes físicos saem do ar</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <hr class="w-7/8 border-cream my-4" />
+      <div class="mt-4">
+        <button
+          id="promo"
+          class="inline-block bg-green hover:bg-green-dark text-blue font-bold py-3 px-6 rounded-lg text-xl transition duration-300"
+        >
+          👉 QUERO ENTRAR NO LACTOFLOW® AGORA
+        </button>
+        <p class="text-md mt-2">
+          Garanta sua vaga e receba todos os bônus da campanha especial.
+        </p>
+      </div>
+      <hr class="w-7/8 border-cream my-4" />
+    </div>
+  </section>
+  <div class="flex flex-col items-center">
+    <p
+      class="mx-auto w-[80%] max-w-[600px] text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+    >
+      Assista a essa aula gratuita e comece a aumentar a sua produção de leite
+      HOJE MESMO
+    </p>
+    <div class="flex flex-col items-center lg:flex-row">
+      <div class="flex items-center">
+        <div class="m-2">
+          <img
+            class="ml-2 animate-bounce"
+            src="/arrow-down.svg"
+            alt="one"
+            height={36}
+            width={36}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <YoutubePlayer client:load />
+
+  <script>
+    import { isModalOpen, ctaValue } from "../store";
+
+    const modal = document.getElementById("modal") as HTMLDivElement;
+
+    function openModal(cta: string) {
+      // add cta to url params
+      //add cta to input hidden
+      const form = document.querySelector("form");
+      if (form) {
+        const ctaInput = form.querySelector('input[name="cta"]');
+        if (ctaInput) {
+          ctaInput.setAttribute("value", cta);
+        }
+      }
+
+      ctaValue.set(cta);
+      if (!modal) return;
+
+      modal.classList.remove("hidden");
+    }
+    function closeModal() {
+      if (!modal) return;
+      modal.classList.add("hidden");
+    }
+    isModalOpen.set(false);
+    // set sck equal to utm params concatenated
+    const sck = document.getElementById("sck");
+    console.log(sck);
+    function redirectToHotmart() {
+      window.location.href =
+        "https://pay.hotmart.com/O84147403X?off=iz9e8l99&sck=" + sck?.innerHTML;
+    }
+
+    const ctaPromo = document.getElementById("promo");
+    if (ctaPromo) ctaPromo.addEventListener("click", () => openModal("promo"));
+
+    const cta1 = document.getElementById("1");
+    if (cta1) cta1.addEventListener("click", () => openModal("1"));
+
+    const cta2 = document.getElementById("2");
+    if (cta2) cta2.addEventListener("click", () => openModal("2"));
+
+    const cta3 = document.getElementById("3");
+    if (cta3) cta3.addEventListener("click", () => openModal("3"));
+
+    const cta4 = document.getElementById("4");
+    if (cta4) cta4.addEventListener("click", () => openModal("4"));
+
+    const closeBtn = document.getElementById("close");
+    if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
+  </script>
+
+  <div class="flex flex-col items-center space-y-4">
+    <!-- <CTA ctaOption="1" /> -->
+    <Depos />
+    <CTA
+      ctaOption="2"
+      price
+      label="Você também pode aumentar a sua produção"
+      installments={"12"}
+      installmentValue={"20,38"}
+      total={"197,00"}
+    />
+    <Furadeira />
+    <Bonus />
+    <CTA
+      ctaOption="3"
+      price
+      label="Tenha acesso a tudo isso agora"
+      installments={"12"}
+      installmentValue={"20,38"}
+      total={"197,00"}
+    />
+    <About />
+    <FAQ />
+    <CTA
+      ctaOption="4"
+      price
+      label="Quero aumentar minha produção de leite"
+      installments={"12"}
+      installmentValue={"20,38"}
+      total={"197,00"}
+    />
+    <div class="flex flex-col text-center sm:flex-row sm:text-left">
+      <span>Copyright © {new Date().getFullYear()}</span>
+      <span class="mx-3 hidden sm:block">|</span>
+      <span>Todos os direitos reservados.</span>
+    </div>
+  </div>
+
+  <div
+    id="modal"
+    class="hidden fixed inset-0 flex items-start justify-center bg-blue/70 z-10"
+  >
+    <div
+      class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl transition-all"
+    >
+      <button id="close" class="text-gray-500 absolute top-2 text-2xl right-6"
+        >✖</button
+      >
+      <PreCheckout clientID={clientUuid?.value} />
+    </div>
+  </div>
+</Layout>

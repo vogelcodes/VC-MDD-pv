@@ -11,7 +11,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://prog.lactoflow.com.br",
   redirects: {
-    "/promo-25-05": "/",
+    // "/promo-25-05": "/",
   },
   output: "server",
 

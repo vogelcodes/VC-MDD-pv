@@ -1,0 +1,433 @@
+---
+import About from "../components/About.astro";
+import Bonus from "../components/Bonus.astro";
+import CTA from "../components/CTA.astro";
+import Depos from "../components/Depos.astro";
+import FAQ from "../components/FAQ.astro";
+import Furadeira from "../components/Furadeira.astro";
+import Furadeira2 from "../components/Furadeira2.astro";
+import Conteudo from "../components/Conteudo.astro";
+import Posthog from "../components/posthog.astro";
+import PreCheckout from "../components/Precheckout.astro";
+import YoutubePlayer from "../components/yt-player";
+import Layout from "../layouts/Layout.astro";
+import { createId } from "@paralleldrive/cuid2";
+
+let uuid = createId();
+if (!Astro.cookies.get("uuid")) {
+  Astro.cookies.set("uuid", uuid, {
+    maxAge: 365 * 24 * 60 * 60,
+    path: "/",
+  });
+}
+let clientUuid = Astro.cookies.get("uuid");
+let today = new Date();
+let expirationDate = new Date("2025-05-02T10:00:00-03:00");
+let warningText = "Oferta válida de 28/11 a 01/12";
+let searchParams = Astro.url.searchParams;
+const utmTags = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+];
+let sckValuesArray = utmTags.map((tag) => {
+  if (searchParams.get(tag) && searchParams.get(tag) !== "") {
+    return searchParams.get(tag);
+  }
+  return null;
+});
+console.log(sckValuesArray);
+
+const sckValues = sckValuesArray.filter((value) => value !== null).join("-");
+console.log(sckValues);
+
+// console.log(clientUuid);
+---
+
+<Layout>
+  <main class="max-w-[1080px] mx-auto">
+    <script is:inline>
+      window.posthog.capture("pageview");
+    </script>
+    <!-- <div
+      class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
+    >
+      Agosto Dourado - R$100 OFF + BÔNUS <br /> Somente hoje 19/08/2025
+    </div> -->
+    <div
+      class="text-md font-bold text-center text-cream bg-red-400 fixed top-0 left-0 w-full z-10"
+    >
+      De R$297 por R$197 — 28/11 a 01/12
+    </div>
+    <section class="w-full bg-blue p-4 text-cream rounded-lg shadow-lg">
+      <div class="flex flex-col items-center text-center gap-4">
+        <div class="w-[180px] sm:w-[300px]">
+          <img
+            src="/logo-portrait-v2.svg"
+            alt="logo"
+            width={300}
+            height={120}
+          />
+        </div>
+        <div class="text-6xl">
+          <h1
+            class="text-3xl sm:text-5xl font-extrabold text-amber-100 uppercase text-cream"
+          >
+            Oferta Oficial de <br />
+            <span class="text-red-400 sm:text-7xl"> Black Friday </span>
+            <br />
+            <span class="text-green sm:text-7xl"> LactoBlack </span>
+          </h1>
+        </div>
+
+        <div class="mt-4">
+          <h2 class="text-2xl font-semibold mb-2">
+            👶 Você não precisa passar por isso sozinha
+          </h2>
+          <div class="card bg-cream text-blue font-black shadow-lg">
+            <div class="card-body flex flex-col items-center">
+              <p class="text-lg">Precisa de produção real.</p>
+              <p class="text-lg">Precisa sair da fórmula.</p>
+              <p class="text-lg">Precisa de apoio e método.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-col items-center">
+          <h2 class="text-2xl font-semibold mb-2">
+            🌑 Por isso começou a{" "}
+            <span class="font-bold">
+              Oferta Oficial de Black Friday do LactoFlow®
+            </span>
+          </h2>
+          <div class="card bg-cream text-blue shadow-lg">
+            <div class="card-body flex flex-col items-start">
+              <p class="text-left text-2xl font-semibold mb-2">
+                Para mães que:
+              </p>
+              <ul class="list-none text-left text-lg space-y-1">
+                <li>
+                  – Querem produzir mais <span class="font-semibold">leite</span
+                  >
+                </li>
+                <li>
+                  – Estão usando <span class="font-semibold">fórmula</span>, mas
+                  querem parar
+                </li>
+                <li>
+                  – Querem se preparar para uma <span class="font-semibold"
+                    >amamentação</span
+                  > tranquila
+                </li>
+                <li>
+                  – E querem garantir o <span class="font-semibold"
+                    >melhor preço</span
+                  > do ano
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="card bg-cream text-blue shadow-lg">
+              <div class="card-body flex flex-col items-start">
+                <h2 class="text-left text-2xl font-semibold mb-2">
+                  ✅ O que você vai receber ao entrar no LactoFlow®:
+                </h2>
+                <ul class="list-none text-left text-lg space-y-1">
+                  <li>
+                    - Acesso imediato ao <span class="font-semibold"
+                      >curso completo</span
+                    > LactoFlow
+                  </li>
+                  <li>
+                    - Acesso à <span class="font-semibold"
+                      >Clara, sua assistente de IA</span
+                    > exclusiva
+                  </li>
+                  <li>
+                    - Suporte diário comigo na <span class="font-semibold"
+                      >comunidade exclusiva</span
+                    >
+                  </li>
+                  <li>
+                    - 2 encontros <span class="font-semibold">ao vivo</span> por
+                    mês
+                  </li>
+                  <li>
+                    - Chance de ganhar 1 dos 5 <span class="font-semibold"
+                      >Kits Físicos</span
+                    > (primeiras alunas)
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 card bg-cream text-blue shadow-lg">
+            <div class="card-body flex flex-col items-start">
+              <h2 class="text-left text-2xl font-semibold mb-2">
+                🎁 BÔNUS EXCLUSIVOS da LactoBlack:
+              </h2>
+              <ul
+                class="list-none text-lg space-y-1 text-left max-w-lg mx-auto pl-4"
+              >
+                <li>
+                  🎓{" "}
+                  <span class="font-semibold">
+                    Novidade: Clara, a Assistente de IA
+                  </span>
+                  <br /> Sua rotina personalizada e horários ajustados pelo seu bebê
+                  <div class="mt-4"></div>
+                  <li class="mt-2">
+                    🤰 <span class="font-semibold">Workshop para Gestantes</span
+                    >
+                    <br /> Preparação emocional, prática e segura antes do bebê nascer
+                  </li>
+                  <li class="mt-2">
+                    📦{" "}
+                    <span class="font-semibold">
+                      Workshop de Estoque de Leite Materno
+                    </span>
+                    <br /> Como organizar a rotina e voltar ao trabalho sem desmamar
+                  </li>
+
+                  <li class="mt-2">
+                    🌙 <span class="font-semibold"
+                      >Workshop de Desmame Gentil</span
+                    >
+                    <br /> Noturno e Total: Para quando você decidir parar com segurança
+                  </li>
+                  <li class="mt-2">
+                    🧘‍♀️{" "}
+                    <span class="font-semibold"
+                      >Meditação Guiada – Meu Corpo Produz</span
+                    >
+                    <br /> Pra se conectar com seu corpo e confiar na sua produção
+                  </li>
+                  <li class="mt-2">
+                    📄 <span class="font-semibold">PDFs bônus:</span>
+                    <ul class="list-disc pl-5 mt-1">
+                      <li>Guia: O bebê está mamando bem?</li>
+                      <li>Diário de fraldas do recém-nascido</li>
+                      <li>Manual da pega correta</li>
+                    </ul>
+                  </li>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="card bg-cream text-blue shadow-lg">
+              <div class="card-body flex flex-col items-center">
+                <h2 class="text-2xl font-semibold mb-2">
+                  💰 Investimento com valor de Black Friday:
+                </h2>
+                <p class="text-lg">
+                  De <span class="line-through">R$297</span> por{" "}
+                  <span class="text-green font-bold text-2xl"
+                    >R$197 à vista</span
+                  >
+                </p>
+                <p class="text-lg">ou 12x de R$20,38</p>
+                <p class="text-2xl font-bold mt-2">
+                  📆 {warningText}
+                </p>
+                <p class="text-md mt-2 font-bold text-red-500">
+                  📈 Após a Black Friday, o preço vai subir.
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <h2 class="text-2xl font-semibold mb-2">
+                💬 Esse é o presente que você merece:
+              </h2>
+              <div class="card bg-cream text-blue shadow-lg">
+                <div class="card-body flex flex-col items-center">
+                  <p class="text-lg">Não é mais um curso.</p>
+                  <p class="text-lg">É um método.</p>
+                  <p class="text-lg">É apoio.</p>
+                  <p class="text-lg">É autonomia.</p>
+                  <p class="text-lg">É o seu leite. Com confiança.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="w-7/8 border-cream my-4" />
+          <div class="mt-4">
+            <button
+              id="promo"
+              class="inline-block bg-green hover:bg-green-dark text-blue font-bold py-3 px-6 rounded-lg text-xl transition duration-300"
+            >
+              👉 QUERO ENTRAR NO LACTOFLOW® AGORA
+            </button>
+            <p class="text-md mt-2">
+              Garanta sua vaga e receba todos os bônus da campanha especial.
+            </p>
+          </div>
+          <hr class="w-7/8 border-cream my-4" />
+        </div>
+      </div>
+      <div class="flex flex-col items-center">
+        <p
+          class="mx-auto w-[80%] max-w-[600px] text-amber-50 text-center text-[16.67px] font-bold leading-[22.9px] sm:mt-7 sm:px-2 lg:mt-5 lg:text-[18.75px]"
+        >
+          Assista a essa aula gratuita e comece a aumentar a sua produção de
+          leite HOJE MESMO
+        </p>
+        <div class="flex flex-col items-center lg:flex-row">
+          <div class="flex items-center">
+            <div class="m-2">
+              <img
+                class="ml-2 animate-bounce"
+                src="/arrow-down.svg"
+                alt="one"
+                height={36}
+                width={36}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <YoutubePlayer client:load />
+
+    <script>
+      import { isModalOpen, ctaValue } from "../store";
+
+      const modal = document.getElementById("modal") as HTMLDivElement;
+
+      function openModal(cta: string) {
+        // add cta to url params
+        //add cta to input hidden
+        const form = document.querySelector("form");
+        if (form) {
+          const ctaInput = form.querySelector('input[name="cta"]');
+          if (ctaInput) {
+            ctaInput.setAttribute("value", cta);
+          }
+        }
+
+        ctaValue.set(cta);
+        if (!modal) return;
+
+        modal.classList.remove("hidden");
+      }
+      function closeModal() {
+        if (!modal) return;
+        modal.classList.add("hidden");
+      }
+      isModalOpen.set(false);
+      // set sck equal to utm params concatenated
+      const sck = document.getElementById("sck");
+      console.log(sck);
+      function redirectToHotmart() {
+        window.location.href =
+          "https://pay.hotmart.com/O84147403X?off=iz9e8l99&sck=" +
+          sck?.innerHTML;
+      }
+
+      const ctaPromo = document.getElementById("promo");
+      if (ctaPromo)
+        ctaPromo.addEventListener("click", () => openModal("promo"));
+
+      const cta1 = document.getElementById("1");
+      if (cta1) cta1.addEventListener("click", () => openModal("1"));
+
+      const cta2 = document.getElementById("2");
+      if (cta2) cta2.addEventListener("click", () => openModal("2"));
+
+      const cta3 = document.getElementById("3");
+      if (cta3) cta3.addEventListener("click", () => openModal("3"));
+
+      const cta4 = document.getElementById("4");
+      if (cta4) cta4.addEventListener("click", () => openModal("4"));
+
+      const closeBtn = document.getElementById("close");
+      if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
+    </script>
+
+    <div class="flex flex-col items-center space-y-4 my-4">
+      <CTA
+        ctaOption="1"
+        label="Quero aumentar minha produção de leite com segurança"
+      />
+      <Depos />
+      <CTA
+        ctaOption="2"
+        price
+        installments={"12"}
+        installmentValue={"20,37"}
+        total={"197,00"}
+        label="Você também pode aumentar a sua produção"
+      />
+      <Furadeira />
+      <Furadeira2 />
+      <Bonus />
+      <CTA
+        ctaOption="3"
+        price
+        installments={"12"}
+        installmentValue={"20,37"}
+        total={"197,00"}
+        label="Quero garantir minha vaga no LactoFlow com todos os bônus"
+      />
+      <Conteudo />
+      <About />
+      <FAQ />
+      <CTA
+        ctaOption="4"
+        price
+        installments={"12"}
+        installmentValue={"20,37"}
+        total={"197,00"}
+        label="Sim, eu quero começar com apoio e segurança"
+      />
+      <div class="flex flex-col text-center sm:flex-row sm:text-left">
+        <span>Copyright © {new Date().getFullYear()}</span>
+        <span class="mx-3 hidden sm:block">|</span>
+        <span>Todos os direitos reservados.</span>
+      </div>
+      <a href="/privacy">Política de Privacidade</a>
+    </div>
+
+    <div
+      id="modal"
+      class="hidden fixed inset-0 flex items-start justify-center bg-blue/70 z-10"
+    >
+      <div
+        class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl transition-all"
+      >
+        <button id="close" class="text-gray-500 absolute top-2 text-2xl right-6"
+          >✖</button
+        >
+        <PreCheckout clientID={clientUuid?.value} />
+      </div>
+    </div>
+    <div class="fixed bottom-5 right-5 cursor-pointer">
+      <div class="relative h-[60px] w-[60px]">
+        <a
+          target="_blank"
+          href="https://wa.me/552139554134?text=Oi%2C+tudo+bem%3F+Eu+tenho+uma+pergunta+sobre+o+curso+LactoFlow."
+        >
+          <span>
+            <img
+              width={60}
+              height={60}
+              alt="whats logo"
+              src="/whatsapp-logo.svg"
+              decoding="async"
+              data-nimg="fill"
+            />
+          </span>
+        </a>
+      </div>
+    </div>
+  </main>
+</Layout>
