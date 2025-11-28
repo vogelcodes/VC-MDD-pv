@@ -75,7 +75,7 @@ if (url.pathname.startsWith("/_image")) {
 
   // Admin check (keep as is)
   //I want to add Auth to a list of paths
-  const authPaths = ["/admin", "/test", "/bf-25"];
+  const authPaths = ["/admin", "/test"];
   if (authPaths.includes(url.pathname)) {
     const authHeader = request.headers.get("Authorization");
 

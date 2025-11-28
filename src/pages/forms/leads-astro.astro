@@ -40,7 +40,6 @@ const TELEGRAM_BOT_URL = import.meta.env.TELEGRAM_BOT_URL;
 const DRY_RUN = import.meta.env.DEBUG === "1";
 
 // Retrieve location info potentially set by middleware
-
 if (Astro.request.method === "POST") {
   // This function now just calls the imported service
   async function fetchLeads() {
@@ -92,6 +91,7 @@ if (Astro.request.method === "POST") {
   const city = data.get("city")?.toString() || "";
   const source = data.get("source") || "";
   const searchParams = new URLSearchParams(source.toString().split("?")[1]);
+  const offerUrl = data.get("offerUrl") || "";
   //lets concatanate all search params values with "|"
   const sck = Array.from(searchParams.entries())
     .map(([key, value]) =>
@@ -206,69 +206,80 @@ if (Astro.request.method === "POST") {
       (item) =>
         item.email?.trim().toLowerCase() === email?.trim().toLowerCase(),
     ).length;
-    const telegramURL = `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
-      `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
-        .replace("+", "")
-        .trim()}&text=${encodeURIComponent(
-        `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nPosso te ajudar a entender se o curso é o melhor caminho pra você.\n\nVocê está com alguma dificuldade com a sua amamentação?`, // Use first name from passed name
-      )}
-      `,
-    )}`;
+    const telegramURL =
+      TELEGRAM_BOT_URL &&
+      `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
+        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
+          .replace("+", "")
+          .trim()}&text=${encodeURIComponent(
+          `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nPosso te ajudar a entender se o curso é o melhor caminho pra você.\n\nVocê está com alguma dificuldade com a sua amamentação?`, // Use first name from passed name
+        )}
+        `,
+      )}`;
 
-    const n8n_response = fetch(n8n_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ...fields,
-        client_ip_address: userIP, // Add IP
-        uaOs: userAgentInfo.os.name, // Add full user agent
-        firstName: leadName.split(" ")[0], // Add firstName
-        lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
-        lead_count: emailCount + 1,
-        is_returning_lead: emailCount > 0 ? "true" : "false",
-        // Add location details if needed in sheet
-        geo_country: locationData?.countryCode,
-        geo_region: locationData?.regionName,
-        geo_city: locationData?.city,
-        phid: phid,
-        clarityID: clarityID,
+    if (n8n_WEBHOOK_URL) {
+      fetch(n8n_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...fields,
+          client_ip_address: userIP, // Add IP
+          uaOs: userAgentInfo.os.name, // Add full user agent
+          firstName: leadName.split(" ")[0], // Add firstName
+          lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
+          lead_count: emailCount + 1,
+          is_returning_lead: emailCount > 0 ? "true" : "false",
+          // Add location details if needed in sheet
+          geo_country: locationData?.countryCode,
+          geo_region: locationData?.regionName,
+          geo_city: locationData?.city,
+          phid: phid,
+          clarityID: clarityID,
 
-        // Use original form fields for sheet
-      }),
-    });
-    if (!dryRun) {
-      const telegramMessage = fetch(telegramURL);
-    } else {
-      console.log("DEBUG MODE: Not sending to Telegram"); // Keep: Debug info
-      console.log(telegramURL); // Keep: Debug info
+          // Use original form fields for sheet
+        }),
+      }).catch((err) => console.error("n8n webhook error:", err));
     }
-    const response = fetch(GSHEET_POST_WH_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        Date: new Date().toISOString(),
-        ...fields, // Use original form fields for sheet
-        client_ip_address: userIP, // Add IP
-        client_user_agent: agent, // Add full user agent
-        firstName: leadName.split(" ")[0], // Add firstName
-        lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
-        lead_count: emailCount + 1,
-        is_returning_lead: emailCount > 0 ? "true" : "false",
-        // Add location details if needed in sheet
-        geo_country: locationData?.countryCode,
-        geo_region: locationData?.regionName,
-        geo_city: locationData?.city,
-        phid: phid,
-        clarityID: clarityID,
-      }),
-    })
-      .then((res) => res.json())
-      // .then((json) => console.log("Google Sheet POST Response:", json)); // Comment out: GSheet response
-      .then((json) => {}); // Keep the .then chain, just remove the log
+
+    if (!dryRun && telegramURL) {
+      fetch(telegramURL).catch((err) =>
+        console.error("Telegram fetch error:", err),
+      );
+    } else {
+      if (!telegramURL) console.warn("TELEGRAM_BOT_URL is not defined");
+      else console.log("DEBUG MODE: Not sending to Telegram"); // Keep: Debug info
+      if (dryRun && telegramURL) console.log(telegramURL); // Keep: Debug info
+    }
+    if (GSHEET_POST_WH_URL) {
+      fetch(GSHEET_POST_WH_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Date: new Date().toISOString(),
+          ...fields, // Use original form fields for sheet
+          client_ip_address: userIP, // Add IP
+          client_user_agent: agent, // Add full user agent
+          firstName: leadName.split(" ")[0], // Add firstName
+          lastName: leadName.slice(leadName.indexOf(" ") + 1), // Add lastName
+          lead_count: emailCount + 1,
+          is_returning_lead: emailCount > 0 ? "true" : "false",
+          // Add location details if needed in sheet
+          geo_country: locationData?.countryCode,
+          geo_region: locationData?.regionName,
+          geo_city: locationData?.city,
+          phid: phid,
+          clarityID: clarityID,
+        }),
+      })
+        .then((res) => res.json())
+        // .then((json) => console.log("Google Sheet POST Response:", json)); // Comment out: GSheet response
+        .then((json) => {})
+        .catch((err) => console.error("GSheet webhook error:", err)); // Keep the .then chain, just remove the log
+    }
     // console.timeEnd("onLeadSubmit"); // Comment out: Timing info
   }
 
@@ -290,13 +301,16 @@ if (Astro.request.method === "POST") {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+        Location:
+          offerUrl +
+          `&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
       },
     });
   } else {
     console.log("DEBUG MODE: Not redirecting to Hotmart");
     console.log(
-      `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${source}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+      offerUrl +
+        `&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     );
   }
 
@@ -306,7 +320,9 @@ if (Astro.request.method === "POST") {
       message: "Lead processed in DEBUG mode.",
       submitted_data: fields,
       hashed_data: hashedUserData,
-      redirect_url: `https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
+      redirect_url:
+        offerUrl +
+        `&sck=${sck}&email=${email}&name=${name}&phonenumber=${phoneac}`,
     }),
     {
       headers: {

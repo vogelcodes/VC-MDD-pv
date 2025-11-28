@@ -88,16 +88,20 @@ console.log(sckValues);
           </h2>
           <div class="card bg-cream text-blue font-black shadow-lg">
             <div class="card-body flex flex-col items-center">
-              <p class="text-lg">Precisa de produção real.</p>
-              <p class="text-lg">Precisa sair da fórmula.</p>
-              <p class="text-lg">Precisa de apoio e método.</p>
+              <p class="text-lg">
+                A culpa por precisar complementar com fórmula.
+              </p>
+              <p class="text-lg">A insegurança com sua produção de leite.</p>
+              <p class="text-lg">
+                A pressão de tentar de tudo sem saber o que funciona.
+              </p>
             </div>
           </div>
         </div>
 
         <div class="mt-4 flex flex-col items-center">
           <h2 class="text-2xl font-semibold mb-2">
-            🌑 Por isso começou a{" "}
+            Por isso começou a{" "}
             <span class="font-bold">
               Oferta Oficial de Black Friday do LactoFlow®
             </span>
@@ -179,7 +183,8 @@ console.log(sckValues);
                   <span class="font-semibold">
                     Novidade: Clara, a Assistente de IA
                   </span>
-                  <br /> Sua rotina personalizada e horários ajustados pelo seu bebê
+                  <br /> Nossa assistente de dúvidas rápidas para te ajudar com o
+                  que for necessário no dia a dia
                   <div class="mt-4"></div>
                   <li class="mt-2">
                     🤰 <span class="font-semibold">Workshop para Gestantes</span
@@ -327,11 +332,6 @@ console.log(sckValues);
       // set sck equal to utm params concatenated
       const sck = document.getElementById("sck");
       console.log(sck);
-      function redirectToHotmart() {
-        window.location.href =
-          "https://pay.hotmart.com/O84147403X?off=iz9e8l99&sck=" +
-          sck?.innerHTML;
-      }
 
       const ctaPromo = document.getElementById("promo");
       if (ctaPromo)
@@ -407,7 +407,10 @@ console.log(sckValues);
         <button id="close" class="text-gray-500 absolute top-2 text-2xl right-6"
           >✖</button
         >
-        <PreCheckout clientID={clientUuid?.value} />
+        <PreCheckout
+          clientID={clientUuid?.value}
+          offerUrl={"https://pay.hotmart.com/O84147403X?off=7scwu232"}
+        />
       </div>
     </div>
     <div class="fixed bottom-5 right-5 cursor-pointer">

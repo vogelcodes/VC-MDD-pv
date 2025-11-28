@@ -7,9 +7,10 @@ import { encryptData, decryptData } from "../utils/crypto";
 export interface Props {
   pcId?: string;
   clientID?: string;
+  offerUrl?: string;
 }
 
-const { pcId = "", clientID = "" } = Astro.props;
+const { pcId = "", clientID = "", offerUrl = "" } = Astro.props;
 
 // Get query params
 const search = Astro.url.searchParams;
@@ -178,6 +179,7 @@ if (locationInfo.status === "fail") {
           hidden
           value={path + "?" + search.toString()}
         />
+        <input type="text" name="offerUrl" hidden value={offerUrl} />
         <input type="text" name="cta" hidden value="" />
         <input type="text" name="fbc" hidden />
         <input type="text" name="fbp" hidden />
