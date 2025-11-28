@@ -25,6 +25,7 @@ let today = new Date();
 let expirationDate = new Date("2025-05-02T10:00:00-03:00");
 let warningText = "Oferta válida de 28/11 a 01/12";
 let searchParams = Astro.url.searchParams;
+
 const utmTags = [
   "utm_source",
   "utm_medium",
@@ -32,6 +33,7 @@ const utmTags = [
   "utm_content",
   "utm_term",
 ];
+// redirect to bf-25 with search params
 let sckValuesArray = utmTags.map((tag) => {
   if (searchParams.get(tag) && searchParams.get(tag) !== "") {
     return searchParams.get(tag);
@@ -42,7 +44,9 @@ console.log(sckValuesArray);
 
 const sckValues = sckValuesArray.filter((value) => value !== null).join("-");
 console.log(sckValues);
-
+Astro.redirect(
+  `/bf-25?utm_source=${searchParams.get("utm_source")}&utm_medium=${searchParams.get("utm_medium")}&utm_campaign=${searchParams.get("utm_campaign")}&utm_content=${searchParams.get("utm_content")}&utm_term=${searchParams.get("utm_term")}`,
+);
 // console.log(clientUuid);
 ---
 

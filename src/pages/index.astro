@@ -22,6 +22,13 @@ if (!Astro.cookies.get("uuid")) {
 }
 let clientUuid = Astro.cookies.get("uuid");
 
+let searchParams = Astro.url.searchParams;
+if (true) {
+  return Astro.redirect(
+    `/bf-25?utm_source=${searchParams.get("utm_source")}&utm_medium=${searchParams.get("utm_medium")}&utm_campaign=${searchParams.get("utm_campaign")}&utm_content=${searchParams.get("utm_content")}&utm_term=${searchParams.get("utm_term")}`,
+  );
+}
+
 // console.log(clientUuid);
 ---
 
