@@ -1,0 +1,520 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import About from "../../components/About.astro";
+import Bonus from "../../components/Bonus.astro";
+import CTA from "../../components/CTA.astro";
+import Depos from "../../components/Depos.astro";
+import FAQ from "../../components/FAQ.astro";
+import Furadeira from "../../components/Furadeira.astro";
+import Furadeira2 from "../../components/Furadeira2.astro";
+import Conteudo from "../../components/Conteudo.astro";
+import PreCheckout from "../../components/Precheckout.astro";
+import { createId } from "@paralleldrive/cuid2";
+
+let uuid = createId();
+if (!Astro.cookies.get("uuid")) {
+    Astro.cookies.set("uuid", uuid, {
+        maxAge: 365 * 24 * 60 * 60,
+        path: "/",
+    });
+}
+let clientUuid = Astro.cookies.get("uuid");
+
+// Cloudflare Stream configuration
+// Replace these with your actual values or use environment variables
+// You can set these in your .env file:
+// CLOUDFLARE_STREAM_CUSTOMER_CODE=your_customer_code
+// CLOUDFLARE_STREAM_VIDEO_UID=your_video_uid
+const CLOUDFLARE_CUSTOMER_CODE =
+    import.meta.env.CLOUDFLARE_STREAM_CUSTOMER_CODE || "YOUR_CODE";
+const CLOUDFLARE_VIDEO_UID =
+    import.meta.env.CLOUDFLARE_STREAM_VIDEO_UID || "YOUR_VIDEO_UID";
+const TEASER_VIDEO_URL = "/teaser-video.mp4"; // Path to your silent teaser MP4 (place in /public folder)
+
+const streamUrl = `https://customer-rcfaqql9z2npngbu.cloudflarestream.com/${CLOUDFLARE_VIDEO_UID}/iframe`;
+---
+
+<Layout>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: #000;
+        }
+        #video-wrapper {
+            position: relative;
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        #video-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+        @media (orientation: landscape) {
+            #video-container {
+                width: 56.25vh; /* 9/16 aspect ratio */
+                height: 100vh;
+                margin: 0 auto;
+            }
+        }
+        #content-section {
+            position: relative;
+            background: #1e3a5f;
+            min-height: 100vh;
+            z-index: 1;
+        }
+        #custom-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #custom-overlay.active {
+            opacity: 1;
+        }
+        #custom-overlay svg {
+            width: 100%;
+            height: 100%;
+        }
+        .instagram-top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.5) 0%,
+                rgba(0, 0, 0, 0) 100%
+            );
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+        .instagram-bottom-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0.5) 0%,
+                rgba(0, 0, 0, 0) 100%
+            );
+            z-index: 15;
+        }
+    </style>
+    <div id="video-wrapper">
+        <div id="video-container">
+            <!-- Teaser Video (plays silently in background) -->
+            <video
+                id="teaser-video"
+                class="absolute top-0 left-0 w-full h-full object-contain"
+                autoplay
+                loop
+                muted
+                playsinline
+                preload="auto"
+            >
+                <source src={TEASER_VIDEO_URL} type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- Instagram-like Top Bar -->
+            <div class="instagram-top-bar">
+                <div class="flex items-center gap-3">
+                    <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="white"
+                    >
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+                        ></path>
+                    </svg>
+                    <span class="text-white font-bold text-lg">LactoFlow®</span
+                    >
+                </div>
+            </div>
+
+            <!-- Play Button Overlay -->
+            <div
+                id="play-overlay"
+                class="absolute inset-0 flex items-center justify-center bg-black/20 cursor-pointer transition-opacity z-10"
+            >
+                <button
+                    id="play-button"
+                    class="bg-white/90 hover:bg-white rounded-full p-6 sm:p-8 transition-transform hover:scale-110 shadow-2xl"
+                    aria-label="Play video"
+                >
+                    <svg
+                        class="w-16 h-16 sm:w-20 sm:h-20 text-blue"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M8 5v14l11-7z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Custom SVG Overlay (appears when video starts) -->
+            <div id="custom-overlay">
+                <svg
+                    viewBox="0 0 1080 1920"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <!-- Gradient background -->
+                    <defs>
+                        <linearGradient
+                            id="grad1"
+                            x1="0%"
+                            y1="0%"
+                            x2="0%"
+                            y2="100%"
+                        >
+                            <stop
+                                offset="0%"
+                                style="stop-color:rgba(0,0,0,0.7);stop-opacity:1"
+                            ></stop>
+                            <stop
+                                offset="100%"
+                                style="stop-color:rgba(0,0,0,0);stop-opacity:1"
+                            ></stop>
+                        </linearGradient>
+                        <linearGradient
+                            id="grad2"
+                            x1="0%"
+                            y1="0%"
+                            x2="0%"
+                            y2="100%"
+                        >
+                            <stop
+                                offset="0%"
+                                style="stop-color:rgba(0,0,0,0);stop-opacity:1"
+                            ></stop>
+                            <stop
+                                offset="100%"
+                                style="stop-color:rgba(0,0,0,0.7);stop-opacity:1"
+                            ></stop>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Top gradient -->
+                    <rect width="1080" height="300" fill="url(#grad1)"></rect>
+
+                    <!-- Bottom gradient -->
+                    <rect y="1620" width="1080" height="300" fill="url(#grad2)"
+                    ></rect>
+
+                    <!-- LactoFlow Logo/Text -->
+                    <text
+                        x="540"
+                        y="200"
+                        font-family="Arial, sans-serif"
+                        font-size="48"
+                        font-weight="bold"
+                        fill="white"
+                        text-anchor="middle"
+                        opacity="0.9"
+                    >
+                        LactoFlow®
+                    </text>
+
+                    <!-- Decorative elements -->
+                    <circle cx="200" cy="150" r="3" fill="#07a71c" opacity="0.8"
+                    ></circle>
+                    <circle cx="880" cy="150" r="3" fill="#07a71c" opacity="0.8"
+                    ></circle>
+                    <circle
+                        cx="200"
+                        cy="1770"
+                        r="3"
+                        fill="#07a71c"
+                        opacity="0.8"></circle>
+                    <circle
+                        cx="880"
+                        cy="1770"
+                        r="3"
+                        fill="#07a71c"
+                        opacity="0.8"></circle>
+
+                    <!-- Bottom text -->
+                    <text
+                        x="540"
+                        y="1850"
+                        font-family="Arial, sans-serif"
+                        font-size="36"
+                        fill="white"
+                        text-anchor="middle"
+                        opacity="0.9"
+                    >
+                        Aula Exclusiva
+                    </text>
+                </svg>
+            </div>
+
+            <!-- Cloudflare Stream Player (hidden initially, loads in background) -->
+            <iframe
+                id="stream-player"
+                src=""
+                class="absolute top-0 left-0 w-full h-full border-none hidden"
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowfullscreen="true"
+                loading="lazy"></iframe>
+        </div>
+    </div>
+
+    <!-- Content Section (scrollable content from index) -->
+    <section id="content-section" class="bg-blue">
+        <div class="flex flex-col items-center space-y-4 py-8">
+            <CTA
+                ctaOption="1"
+                label="Quero aumentar minha produção de leite com segurança"
+            />
+            <Depos />
+            <CTA
+                ctaOption="2"
+                label="Você também pode aumentar a sua produção"
+            />
+            <Furadeira />
+            <Furadeira2 />
+            <Bonus />
+            <CTA
+                ctaOption="3"
+                price
+                label="Quero garantir minha vaga no LactoFlow com todos os bônus"
+            />
+            <Conteudo />
+            <About />
+            <FAQ />
+            <CTA
+                ctaOption="4"
+                price
+                label="Sim, eu quero começar com apoio e segurança"
+            />
+            <div class="flex flex-col text-center sm:flex-row sm:text-left">
+                <span class="text-cream"
+                    >Copyright © {new Date().getFullYear()}</span
+                >
+                <span class="mx-3 hidden sm:block text-cream">|</span>
+                <span class="text-cream">Todos os direitos reservados.</span>
+            </div>
+            <a href="/privacy" class="text-cream underline"
+                >Política de Privacidade</a
+            >
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div
+        id="modal"
+        class="hidden fixed inset-0 items-start justify-center bg-blue/70 z-50"
+    >
+        <div
+            class="mt-4 w-full max-w-md transform overflow-hidden rounded-2xl bg-green p-6 text-left align-middle shadow-xl transition-all"
+        >
+            <button
+                id="close"
+                class="text-gray-500 absolute top-2 text-2xl right-6">✖</button
+            >
+            <PreCheckout
+                clientID={clientUuid?.value}
+                offerUrl={"https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10"}
+            />
+        </div>
+    </div>
+
+    <!-- WhatsApp Button -->
+    <div class="fixed bottom-5 right-5 cursor-pointer z-40">
+        <div class="relative h-[60px] w-[60px]">
+            <a
+                target="_blank"
+                href="https://wa.me/552139554134?text=Oi%2C+tudo+bem%3F+Eu+tenho+uma+pergunta+sobre+o+curso+LactoFlow."
+            >
+                <span>
+                    <img
+                        width={60}
+                        height={60}
+                        alt="whats logo"
+                        src="/whatsapp-logo.svg"
+                        decoding="async"
+                        data-nimg="fill"
+                    />
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <script define:vars={{ streamUrl }}>
+        (function () {
+            const container = document.getElementById("video-container");
+            const teaserVideo = document.getElementById("teaser-video");
+            const playOverlay = document.getElementById("play-overlay");
+            const playButton = document.getElementById("play-button");
+            const streamPlayer = document.getElementById("stream-player");
+
+            if (
+                !container ||
+                !teaserVideo ||
+                !playOverlay ||
+                !playButton ||
+                !streamPlayer
+            ) {
+                console.error("Video player elements not found");
+                return;
+            }
+
+            // Check if streamUrl is valid
+            if (
+                !streamUrl ||
+                streamUrl.includes("YOUR_CODE") ||
+                streamUrl.includes("YOUR_VIDEO_UID")
+            ) {
+                console.warn(
+                    "Cloudflare Stream configuration not set. Please configure CLOUDFLARE_STREAM_CUSTOMER_CODE and CLOUDFLARE_STREAM_VIDEO_UID",
+                );
+            }
+
+            let preloadIframe = null;
+            let isPlaying = false;
+
+            // Preload the Stream player in the background (without autoplay)
+            // Create a hidden iframe to preload the video
+            if (
+                streamUrl &&
+                !streamUrl.includes("YOUR_CODE") &&
+                !streamUrl.includes("YOUR_VIDEO_UID")
+            ) {
+                preloadIframe = document.createElement("iframe");
+                preloadIframe.src = `${streamUrl}?preload=auto&muted=true`;
+                preloadIframe.style.display = "none";
+                preloadIframe.style.width = "0";
+                preloadIframe.style.height = "0";
+                preloadIframe.style.position = "absolute";
+                preloadIframe.style.opacity = "0";
+                preloadIframe.style.pointerEvents = "none";
+                document.body.appendChild(preloadIframe);
+            }
+
+            const customOverlay = document.getElementById("custom-overlay");
+
+            function playStream() {
+                if (isPlaying) return;
+                isPlaying = true;
+
+                // Hide teaser and overlay
+                teaserVideo.style.display = "none";
+                playOverlay.style.display = "none";
+
+                // Show and play the Stream player
+                streamPlayer.classList.remove("hidden");
+                streamPlayer.src = `${streamUrl}?autoplay=true&muted=false&controls=true`;
+
+                // Show custom SVG overlay
+                if (customOverlay) {
+                    setTimeout(() => {
+                        customOverlay.classList.add("active");
+                        // Hide overlay after 3 seconds
+                        setTimeout(() => {
+                            customOverlay.classList.remove("active");
+                        }, 3000);
+                    }, 100);
+                }
+
+                // Remove preload iframe after a delay
+                if (preloadIframe) {
+                    setTimeout(() => {
+                        if (preloadIframe && preloadIframe.parentNode) {
+                            preloadIframe.parentNode.removeChild(preloadIframe);
+                            preloadIframe = null;
+                        }
+                    }, 2000);
+                }
+            }
+
+            // Click handlers
+            playButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                playStream();
+            });
+            playOverlay.addEventListener("click", playStream);
+
+            // Keyboard support
+            playButton.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    playStream();
+                }
+            });
+
+            // Handle teaser video errors
+            teaserVideo.addEventListener("error", (e) => {
+                console.warn(
+                    "Teaser video failed to load. Make sure /teaser-video.mp4 exists in the public folder.",
+                );
+                // Optionally show a placeholder image or hide the teaser
+            });
+        })();
+    </script>
+
+    <script>
+        import { isModalOpen, ctaValue } from "../../store";
+
+        const modal = document.getElementById("modal") as HTMLDivElement;
+
+        function openModal(cta: string) {
+            // add cta to url params
+            //add cta to input hidden
+            const form = document.querySelector("form");
+            if (form) {
+                const ctaInput = form.querySelector('input[name="cta"]');
+                if (ctaInput) {
+                    ctaInput.setAttribute("value", cta);
+                }
+            }
+
+            ctaValue.set(cta);
+            if (!modal) return;
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+        function closeModal() {
+            if (!modal) return;
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+        isModalOpen.set(false);
+
+        const cta1 = document.getElementById("1");
+        if (cta1) cta1.addEventListener("click", () => openModal("1"));
+
+        const cta2 = document.getElementById("2");
+        if (cta2) cta2.addEventListener("click", () => openModal("2"));
+
+        const cta3 = document.getElementById("3");
+        if (cta3) cta3.addEventListener("click", () => openModal("3"));
+
+        const cta4 = document.getElementById("4");
+        if (cta4) cta4.addEventListener("click", () => openModal("4"));
+
+        const closeBtn = document.getElementById("close");
+        if (closeBtn) closeBtn.addEventListener("click", () => closeModal());
+    </script>
+</Layout>
