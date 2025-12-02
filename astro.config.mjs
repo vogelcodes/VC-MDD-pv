@@ -12,6 +12,7 @@ export default defineConfig({
   site: "https://prog.lactoflow.com.br",
   redirects: {
     // "/promo-25-05": "/",
+    "/bf-25": "/",
   },
   output: "server",
 
