@@ -36,7 +36,7 @@ const CLOUDFLARE_VIDEO_UID =
     "YOUR_VIDEO_UID";
 const TEASER_VIDEO_URL = "/teaser-video.mp4";
 
-const streamUrl = `https://customer-${CLOUDFLARE_CUSTOMER_CODE}.cloudflarestream.com/${CLOUDFLARE_VIDEO_UID}/iframe`;
+const streamUrl = `https://customer-${CLOUDFLARE_CUSTOMER_CODE}.cloudflarestream.com/${CLOUDFLARE_VIDEO_UID}/iframe?controls=true&autoplay=true&muted=false&defaultTextTrack=pt-br&poster=https%3A%2F%2Fcustomer-${CLOUDFLARE_CUSTOMER_CODE}.cloudflarestream.com%2F${CLOUDFLARE_VIDEO_UID}%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600`;
 
 // Debug logging
 console.log("Video Config:", {
@@ -675,7 +675,7 @@ const eventId =
 
                 // Show and play the Stream player
                 streamPlayer.classList.remove("hidden");
-                streamPlayer.src = `${streamUrl}?autoplay=true&muted=false&controls=true`;
+                streamPlayer.src = `${streamUrl}`;
 
                 // Setup progress tracking when iframe loads
                 streamPlayer.addEventListener("load", () => {
