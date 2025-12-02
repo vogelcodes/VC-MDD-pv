@@ -35,28 +35,60 @@ export const sendToMeta = async (metaEventData: any) => {
 
       console.log(`Sending event to Pixel ID: ${pixelId}`);
 
-      const response = await fetch(
-        `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(metaEventData),
-        }
-      );
+      // Create AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const result = await response.json();
-      console.log(
-        `Meta Conversion API Response for Pixel ID ${pixelId}:`,
-        result
-      );
-
-      if (result.error) {
-        console.error(
-          `Meta Conversion API Error for Pixel ID ${pixelId}:`,
-          result.error
+      try {
+        const response = await fetch(
+          `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(metaEventData),
+            signal: controller.signal,
+          }
         );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.error(
+            `Meta Conversion API HTTP Error for Pixel ID ${pixelId}:`,
+            response.status,
+            response.statusText
+          );
+          continue;
+        }
+
+        const result = await response.json();
+        console.log(
+          `Meta Conversion API Response for Pixel ID ${pixelId}:`,
+          result
+        );
+
+        if (result.error) {
+          console.error(
+            `Meta Conversion API Error for Pixel ID ${pixelId}:`,
+            result.error
+          );
+        }
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === "AbortError") {
+          console.error(
+            `Meta Conversion API Timeout for Pixel ID ${pixelId} (10s timeout)`
+          );
+        } else {
+          console.error(
+            `Meta Conversion API Fetch Error for Pixel ID ${pixelId}:`,
+            fetchError.message || fetchError
+          );
+        }
+        // Continue to next pixel instead of breaking the entire function
+        continue;
       }
     }
   } catch (error) {

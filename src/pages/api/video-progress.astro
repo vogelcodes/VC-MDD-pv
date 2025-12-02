@@ -1,0 +1,254 @@
+---
+import { sendToMeta } from "../../utils/metaConversionsAPI";
+import { hashUserData, type RawUserData } from "../../utils/hashing";
+
+type LocationInfo = {
+    country_code?: string;
+    countryCode?: string;
+    status?: string;
+    country?: string;
+    region_code?: string;
+    region?: string;
+    regionName?: string;
+    city?: string;
+    isp?: string;
+    zip_code?: string;
+    zip?: string;
+    time_zone?: string;
+    timezone?: string;
+    latitude?: number;
+    lat?: number;
+    longitude?: number;
+    lon?: number;
+};
+
+if (Astro.request.method === "POST") {
+    const body = await Astro.request.json();
+    const {
+        slug,
+        progress,
+        watchTime,
+        eventType,
+        eventId,
+        locationData,
+        pageUrl,
+    } = body;
+
+    // Get user data from cookies and request
+    const clientUuid = Astro.cookies.get("uuid")?.value;
+    const userIP = Astro.clientAddress;
+    const agent = Astro.request.headers.get("user-agent") || "";
+
+    // Get Facebook cookies
+    const fbc = Astro.cookies.get("_fbc")?.value;
+    const fbp = Astro.cookies.get("_fbp")?.value;
+
+    // Fetch geolocation data (same logic as Precheckout component)
+    // First try to get from middleware
+    let locationInfo: LocationInfo | null =
+        (Astro.locals as any)?.locationInfo || null;
+
+    // If not available from middleware, fetch from IP API
+    if (!locationInfo && userIP) {
+        try {
+            console.time("location");
+            const ipResponse = await fetch(
+                `http://ip-api.com/json/${userIP}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`,
+            );
+            locationInfo = await ipResponse.json();
+            console.timeEnd("location");
+            console.log("Geolocation fetched:", locationInfo);
+
+            // If fetch failed, use mock data for dev environment
+            if (locationInfo?.status === "fail") {
+                const locationMock = {
+                    status: "success",
+                    country: "United States",
+                    countryCode: "US",
+                    region: "CA",
+                    regionName: "California",
+                    city: "Los Angeles",
+                    zip: "90038",
+                    lat: 33.9533,
+                    lon: -43.1883,
+                    timezone: "America/Sao_Paulo",
+                    isp: "Mock ISP (Dev Mode)",
+                    org: "Mock Org (Dev Mode)",
+                    as: "Mock AS (Dev Mode)",
+                };
+                locationInfo = {
+                    ...locationInfo,
+                    city: locationMock.city,
+                    region: locationMock.region,
+                    country: locationMock.country,
+                    countryCode: locationMock.countryCode,
+                    country_code: locationMock.countryCode,
+                };
+            }
+        } catch (error) {
+            console.error("Error fetching geolocation:", error);
+            // Use mock data on error in dev mode
+            if (import.meta.env.DEBUG === "1") {
+                locationInfo = {
+                    status: "success",
+                    country: "United States",
+                    countryCode: "US",
+                    country_code: "US",
+                    region: "CA",
+                    regionName: "California",
+                    city: "Los Angeles",
+                    zip: "90038",
+                    lat: 33.9533,
+                    lon: -43.1883,
+                    timezone: "America/Sao_Paulo",
+                    isp: "Mock ISP (Dev Mode)",
+                };
+            }
+        }
+    } else if (!locationInfo && import.meta.env.DEBUG === "1") {
+        // Use mock data in dev mode if no IP available
+        locationInfo = {
+            status: "success",
+            country: "United States",
+            countryCode: "US",
+            country_code: "US",
+            region: "CA",
+            regionName: "California",
+            city: "Los Angeles",
+            zip: "90038",
+            lat: 33.9533,
+            lon: -43.1883,
+            timezone: "America/Sao_Paulo",
+            isp: "Mock ISP (Dev Mode)",
+        };
+    }
+
+    // Prepare location data for hashing
+    // Use fetched locationInfo or fallback to locationData from request body
+    const finalLocationData = locationInfo || locationData || {};
+    const rawLocationData: RawUserData = {
+        city: finalLocationData.city || locationData?.city || null,
+        state:
+            finalLocationData.region ||
+            finalLocationData.regionName ||
+            locationData?.region ||
+            locationData?.state ||
+            null,
+        countryCode:
+            finalLocationData.countryCode ||
+            finalLocationData.country_code ||
+            locationData?.countryCode ||
+            locationData?.country_code ||
+            null,
+    };
+
+    const hashedLocationData = hashUserData(rawLocationData);
+
+    const eventTimeSec = Math.floor(Date.now() / 1000);
+
+    // Time-based and percentage-based tracking
+    // Custom Conversion IDs in Meta (you'll need to create these):
+    // - Video_Rel_5min: 1597783634724002 (5 minutes)
+    // - Video_Rel_25: (create in Meta for 25%)
+    // - Video_Rel_50: (create in Meta for 50%)
+    // - Video_Rel_75: (create in Meta for 75%)
+    // - Video_Rel_90: (create in Meta for 90%)
+    // The event_name must match what's configured in your Meta Custom Conversion
+    let eventName;
+
+    if (eventType === "time" && watchTime && watchTime >= 300) {
+        // Custom conversion event for 5 minutes (300 seconds) watch time
+        eventName = "Video_Rel_5min";
+    } else if (eventType === "percent" && progress) {
+        // Percentage-based milestones: 25%, 50%, 75%, 90%
+        // IMPORTANT: Update these event names to match your Meta custom conversion event names
+        const percentEventMap: Record<number, string> = {
+            25: "Video_Rel_25", // TODO: Update to match your Meta custom conversion
+            50: "Video_Rel_50", // TODO: Update to match your Meta custom conversion
+            75: "Video_Rel_75", // TODO: Update to match your Meta custom conversion
+            90: "Video_Rel_90", // TODO: Update to match your Meta custom conversion
+        };
+        eventName =
+            percentEventMap[progress] || `VideoProgress${progress}Percent`;
+    } else {
+        // Default fallback
+        eventName = "VideoProgress";
+    }
+
+    const metaEventData = {
+        data: [
+            {
+                event_name: eventName,
+                event_time: eventTimeSec,
+                action_source: "website",
+                // event_id is for deduplication - must be unique per event instance
+                event_id: eventId || `${clientUuid}_${Date.now()}_${progress}`,
+                // Use the actual page URL where the user is watching, not the API endpoint
+                event_source_url: pageUrl || Astro.url.href,
+                user_data: {
+                    ...hashedLocationData,
+                    client_ip_address: userIP ? String(userIP) : undefined,
+                    client_user_agent: agent,
+                    fbc: fbc || undefined,
+                    fbp: fbp || undefined,
+                    external_id: clientUuid || undefined,
+                },
+                custom_data: {
+                    video_slug: slug || "unknown",
+                    ...(progress !== null &&
+                        progress !== undefined && {
+                            progress_percent: progress,
+                        }),
+                    ...(watchTime !== null &&
+                        watchTime !== undefined && {
+                            watch_time_seconds: watchTime,
+                        }),
+                    content_type: "video",
+                    // Add any additional parameters that your custom conversion might need
+                },
+            },
+        ],
+    };
+
+    console.log(
+        "Video Progress Event Data:",
+        JSON.stringify(metaEventData, null, 2),
+    );
+
+    // Send to Meta Conversion API
+    if (import.meta.env.DEBUG !== "1") {
+        try {
+            await sendToMeta(metaEventData);
+        } catch (error) {
+            console.error("Error sending video progress event to Meta:", error);
+        }
+    } else {
+        console.log("DEBUG MODE: Not sending video progress event to Meta");
+    }
+
+    const eventDescription =
+        eventType === "time"
+            ? `${Math.floor(watchTime / 60)} minutes watch time`
+            : `${progress}% progress`;
+
+    return new Response(
+        JSON.stringify({
+            success: true,
+            message: `Video progress event (${eventDescription}) sent to Meta`,
+        }),
+        {
+            headers: {
+                "content-type": "application/json",
+            },
+            status: 200,
+        },
+    );
+}
+
+return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    headers: {
+        "content-type": "application/json",
+    },
+    status: 405,
+});
+---
