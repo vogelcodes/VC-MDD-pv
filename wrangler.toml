@@ -6,6 +6,10 @@ pages_build_output_dir = "./dist"
 [vars]
 # Add your environment variables here or in the dashboard
 # META_PIXEL_ACCESS_TOKEN = "..."
+
+# Worker with Assets configuration (enables 'wrangler deploy')
+main = "dist/_worker.js/index.js"
+assets = { directory = "./dist", binding = "ASSETS" }
 # META_PIXEL_ID = "..."
 # LOCATION_ENCRYPTION_KEY = "..."
 # ADMIN_USERNAME = "..."
