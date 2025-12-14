@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 
-import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 
 import react from "@astrojs/react";
 
@@ -16,8 +16,9 @@ export default defineConfig({
   },
   output: "server",
 
-  adapter: node({
-    mode: "standalone",
+  adapter: cloudflare({
+    imageService: 'cloudflare',
+    platformProxy: { enabled: true },
   }),
 
   integrations: [react({ experimentalReactChildren: true })],

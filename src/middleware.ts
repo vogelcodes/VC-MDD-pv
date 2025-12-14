@@ -11,8 +11,6 @@ const ADMIN_USERNAME = import.meta.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
 const LOCATION_COOKIE_NAME = "loc_info";
 const LOCATION_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60; // 1 day
-// const LOCATION_ENCRYPTION_KEY = import.meta.env.LOCATION_ENCRYPTION_KEY; // Not used directly
-// const META_ACCESS_TOKEN = import.meta.env.META_ACCESS_TOKEN; // Not used directly
 
 // Helper function to get client IP
 function getClientIp(request: Request): string | null {
@@ -33,14 +31,14 @@ const middleware = async (
 
   const url = new URL(request.url);
   const fbclid = url.searchParams.get("fbclid");
-  
+
   let clientUserAgent = request.headers.get("user-agent");
-if (url.pathname.startsWith("/_image")) {
-  return next();
-}
-// if (url.pathname.startsWith("/_") && import.meta.env.NODE_ENV === "production") {
-//   return new Response("Not found", { status: 404 });
-// }
+  if (url.pathname.startsWith("/_image")) {
+    return next();
+  }
+  // if (url.pathname.startsWith("/_") && import.meta.env.NODE_ENV === "production") {
+  //   return new Response("Not found", { status: 404 });
+  // }
   let skipGeolocation = false;
   if (
     clientUserAgent ==
@@ -111,54 +109,45 @@ if (url.pathname.startsWith("/_image")) {
 
   // --- Location Cookie / Lookup Logic ---
   let locationInfo: LocationInfo | null = null;
-  let needsLocationCookieUpdate = false;
+  // let needsLocationCookieUpdate = false; // logic simplified, we trust CF or cookie
   const clientIp = getClientIp(request);
-  // console.log("clientIp determined as:", clientIp); // Debug IP
 
-  const locationCookie = cookies.get(LOCATION_COOKIE_NAME);
-  if (locationCookie?.value) {
-    // console.log("Existing location cookie found."); // Informational
-    const decryptedData = decryptData(locationCookie.value);
-    if (decryptedData) {
-      try {
-        const parsedData: LocationInfo = JSON.parse(decryptedData);
-        if (clientIp && parsedData.query === clientIp) {
-          // console.log(
-          //   "Decrypted location data matches current IP:",
-          //   parsedData
-          // ); // Debugging cookie data
-          locationInfo = parsedData;
-        } else if (!clientIp && parsedData.query) {
-          // console.log(
-          //   "Could not determine current IP, using location data from cookie based on previous IP:",
-          //   parsedData.query
-          // ); // Debugging cookie data
-          locationInfo = parsedData;
-        } else {
-          // console.log(
-          //   "IP mismatch or invalid data in location cookie. Current IP:",
-          //   clientIp,
-          //   "Cookie IP:",
-          //   parsedData.query
-          // ); // Debugging cookie data
-          cookies.delete(LOCATION_COOKIE_NAME, { path: "/" }); // Delete invalid cookie
-        }
-      } catch (e) {
-        console.error("Error parsing decrypted location data:", e);
-        cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
-      }
-    } else {
-      // console.log("Failed to decrypt location cookie."); // Informational / Error
-      cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
-    }
+  // Try to get location from Cloudflare context first
+  const cf = locals.runtime?.cf;
+  if (cf) {
+    locationInfo = {
+      status: "success",
+      country: cf.country, // Full name not always available directly in CF object, often just code
+      countryCode: cf.country,
+      region: cf.region, // ISO-3166-2 code
+      regionName: cf.region, // CF might not provide full name, using code as fallback
+      city: cf.city,
+      zip: cf.postalCode,
+      lat: Number(cf.latitude),
+      lon: Number(cf.longitude),
+      timezone: cf.timezone,
+      isp: cf.asOrganization,
+      org: cf.asOrganization,
+      as: cf.asn ? `AS${cf.asn} ${cf.asOrganization}` : undefined,
+      query: clientIp || undefined,
+    };
+    // console.log("Location determined from Cloudflare CF object");
   } else {
-    console.log("No location cookie found."); // Informational
-  }
+    // Fallback to cookie if CF is missing (e.g. local dev without platformProxy working perfectly)
+    const locationCookie = cookies.get(LOCATION_COOKIE_NAME);
+    if (locationCookie?.value) {
+      const decryptedData = decryptData(locationCookie.value);
+      if (decryptedData) {
+        try {
+          const parsedData: LocationInfo = JSON.parse(decryptedData);
+          locationInfo = parsedData;
+        } catch (e) { console.error("Error parsing cookie", e); }
+      }
+    }
 
-  if (!locationInfo && !skipGeolocation) {
-    if (import.meta.env.DEBUG === "1") {
-      console.log(`DEBUG MODE: Using mock geolocation data.`); // Keep: Debug mode
-      const mockQueryIp = clientIp || "127.0.0.1";
+    // If still no location and in dev/debug
+    if (!locationInfo && (import.meta.env.DEBUG === "1" || import.meta.env.DEV)) {
+      console.log(`DEBUG/DEV MODE: Using mock geolocation data.`);
       locationInfo = {
         status: "success",
         country: "United States",
@@ -170,46 +159,12 @@ if (url.pathname.startsWith("/_image")) {
         lat: 33.9533,
         lon: -43.1883,
         timezone: "America/Sao_Paulo",
-        isp: "Mock ISP (Dev Mode)", // Indicate mock
+        isp: "Mock ISP (Dev Mode)",
         org: "Mock Org (Dev Mode)",
         as: "Mock AS (Dev Mode)",
-        query: mockQueryIp,
+        query: clientIp || "127.0.0.1",
       };
-      needsLocationCookieUpdate = true;
-    } else if (clientIp) {
-      // console.log(
-      //   `PRODUCTION MODE: Performing IP geolocation lookup for ${clientIp}...`
-      // ); // Informational
-      try {
-        const geoResponse = await fetch(
-          `http://ip-api.com/json/${clientIp}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`
-        );
-        const geoData: LocationInfo = await geoResponse.json();
-
-        if (geoData.status === "success" && geoData.query) {
-          console.log(
-            "Geolocation lookup successful:",
-            JSON.stringify(geoData, null, 2)
-          ); // Keep: Location Info
-          locationInfo = geoData;
-          needsLocationCookieUpdate = true;
-        } else {
-          console.error(
-            "Geolocation lookup failed:",
-            geoData.status,
-            geoData.message
-          );
-        }
-      } catch (error) {
-        console.error("Error during IP geolocation lookup:", error);
-      }
-    } else {
-      // console.log(
-      //   "PRODUCTION MODE: Skipping geolocation lookup as client IP could not be determined."
-      // ); // Informational
     }
-  } else {
-    // console.log("Using location info from cookie."); // Informational
   }
 
   // Store final location info in locals and cookies
