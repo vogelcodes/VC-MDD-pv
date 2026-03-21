@@ -1,0 +1,43 @@
+---
+import { Image } from "astro:assets";
+import outroscursos from "../assets/img/outros-cursos.jpg";
+---
+
+<section>
+  <h1
+    class="mt-6 px-4 text-center text-cream text-[25px] font-extrabold sm:px-2 lg:text-[31.25px]"
+  >
+    🔍 Como funciona o LactoFlow na prática
+  </h1>
+  <div
+    class="mx-auto my-4 flex max-w-[40rem] flex-col items-center gap-2 text-blue"
+  >
+    <div class="card text-blue bg-cream shadow-lg">
+      <div class="card-body px-4">
+        <div class="flex flex-col items-center gap-2">
+          <div class="flex flex-row items-center gap-2 pt-2">
+            <p class="text-2xl">
+              Você não vai receber apenas informações <span class="font-bold"
+                >soltas</span
+              > ou conselhos genéricos.
+            </p>
+          </div>
+          <Image
+            width={600}
+            height={600}
+            src={outroscursos}
+            alt="furadeira"
+            class="w-full rounded-md sm:w-[300px]"
+          />
+          <p class="text-justify text-lg">
+            No LactoFlow, você vai seguir <span class="font-bold">
+              técnicas claras, validadas por milhares de mães reais,</span
+            > que ensinam como estimular sua produção de leite de forma <span
+              class="font-bold">natural, eficiente e com segurança</span
+            > — mesmo que hoje você sinta que já tentou de tudo.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

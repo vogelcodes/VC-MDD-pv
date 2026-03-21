@@ -1,0 +1,136 @@
+---
+import Image from "astro/components/Image.astro";
+import zoom from "../assets/img/zoom.svg";
+import zoomCall from "../assets/img/zoom-call.webp";
+import zoom2408 from "../assets/img/zoom-24-08.webp";
+import oficina from "../assets/img/oficina.webp";
+import ervasMock from "../assets/img/ervas-mock.webp";
+import receitasMock from "../assets/img/receitas-mock.webp";
+import telegram2 from "../assets/img/telegram-2.svg";
+import telegram2408 from "../assets/img/telegram-24-08.webp";
+import comunidade from "../assets/img/comunidade-1.webp";
+import zoom2509 from "../assets/img/zoom-25-09.webp";
+---
+
+<section class="mt-2 w-full bg-cream p-2 text-2xl text-blue">
+  <p class="text-center font-semibold">
+    Ao entrar para o LactoFlow, você ainda recebe:
+  </p>
+  <div
+    class="mx-auto my-4 flex max-w-[40rem] flex-col items-center gap-2 text-cream"
+  >
+    <div class="card text-cream bg-blue shadow-lg">
+      <div class="card-body px-4">
+        <div class="flex flex-col items-center gap-2">
+          <div class="flex flex-row items-center gap-2 pt-2">
+            <Image height={44} alt="telegram" src={telegram2} />
+
+            <p class="text-2xl">
+              <span class="text-2xl w-full text-left font-semibold"
+                >Bônus #1 –
+              </span>Comunidade exclusiva de alunas com meu suporte diário
+            </p>
+          </div>
+          <p>
+            Você vai entrar em um espaço acolhedor só para alunas, onde eu mesma
+            tiro dúvidas todos os dias e acompanho de perto cada jornada.
+          </p>
+          <p class="font-bold">
+            Nada de se sentir sozinha: aqui, você será acompanhada de perto.
+          </p>
+          <Image
+            alt="telegram-comunidade"
+            src={comunidade}
+            class="w-full rounded-md sm:w-[300px]"
+          />
+          <!-- <p class="text-justify text-lg">
+            No Telegram, temos a comunidade LactoFlow® onde você encontra
+            acolhimento, um espaço para desabafos e também para tirar dúvidas
+            COMIGO sobre o método.
+          </p> -->
+        </div>
+      </div>
+    </div>
+    <div class="card bg-blue shadow-lg">
+      <div class="card-body flex flex-col items-center">
+        <div class="flex flex-row items-center gap-2">
+          <Image height={44} alt="zoom" src={zoom} />
+
+          <p class="text-2xl">
+            <span class="font-bold"> BÔNUS #2 </span>– Encontros ao vivo duas
+            vezes por mês comigo
+          </p>
+        </div>
+        <Image alt="telegram-comunidade" src={zoomCall} class="rounded-md" />
+        <p class="">
+          São dois encontros mensais: um só para tirar dúvidas ao vivo, e outro
+          com oficinas práticas sobre temas que impactam sua amamentação.
+        </p>
+        <p class="font-bold">
+          É como ter uma consultora de amamentação na sua casa duas vezes por
+          mês.
+        </p>
+
+        <Image alt="zoom-comunidade" src={zoom2509} class="rounded-md" />
+        <p class="text-lg">
+          Você terá acesso a todas essas Oficinas que já rolaram:
+        </p>
+        <ul class="list-disc pl-4 text-lg">
+          <li>🧷 Enxoval Amigo da Amamentação</li>
+          <li>💧 Relactação</li>
+          <li>💊 Métodos Contraceptivos</li>
+          <li>💦 Hiperlactação</li>
+          <li>💉 Cirurgias Mamárias</li>
+          <li>😴 Sono seguro do bebê</li>
+          <li>🍼 Ordenha Exclusiva</li>
+          <li>👶 Parto e Pós Parto c/ Dani Morais</li>
+          <li>👅 Meu bebê tem a língua presa? c/ Juliana Grzeidak</li>
+          <li>🔴 Espectro da Mastite</li>
+          <li>👶 Prematuros</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card bg-blue px-0.5 shadow-lg">
+      <div class="card-body p-1 pt-4">
+        <div class="flex flex-col items-center leading-tight gap-2">
+          {
+            /* <Image
+      alt="wpp"
+      
+      src={"/telegram-2.svg"}
+      
+      ></Image> */
+          }
+          <p class="p-3 text-2xl text-center">
+            🌿BÔNUS #3 – E-book: Guia de Ervas para Estimular a Produção de
+            Leite🌿
+          </p>
+          <Image alt="telegram-comunidade" src={ervasMock} class="rounded-md" />
+          <p class="break-words p-4 text-justify leading-normal text-md">
+            Descubra quais ervas realmente funcionam e como usar com segurança —
+            tudo com base em evidências científicas e experiência prática.
+          </p>
+          <p class="text-center text-2xl">
+            👩‍🍳BÔNUS #4 – E-book de Receitas para Aumentar a Produção de Leite🧁
+          </p>
+          <Image
+            alt="telegram-comunidade"
+            src={receitasMock}
+            class="rounded-md"
+          />
+          <p class="p-4 text-justify text-md">
+            Receitas simples, naturais e gostosas que ajudam a turbinar sua
+            produção no dia a dia — com ingredientes acessíveis.
+          </p>
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-blue text-xl">
+      Esses bônus foram pensados para <span class="font-bold"
+        >te apoiar de verdade</span
+      >, com conhecimento, acolhimento e ferramentas práticas — porque você não
+      precisa e nem deve passar pela experiência da amamentação sozinha.
+    </p>
+  </div>
+</section>

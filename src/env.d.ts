@@ -8,3 +8,9 @@ declare namespace App {
     // Add other custom locals properties here if you have them
   }
 }
+
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
