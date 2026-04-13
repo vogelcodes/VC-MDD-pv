@@ -151,7 +151,10 @@ if (locationInfo.status === "fail") {
       <h1 class="text-2xl leading-6 text-blue">
         Venha para o LactoFlow®: {pcId}
       </h1>
+      
+      <!-- Step 1: Lead Form -->
       <form
+        id="lead-form-step1"
         class="flex flex-col gap-1.5 w-full font-bold"
         method="post"
         action="/forms/leads-astro"
@@ -225,7 +228,16 @@ if (locationInfo.status === "fail") {
           value={locationInfo.country_code?.toString()}
         />
         <input type="text" name="clientID" hidden value={clientID} />
+        
+        <!-- Hidden survey fields to be populated by Step 2 -->
+        <input type="text" name="baby_birth_date" id="survey_baby_birth_date" hidden />
+        <input type="text" name="using_formula" id="survey_using_formula" hidden />
+        <input type="text" name="difficulty" id="survey_difficulty" hidden />
+        <input type="text" name="back_to_work" id="survey_back_to_work" hidden />
+        
         <button
+          type="button"
+          id="btn-step1"
           class="mx-auto mt-4 w-full rounded-lg border-b-4 border-b-[#236C0F] bg-[#40C351] px-2 py-3 text-[13.6px] font-extrabold uppercase text-cream hover:scale-[104%] hover:border-b-[#44972d] hover:bg-[#236C0F] lg:py-5 lg:text-[22.6px]"
         >
           Quero entrar!
@@ -237,6 +249,139 @@ if (locationInfo.status === "fail") {
           >Política de Privacidade</a
         >
       </form>
+
+      <!-- Step 2: Survey (hidden initially) -->
+      <form
+        id="lead-form-step2"
+        class="hidden flex-col gap-3 w-full font-bold"
+        method="post"
+        action="/forms/leads-astro"
+      >
+        <p class="text-center text-sm text-blue mb-2">Pergunta 2 de 4</p>
+        
+        <label>
+          Quando seu bebê nasceu?
+          <input
+            type="date"
+            required
+            id="survey-input-baby-birth"
+            name="baby_birth_date"
+          />
+        </label>
+        
+        <label>
+          Você já está usando fórmula?
+          <select required id="survey-input-formula" name="using_formula" class="w-full p-2 rounded border text-black">
+            <option value="">Selecione...</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+          </select>
+        </label>
+        
+        <label>
+          Qual sua maior dificuldade agora?
+          <textarea
+            required
+            id="survey-input-difficulty"
+            name="difficulty"
+            rows="3"
+            placeholder="Descreva sua dificuldade..."
+            class="w-full p-2 rounded border text-black"
+          ></textarea>
+        </label>
+        
+        <label>
+          Você voltou a trabalhar?
+          <select required id="survey-input-work" name="back_to_work" class="w-full p-2 rounded border text-black">
+            <option value="">Selecione...</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+            <option value="ja_voltei">Já voltei</option>
+          </select>
+        </label>
+        
+        <button
+          type="submit"
+          class="mx-auto mt-4 w-full rounded-lg border-b-4 border-b-[#236C0F] bg-[#40C351] px-2 py-3 text-[13.6px] font-extrabold uppercase text-cream hover:scale-[104%] hover:border-b-[#44972d] hover:bg-[#236C0F] lg:py-5 lg:text-[22.6px]"
+        >
+          Continuar
+        </button>
+        
+        <button
+          type="button"
+          id="btn-back-step2"
+          class="text-center text-sm text-blue underline hover:no-underline"
+        >
+          ← Voltar
+        </button>
+      </form>
     </div>
+
+    <script>
+      const formStep1 = document.getElementById('lead-form-step1') as HTMLFormElement;
+      const formStep2 = document.getElementById('lead-form-step2') as HTMLFormElement;
+      const btnStep1 = document.getElementById('btn-step1');
+      const btnBackStep2 = document.getElementById('btn-back-step2');
+
+      // Step 1 -> Step 2
+      btnStep1?.addEventListener('click', () => {
+        // Basic validation for step 1
+        const nameInput = formStep1.querySelector('input[name="name"]') as HTMLInputElement;
+        const emailInput = formStep1.querySelector('input[name="email"]') as HTMLInputElement;
+        const phoneInput = formStep1.querySelector('input[name="intl-phone"]') as HTMLInputElement;
+
+        if (!nameInput?.value || !emailInput?.value || !phoneInput?.value) {
+          alert('Por favor, preencha todos os campos.');
+          return;
+        }
+
+        // Hide step 1, show step 2
+        formStep1.classList.add('hidden');
+        formStep1.classList.remove('flex');
+        formStep2.classList.remove('hidden');
+        formStep2.classList.add('flex');
+      });
+
+      // Step 2 -> back
+      btnBackStep2?.addEventListener('click', () => {
+        formStep2.classList.add('hidden');
+        formStep2.classList.remove('flex');
+        formStep1.classList.remove('hidden');
+        formStep1.classList.add('flex');
+      });
+
+      // Form step 2 submit - copy survey data to hidden fields in step 1, then submit step 1
+      formStep2?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Get survey values
+        const babyBirthDate = (document.getElementById('survey-input-baby-birth') as HTMLInputElement)?.value;
+        const usingFormula = (document.getElementById('survey-input-formula') as HTMLSelectElement)?.value;
+        const difficulty = (document.getElementById('survey-input-difficulty') as HTMLTextAreaElement)?.value;
+        const backToWork = (document.getElementById('survey-input-work') as HTMLSelectElement)?.value;
+
+        // Copy to hidden fields in step 1 form
+        (document.getElementById('survey_baby_birth_date') as HTMLInputElement).value = babyBirthDate || '';
+        (document.getElementById('survey_using_formula') as HTMLInputElement).value = usingFormula || '';
+        (document.getElementById('survey_difficulty') as HTMLInputElement).value = difficulty || '';
+        (document.getElementById('survey_back_to_work') as HTMLInputElement).value = backToWork || '';
+
+        // Submit step 1 form
+        const fbqTrack = (window as any)["fbqTrack"];
+        if (typeof fbqTrack === "function") {
+          fbqTrack("Lead");
+        }
+        
+        formStep1?.submit();
+      });
+
+      // Handle step 1 submit via fetch (for Lead event tracking)
+      formStep1?.addEventListener('submit', () => {
+        const fbqTrack = (window as any)["fbqTrack"];
+        if (typeof fbqTrack === "function") {
+          fbqTrack("Lead");
+        }
+      });
+    </script>
   </main>
 </div>
