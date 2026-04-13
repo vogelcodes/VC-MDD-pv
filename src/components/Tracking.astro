@@ -1,0 +1,397 @@
+---
+import ReactPhoneInput from "./react-phone";
+import { formatPhoneNumber } from "react-phone-number-input";
+import { encryptData } from "../utils/crypto";
+
+export interface Props {
+  pcId?: string;
+  clientID?: string;
+  offerUrl?: string;
+}
+
+const { pcId = "", clientID = "", offerUrl = "" } = Astro.props;
+
+const search = Astro.url.searchParams;
+const path = Astro.url.pathname;
+const userIp = Astro.clientAddress;
+const locationData = (Astro.locals as any)?.locationInfo;
+const fbc = Astro.cookies.get("_fbc")?.value;
+const fbp = Astro.cookies.get("_fbp")?.value;
+const formAction = `/forms/leads-astro`;
+const encryptedLocation = locationData ? encryptData(JSON.stringify(locationData)) : "";
+
+type LocationInfo = {
+  country_code: string;
+  status: string;
+  country: string;
+  region_code: string;
+  region: string;
+  city: string;
+  isp: string;
+  zip_code: string;
+  time_zone: string;
+  latitude: number;
+  longitude: number;
+};
+
+const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
+let locationInfo: LocationInfo = await ipResponse.json();
+
+if (locationInfo.status === "fail") {
+  locationInfo = {
+    ...locationInfo,
+    city: "Unknown",
+    region: "Unknown",
+    country: "Brazil",
+    country_code: "BR",
+  };
+}
+
+const GOOGLE_ADS_ID = import.meta.env.GOOGLE_ADS_ID || 'AW-16561604318';
+const TRACK_API_URL = import.meta.env.TRACK_API_URL || '';
+---
+
+<div id="container" class="bg-green">
+  <!-- Cookie helpers -->
+  <script>
+    // Get Meta cookies
+    function getMetaCookie(name: string): string | null {
+      return document.cookie
+        .split("; ")
+        .find((row) => row.startsWith(`${name}=`))
+        ?.split("=")[1] || null;
+    }
+
+    // Get PostHog session ID
+    function getPostHogSession(): string | null {
+      const posthog = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("ph_phc"))
+        ?.split("=")[1];
+      if (!posthog) return null;
+      try {
+        const decoded = decodeURIComponent(posthog);
+        const data = JSON.parse(decoded);
+        return data.$sesid?.[1] || null;
+      } catch {
+        return null;
+      }
+    }
+
+    // Ensure Meta cookies exist
+    function ensureMetaCookies() {
+      let fbc = getMetaCookie("_fbc");
+      let fbp = getMetaCookie("_fbp");
+
+      if (!fbc) {
+        const fbclid = new URLSearchParams(window.location.search).get("fbclid");
+        if (fbclid) {
+          fbc = `fb.1.${Date.now()}.${fbclid}`;
+          document.cookie = `_fbc=${fbc}; path=/; max-age=${90 * 24 * 60 * 60}`;
+        }
+      }
+      if (!fbp) {
+        const rnd = Math.floor(Math.random() * 10000000000);
+        fbp = `fb.1.${Date.now()}.${rnd}`;
+        document.cookie = `_fbp=${fbp}; path=/; max-age=${90 * 24 * 60 * 60}`;
+      }
+
+      return { fbc, fbp };
+    }
+
+    // Fire Meta Pixel
+    function fireMetaEvent(eventName: string, params?: Record<string, any>) {
+      const fbq = (window as any).fbq;
+      if (typeof fbq === "function") {
+        fbq("track", eventName, params);
+      }
+    }
+
+    // Fire Google Ads conversion
+    function fireGoogleEvent(conversionId: string, label: string, value?: number) {
+      const gtag = (window as any).gtag;
+      if (typeof gtag === "function") {
+        gtag("event", "conversion", {
+          send_to: `${conversionId}/${label}`,
+          ...(value !== undefined && { value }),
+        });
+      }
+    }
+
+    // Send lead to our tracking API (server-side)
+    async function sendLeadToAPI(data: any) {
+      try {
+        await fetch("/api/track/lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+      } catch (err) {
+        console.error("Lead API error:", err);
+      }
+    }
+
+    // Compute lead score
+    function computeLeadScore(data: {
+      babyBirthDate: string;
+      usingFormula: string;
+      difficulty: string;
+      backToWork: string;
+    }): { score: number; highUrgency: boolean } {
+      let score = 0;
+      const { babyBirthDate, usingFormula, difficulty, backToWork } = data;
+
+      if (babyBirthDate) {
+        const birthDate = new Date(babyBirthDate);
+        const daysSinceBirth = Math.floor(
+          (Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysSinceBirth > 60) score += 20;
+      }
+
+      if (usingFormula === "sim") score += 25;
+      if (backToWork === "sim") score += 20;
+      if (backToWork === "ja_voltei") score += 30;
+
+      const difficultyLower = difficulty.toLowerCase();
+      const urgencyWords = ["desespero", "angustia", "não aguento", "estress", "medo"];
+      if (urgencyWords.some((w) => difficultyLower.includes(w))) score += 15;
+
+      score = Math.min(100, Math.max(0, score));
+      return { score, highUrgency: score >= 70 };
+    }
+
+    // Main form handling
+    document.addEventListener("DOMContentLoaded", () => {
+      const formStep1 = document.getElementById("lead-form-step1") as HTMLFormElement;
+      const formStep2 = document.getElementById("lead-form-step2") as HTMLFormElement;
+      const btnStep1 = document.getElementById("btn-step1");
+      const btnBackStep2 = document.getElementById("btn-back-step2");
+      const googleAdsId = (window as any).GOOGLE_ADS_ID || "AW-16561604318";
+
+      if (!formStep1 || !formStep2 || !btnStep1) return;
+
+      // Step 1 -> Step 2
+      btnStep1.addEventListener("click", () => {
+        const nameInput = formStep1.querySelector('input[name="name"]') as HTMLInputElement;
+        const emailInput = formStep1.querySelector('input[name="email"]') as HTMLInputElement;
+        const phoneInput = formStep1.querySelector('input[name="intl-phone"]') as HTMLInputElement;
+
+        if (!nameInput?.value || !emailInput?.value || !phoneInput?.value) {
+          alert("Por favor, preencha todos os campos.");
+          return;
+        }
+
+        formStep1.classList.add("hidden");
+        formStep1.classList.remove("flex");
+        formStep2.classList.remove("hidden");
+        formStep2.classList.add("flex");
+      });
+
+      // Step 2 -> back
+      btnBackStep2?.addEventListener("click", () => {
+        formStep2.classList.add("hidden");
+        formStep2.classList.remove("flex");
+        formStep1.classList.remove("hidden");
+        formStep1.classList.add("flex");
+      });
+
+      // Step 2 submit - gather all data and send
+      formStep2.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const babyBirthDate = (document.getElementById("survey-input-baby-birth") as HTMLInputElement)?.value;
+        const usingFormula = (document.getElementById("survey-input-formula") as HTMLSelectElement)?.value;
+        const difficulty = (document.getElementById("survey-input-difficulty") as HTMLTextAreaElement)?.value;
+        const backToWork = (document.getElementById("survey-input-work") as HTMLSelectElement)?.value;
+
+        const nameInput = formStep1.querySelector('input[name="name"]') as HTMLInputElement;
+        const emailInput = formStep1.querySelector('input[name="email"]') as HTMLInputElement;
+        const phoneInput = formStep1.querySelector('input[name="intl-phone"]') as HTMLInputElement;
+        const sourceInput = formStep1.querySelector('input[name="source"]') as HTMLInputElement;
+        const offerUrlInput = formStep1.querySelector('input[name="offerUrl"]') as HTMLInputElement;
+        const locationInput = formStep1.querySelector('input[name="location"]') as HTMLInputElement;
+        const cityInput = formStep1.querySelector('input[name="city"]') as HTMLInputElement;
+        const stateInput = formStep1.querySelector('input[name="state"]') as HTMLInputElement;
+        const countryInput = formStep1.querySelector('input[name="countryName"]') as HTMLInputElement;
+        const clientIDInput = formStep1.querySelector('input[name="clientID"]') as HTMLInputElement;
+
+        const name = nameInput?.value || "";
+        const email = emailInput?.value || "";
+        const phone = phoneInput?.value || "";
+        const source = sourceInput?.value || "";
+        const offerUrlVal = offerUrlInput?.value || "";
+        const location = locationInput?.value || "{}";
+        const city = cityInput?.value || "";
+        const state = stateInput?.value || "";
+        const country = countryInput?.value || "";
+        const clientIDVal = clientIDInput?.value || "";
+
+        const firstName = name.split(" ")[0];
+        const lastName = name.slice(name.indexOf(" ") + 1);
+
+        // Get cookies
+        const { fbc, fbp } = ensureMetaCookies();
+        const phid = getPostHogSession();
+
+        // Compute score
+        const { score, highUrgency } = computeLeadScore({
+          babyBirthDate,
+          usingFormula,
+          difficulty,
+          backToWork,
+        });
+
+        // Client-side: Fire Meta Pixel Lead
+        fireMetaEvent("Lead");
+
+        // Client-side: Fire Google Ads Lead conversion
+        fireGoogleEvent(googleAdsId, "Lead");
+
+        // Server-side: Send to our tracking API
+        await sendLeadToAPI({
+          email,
+          phone,
+          firstName,
+          lastName,
+          city,
+          state,
+          country,
+          fbp,
+          fbc,
+          clientIP: "",
+          clientUserAgent: navigator.userAgent,
+          clientID: clientIDVal,
+          leadScore: score,
+          highUrgency,
+          source,
+          babyBirthDate,
+          usingFormula,
+          difficulty,
+          backToWork,
+        });
+
+        // Build redirect URL with UTM params
+        const searchParams = new URLSearchParams(source.split("?")[1]);
+        const sck = Array.from(searchParams.entries())
+          .map(([key, value]) =>
+            !["fbclid", "mcp_token"].includes(key) ? value : ""
+          )
+          .join("|");
+
+        // Redirect to Hotmart
+        const phoneac = phone.replace(/\D/g, "");
+        const redirectUrl = `${offerUrlVal}&sck=${sck}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&phonenumber=${phoneac}`;
+        window.location.href = redirectUrl;
+      });
+    });
+  </script>
+
+  <main>
+    <div class="flex flex-col gap-2 items-center px-3 text-blue">
+      <h1 class="text-2xl leading-6 text-blue">
+        Venha para o LactoFlow®: {pcId}
+      </h1>
+
+      <!-- Step 1: Lead Form -->
+      <form id="lead-form-step1" class="flex flex-col gap-1.5 w-full font-bold">
+        <label>
+          Nome:
+          <input type="text" required placeholder="Nome" name="name" />
+        </label>
+        <label>
+          Email:
+          <input type="email" required placeholder="maeincrivel@gmail.com" name="email" />
+        </label>
+        <label>
+          Whatsapp:
+          <ReactPhoneInput client:idle />
+        </label>
+
+        <input type="text" name="source" hidden value={path + "?" + search.toString()} />
+        <input type="text" name="offerUrl" hidden value={offerUrl} />
+        <input type="text" name="location" hidden value={JSON.stringify(locationInfo)} />
+        <input type="text" name="city" hidden value={locationInfo.city?.toString()} />
+        <input type="text" name="state" hidden value={locationInfo.region?.toLowerCase()} />
+        <input type="text" name="countryName" hidden value={locationInfo.country?.toString()} />
+        <input type="text" name="countryCode" hidden value={locationInfo.country_code?.toString()} />
+        <input type="text" name="clientID" hidden value={clientID} />
+
+        <button
+          type="button"
+          id="btn-step1"
+          class="mx-auto mt-4 w-full rounded-lg border-b-4 border-b-[#236C0F] bg-[#40C351] px-2 py-3 text-[13.6px] font-extrabold uppercase text-cream hover:scale-[104%] hover:border-b-[#44972d] hover:bg-[#236C0F] lg:py-5 lg:text-[22.6px]"
+        >
+          Quero entrar!
+        </button>
+
+        <h3 class="text-center text-base text-blue">
+          SEUS DADOS ESTÃO SEGUROS
+        </h3>
+        <a class="text-center underline text-sm text-blue" href="/privacy">
+          Política de Privacidade
+        </a>
+      </form>
+
+      <!-- Step 2: Survey (hidden initially) -->
+      <form id="lead-form-step2" class="hidden flex-col gap-3 w-full font-bold">
+        <p class="text-center text-sm text-blue mb-2">Pergunta 2 de 4</p>
+
+        <label>
+          Quando seu bebê nasceu?
+          <input type="date" required id="survey-input-baby-birth" name="baby_birth_date" />
+        </label>
+
+        <label>
+          Você já está usando fórmula?
+          <select required id="survey-input-formula" name="using_formula" class="w-full p-2 rounded border text-black">
+            <option value="">Selecione...</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+          </select>
+        </label>
+
+        <label>
+          Qual sua maior dificuldade agora?
+          <textarea
+            required
+            id="survey-input-difficulty"
+            name="difficulty"
+            rows="3"
+            placeholder="Descreva sua dificuldade..."
+            class="w-full p-2 rounded border text-black"
+          ></textarea>
+        </label>
+
+        <label>
+          Você voltou a trabalhar?
+          <select required id="survey-input-work" name="back_to_work" class="w-full p-2 rounded border text-black">
+            <option value="">Selecione...</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+            <option value="ja_voltei">Já voltei</option>
+          </select>
+        </label>
+
+        <button
+          type="submit"
+          class="mx-auto mt-4 w-full rounded-lg border-b-4 border-b-[#236C0F] bg-[#40C351] px-2 py-3 text-[13.6px] font-extrabold uppercase text-cream hover:scale-[104%] hover:border-b-[#44972d] hover:bg-[#236C0F] lg:py-5 lg:text-[22.6px]"
+        >
+          Continuar
+        </button>
+
+        <button
+          type="button"
+          id="btn-back-step2"
+          class="text-center text-sm text-blue underline hover:no-underline"
+        >
+          ← Voltar
+        </button>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script define:vars={{ GOOGLE_ADS_ID }}>
+  window.GOOGLE_ADS_ID = GOOGLE_ADS_ID;
+</script>
