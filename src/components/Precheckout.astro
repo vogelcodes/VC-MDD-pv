@@ -1,7 +1,6 @@
 ---
 import ReactPhoneInput from "./react-phone";
 import { formatPhoneNumber } from "react-phone-number-input";
-import { sendToMeta } from "../utils/metaConversionsAPI";
 import { encryptData, decryptData } from "../utils/crypto";
 
 export interface Props {
@@ -33,6 +32,7 @@ const encryptedLocation = locationData
 
 type LocationInfo = {
   country_code: string;
+  countryCode?: string;
   status: string;
   country: string;
   region_code: string;
@@ -45,15 +45,11 @@ type LocationInfo = {
   longitude: number;
 };
 
-//time how long it takes to get location info
-console.time("location");
-const ipResponse = await fetch("http://ip-api.com/json/" + userIp);
-let locationInfo: LocationInfo = await ipResponse.json();
+// Use location from middleware (already fetched and cached, no duplicate API call)
+let locationInfo: LocationInfo = (Astro.locals as any)?.locationInfo || {} as LocationInfo;
 
-console.timeEnd("location");
-
-console.log(locationInfo);
-if (locationInfo.status === "fail") {
+// Fallback to mock data if geolocation failed or is unavailable
+if (!locationInfo.city || locationInfo.status === "fail") {
   const locationMock = {
     status: "success",
     country: "United States",
@@ -65,14 +61,17 @@ if (locationInfo.status === "fail") {
     lat: 33.9533,
     lon: -43.1883,
     timezone: "America/Sao_Paulo",
-    isp: "Mock ISP (Dev Mode)", // Indicate mock
+    isp: "Mock ISP (Dev Mode)",
     org: "Mock Org (Dev Mode)",
     as: "Mock AS (Dev Mode)",
   };
-  locationInfo.city = locationMock.city;
-  locationInfo.region = locationMock.region;
-  locationInfo.country = locationMock.country;
-  locationInfo.country_code = locationMock.countryCode;
+  locationInfo = {
+    ...locationInfo,
+    city: locationMock.city,
+    region: locationMock.region,
+    country: locationMock.country,
+    country_code: locationMock.countryCode,
+  } as LocationInfo;
 }
 ---
 

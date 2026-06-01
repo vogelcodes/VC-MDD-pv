@@ -1,9 +1,16 @@
 /**
  * Meta Ads Tracking Utility
- * Handles both client-side Pixel and server-side CAPI
+ * Single implementation for all server-side Meta Conversions API calls.
+ * Supports multiple pixels via comma-separated env vars.
+ *
+ * Usage:
+ *   import { sendMetaCAPI, buildMetaUserData } from '../utils/tracking/meta';
  */
 
-import { sha256 } from 'hash.js';
+import pkg from 'hash.js';
+const { sha256 } = pkg;
+
+// ── Types ──────────────────────────────────────────────────────────
 
 export interface MetaUserData {
   email?: string;
@@ -21,37 +28,43 @@ export interface MetaUserData {
   externalId?: string;
 }
 
-export interface MetaEventData {
-  eventName: string;
-  eventTime?: number;
-  actionSource?: string;
-  eventId?: string;
-  eventSourceUrl?: string;
-  customData?: Record<string, any>;
+export interface MetaEventPayload {
+  event_name: string;
+  event_time: number;
+  action_source: string;
+  event_id?: string;
+  event_source_url?: string;
+  user_data: Record<string, any>;
+  custom_data?: Record<string, any>;
 }
 
-// Hash a value for Meta CAPI
+// ── Hashing helpers ────────────────────────────────────────────────
+
+/** SHA-256 hash a single value (lowercased + trimmed). */
 export function hashData(value: string): string {
   if (!value) return '';
   return sha256().update(value.toLowerCase().trim()).digest('hex');
 }
 
-// Hash phone number (remove non-digits, prepend +55 for Brazil)
+/** Hash phone number — strips non-digits, prepends country code. */
 export function hashPhone(phone: string, countryCode = '55'): string {
   const digits = phone.replace(/\D/g, '');
   const withCountry = countryCode ? `+${countryCode}${digits}` : `+${digits}`;
   return hashData(withCountry);
 }
 
-// Build hashed user_data for Meta CAPI
-export function buildMetaUserData(data: MetaUserData) {
+/**
+ * Build the hashed `user_data` object for Meta CAPI.
+ * Non-PII fields (fbp, fbc, IP, UA, external_id) are passed through as-is.
+ */
+export function buildMetaUserData(data: MetaUserData): Record<string, string | undefined> {
   const user_data: Record<string, string | undefined> = {};
 
   if (data.email) user_data.em = hashData(data.email);
   if (data.phone) user_data.ph = hashPhone(data.phone);
   if (data.firstName) user_data.fn = hashData(data.firstName);
   if (data.lastName) user_data.ln = hashData(data.lastName);
-  if (data.city) user_data.ct = hashData(data.city);
+  if (data.city) user_data.ct = hashData(data.city.replace(/\s+/g, ''));
   if (data.state) user_data.st = hashData(data.state);
   if (data.country) user_data.country = hashData(data.country);
   if (data.zipCode) user_data.zp = hashData(data.zipCode);
@@ -64,64 +77,90 @@ export function buildMetaUserData(data: MetaUserData) {
   return user_data;
 }
 
-// Send event to Meta CAPI (server-side)
+// ── Core sender ────────────────────────────────────────────────────
+
+const META_API_VERSION = 'v24.0';
+const SEND_TIMEOUT_MS = 10_000;
+
+/**
+ * Send one or more events to **all** configured Meta Pixels.
+ *
+ * Pixel IDs and access tokens come from comma-separated env vars:
+ *   META_PIXEL_ID=id1,id2
+ *   META_PIXEL_ACCESS_TOKEN=tok1,tok2
+ *
+ * Returns an array of per-pixel results.
+ */
 export async function sendMetaCAPI(
-  pixelId: string,
-  accessToken: string,
-  events: Array<{
-    eventName: string;
-    eventTime?: number;
-    actionSource?: string;
-    eventId?: string;
-    eventSourceUrl?: string;
-    userData: ReturnType<typeof buildMetaUserData>;
-    customData?: Record<string, any>;
-  }>
-): Promise<{ success: boolean; error?: string }> {
-  const url = `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`;
+  events: MetaEventPayload[],
+): Promise<Array<{ pixelId: string; success: boolean; error?: string }>> {
+  const pixelIdsCsv = import.meta.env.META_PIXEL_ID ?? '';
+  const tokensCsv = import.meta.env.META_PIXEL_ACCESS_TOKEN ?? '';
 
-  const payload = {
-    data: events.map((evt) => ({
-      event_name: evt.eventName,
-      event_time: evt.eventTime ?? Math.floor(Date.now() / 1000),
-      action_source: evt.actionSource ?? 'website',
-      event_id: evt.eventId,
-      event_source_url: evt.eventSourceUrl,
-      user_data: evt.userData,
-      custom_data: evt.customData,
-    })),
-  };
+  const pixelIds = pixelIdsCsv.split(',').map((s: string) => s.trim()).filter(Boolean);
+  const tokens = tokensCsv.split(',').map((s: string) => s.trim()).filter(Boolean);
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const error = await response.text();
-      return { success: false, error: `HTTP ${response.status}: ${error}` };
-    }
-
-    const result = await response.json();
-    if (result.error) {
-      return { success: false, error: result.error.message };
-    }
-
-    return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err.message || 'Unknown error' };
+  if (pixelIds.length === 0 || tokens.length === 0) {
+    console.error('[Meta CAPI] META_PIXEL_ID or META_PIXEL_ACCESS_TOKEN not set');
+    return [{ pixelId: 'none', success: false, error: 'Missing env vars' }];
   }
+
+  if (pixelIds.length !== tokens.length) {
+    console.error('[Meta CAPI] Mismatch between pixel IDs and access tokens count');
+    return [{ pixelId: 'mismatch', success: false, error: 'ID/token count mismatch' }];
+  }
+
+  const payload = { data: events };
+  const results: Array<{ pixelId: string; success: boolean; error?: string }> = [];
+
+  for (let i = 0; i < pixelIds.length; i++) {
+    const pixelId = pixelIds[i];
+    const token = tokens[i];
+    const url = `https://graph.facebook.com/${META_API_VERSION}/${pixelId}/events?access_token=${token}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), SEND_TIMEOUT_MS);
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[Meta CAPI] HTTP ${response.status} for pixel ${pixelId}: ${errorText}`);
+        results.push({ pixelId, success: false, error: `HTTP ${response.status}: ${errorText}` });
+        continue;
+      }
+
+      const result = await response.json();
+      if (result.error) {
+        console.error(`[Meta CAPI] API error for pixel ${pixelId}:`, result.error);
+        results.push({ pixelId, success: false, error: result.error.message || JSON.stringify(result.error) });
+      } else {
+        console.log(`[Meta CAPI] Success for pixel ${pixelId}:`, result);
+        results.push({ pixelId, success: true });
+      }
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      const errMsg = err.name === 'AbortError'
+        ? `Timeout (${SEND_TIMEOUT_MS}ms)`
+        : (err.message || 'Unknown error');
+      console.error(`[Meta CAPI] Error for pixel ${pixelId}: ${errMsg}`);
+      results.push({ pixelId, success: false, error: errMsg });
+    }
+  }
+
+  return results;
 }
 
-// Get fbc and fbp from cookies (client-side)
+// ── Client-side helpers (for use in Astro component scripts) ──────
+
+/** Get _fbc and _fbp from cookies (client-side only). */
 export function getMetaCookies(): { fbp: string | null; fbc: string | null } {
   if (typeof document === 'undefined') return { fbp: null, fbc: null };
 
@@ -134,7 +173,7 @@ export function getMetaCookies(): { fbp: string | null; fbc: string | null } {
   };
 }
 
-// Fire Meta Pixel event (client-side)
+/** Fire Meta Pixel event (client-side only). */
 export function fireMetaPixel(eventName: string, params?: Record<string, any>) {
   if (typeof window === 'undefined') return;
   const fbq = (window as any).fbq;

@@ -1,14 +1,9 @@
 ---
-import { date } from "astro:schema";
-import pkg from "hash.js"; // Correct named import
-const { sha256 } = pkg;
-import { getLeads } from "../../../utils/leadService"; // Import getLeads
-import { sendToMeta as sendToMetaUtil } from "../../../utils/metaConversionsAPI"; // Import the utility function
+import { sendMetaCAPI, buildMetaUserData, type MetaEventPayload } from "../../../utils/tracking/meta";
+import { getLeads } from "../../../utils/leadService";
 
 const { id } = Astro.params;
-
-const META_PIXEL_ACCESS_TOKEN = import.meta.env.META_PIXEL_ACCESS_TOKEN;
-const META_PIXEL_ID = import.meta.env.META_PIXEL_ID;
+const TELEGRAM_BOT_URL = import.meta.env.TELEGRAM_BOT_URL;
 
 if (Astro.request.method === "POST") {
   let userIP = null;
@@ -54,14 +49,16 @@ if (Astro.request.method === "POST") {
 
   const firstName = first_name;
   const lastName = last_name;
+  const phone = `+55${checkout_phone}`;
+
+  // Look up matching lead for fbc/fbp attribution
   console.time("fetchLeads");
   const leads = await getLeads();
   console.timeEnd("fetchLeads");
 
-  // Find the lead matching the buyer's email
-  // Let's find all the matching leads and then we'll use the latest fbp and fbc
   const matchingLeads = leads.filter(
-    (lead) => lead.email?.trim().toLowerCase() === email?.trim().toLowerCase()
+    (lead) =>
+      lead.email?.trim().toLowerCase() === email?.trim().toLowerCase()
   );
 
   // First try to find the latest lead with non-null fbc and fbp
@@ -78,27 +75,10 @@ if (Astro.request.method === "POST") {
 
   let fbp = null;
   let fbc = null;
-  let ct = null;
-  let st = null;
-  let zp = null;
 
   if (latestLead) {
-    fbp = latestLead.fbp || null; // Get fbp or null if missing
-    fbc = latestLead.fbc || null; // Get fbc or null if missing
-    ct = sha256() // Directly use sha256()
-      .update(
-        latestLead?.["city-lwr"].toString().replace(/\s+/g, "").toLowerCase() ||
-          ""
-      ) //using country as city for this implementation
-      .digest("hex");
-    st = sha256()
-      .update(
-        latestLead?.["state"].toString().replace(/\s+/g, "").toLowerCase() || ""
-      )
-      .digest("hex"); // Directly use sha256()
-    zp = sha256()
-      .update(address?.zipcode.toString() || "")
-      .digest("hex");
+    fbp = latestLead.fbp || null;
+    fbc = latestLead.fbc || null;
     userIP = latestLead?.["client_ip_address"] || null;
     agent = latestLead?.["client_user_agent"] || null;
     clientID = latestLead?.["clientID"] || null;
@@ -107,27 +87,22 @@ if (Astro.request.method === "POST") {
     console.log(`No matching lead found for email: ${email}`);
   }
 
-  const country = sha256() // Directly use sha256()
-    .update(address?.country_iso.toString().toLowerCase() || "")
-    .digest("hex");
-  const fn = sha256() // Directly use sha256()
-    .update(firstName?.toLowerCase() || "")
-    .digest("hex");
-
-  const ln = sha256() // Directly use sha256()
-    .update(lastName?.toLowerCase() || "")
-    .digest("hex");
-
-  const em = sha256() // Directly use sha256()
-    .update(email?.toString().trim().toLowerCase() || "")
-    .digest("hex");
-  const phone = "+55" + checkout_phone.toString();
-
-  const ph = sha256()
-    .update(phone?.toString() || "")
-    .digest("hex"); // Directly use sha256()
-
-  // Fetch leads data
+  // Build user data using the unified hashing utility
+  const userData = buildMetaUserData({
+    email,
+    phone,
+    firstName,
+    lastName,
+    city: latestLead?.["city-lwr"] || address?.city,
+    state: latestLead?.["state"] || address?.state,
+    country: address?.country_iso,
+    zipCode: address?.zipcode,
+    fbp: fbp || undefined,
+    fbc: fbc || undefined,
+    clientIP: userIP ? String(userIP) : undefined,
+    clientUserAgent: agent || undefined,
+    externalId: clientID || undefined,
+  });
 
   const eventTimeSec = purchase?.order_date
     ? Math.floor(Number(purchase.order_date) / 1000)
@@ -139,44 +114,43 @@ if (Astro.request.method === "POST") {
     return Number.isFinite(asNumber) ? asNumber : undefined;
   })();
 
-  const metaEventData = {
-    data: [
-      {
-        event_name: "Purchase", // Standard event name for a purchase
-        event_time: eventTimeSec, // Prefer order_date from webhook if available
-        action_source: "website",
-        event_id: transaction, // Using the transaction as the event id
-        event_source_url: offer.code,
-        user_data: {
-          em: em, // Hashed email
-          ph: ph, // Hashed phone number
-          fn: fn, //hashed first name
-          ln: ln, // hashed last name
-          ct: ct, //hashed city
-          st: st, // hashed state
-          zp: zp, // hashed zipcode
-          country: country, // hashed country name
-          client_ip_address: userIP ? String(userIP) : undefined, // Ensure IP is a string
-          client_user_agent: agent,
-          fbp: fbp, // Add fbp
-          fbc: fbc, // Add fbc
-          external_id: clientID,
-        },
-        custom_data: {
-          currency: price.currency_value,
-          value: purchaseValue,
-        },
-      },
-    ],
+  const metaEvent: MetaEventPayload = {
+    event_name: "Purchase",
+    event_time: eventTimeSec,
+    action_source: "website",
+    event_id: transaction,
+    event_source_url: offer?.code,
+    user_data: userData,
+    custom_data: {
+      currency: price?.currency_value || "BRL",
+      value: purchaseValue,
+    },
   };
+
   console.log(
     "Meta Conversion API Event Data:",
-    JSON.stringify(metaEventData),
+    JSON.stringify({ data: [metaEvent] }),
     buyer
   );
 
-  // Call the imported utility function instead
-  await sendToMetaUtil(metaEventData);
+  // Send to Meta via consolidated utility
+  await sendMetaCAPI([metaEvent]);
+
+  // Send Telegram notification
+  if (TELEGRAM_BOT_URL && phone) {
+    const msg = encodeURIComponent(
+      `💰 COMPRA REALIZADA\n` +
+      `${firstName} ${lastName}\n` +
+      `Email: ${email}\n` +
+      `Telefone: ${phone}\n` +
+      `Valor: R$ ${purchaseValue?.toFixed(2)}\n` +
+      `Transação: ${transaction}\n` +
+      `Data: ${new Date(eventTimeSec * 1000).toLocaleString('pt-BR')}`
+    );
+    fetch(`${TELEGRAM_BOT_URL}&text=${msg}`).catch((err) =>
+      console.error("Telegram error:", err)
+    );
+  }
 
   return new Response(
     JSON.stringify({

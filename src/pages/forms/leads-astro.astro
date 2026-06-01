@@ -1,6 +1,6 @@
 ---
 import { date } from "astro:schema";
-import { sendToMeta } from "../../utils/metaConversionsAPI";
+import { sendMetaCAPI, type MetaEventPayload } from "../../utils/tracking/meta";
 import { UAParser } from "ua-parser-js";
 import { getLeads } from "../../utils/leadService"; // Import the new service
 import { hashUserData, type RawUserData } from "../../utils/hashing"; // Import the new hashing utility
@@ -217,9 +217,11 @@ if (Astro.request.method === "POST") {
 
   console.log("Meta Conversion API Event Data:", JSON.stringify(metaEventData)); // Keep: Meta Event Data
 
-  // Call the function to send data to Meta
+  // Send server-side Lead event to Meta CAPI
   if (!DRY_RUN) {
-    // sendToMeta(metaEventData);
+    sendMetaCAPI(metaEventData.data as MetaEventPayload[]).catch((err) =>
+      console.error("Error sending Lead to Meta CAPI:", err)
+    );
   } else {
     console.log("DEBUG MODE: Not sending to Meta");
     console.log(JSON.stringify(metaEventData, null, 2));

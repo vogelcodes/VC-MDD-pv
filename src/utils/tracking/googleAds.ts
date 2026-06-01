@@ -3,7 +3,8 @@
  * Handles both client-side gtag and server-side Enhanced Conversions API
  */
 
-import { sha256 } from 'hash.js';
+import pkg from 'hash.js';
+const { sha256 } = pkg;
 
 // Google Ads Configuration
 export interface GoogleAdsConfig {

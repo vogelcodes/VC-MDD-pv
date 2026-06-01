@@ -1,18 +1,25 @@
+/**
+ * Middleware — lightweight request processing.
+ *
+ * Responsibilities:
+ *  1. Early-return for static assets
+ *  2. Block bots (Facebook crawler)
+ *  3. Basic auth for admin paths
+ *  4. Geolocation lookup (cached in encrypted cookie + locals)
+ *  5. Cookie bootstrapping: uuid, _fbc, _fbp, event_id
+ *
+ * ❌ Does NOT send any events to Meta/Google/etc.
+ *    Events are sent via POST /api/track (called from client-side JS).
+ */
+
 import { defineMiddleware } from "astro:middleware";
-import { sendToMeta } from "./utils/metaConversionsAPI";
-// import { v4 as uuidv4 } from "uuid"; // Not used directly
 import { encryptData, decryptData, type LocationInfo } from "./utils/crypto";
-import { hashUserData, type RawUserData } from "./utils/hashing"; // Import the new hashing utility
 import { createId } from "@paralleldrive/cuid2";
-// import { sha256 } from "crypto"; // Incorrect import, remove
-import { UAParser } from "ua-parser-js";
 
 const ADMIN_USERNAME = import.meta.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD;
 const LOCATION_COOKIE_NAME = "loc_info";
 const LOCATION_COOKIE_MAX_AGE_SECONDS = 24 * 60 * 60; // 1 day
-// const LOCATION_ENCRYPTION_KEY = import.meta.env.LOCATION_ENCRYPTION_KEY; // Not used directly
-// const META_ACCESS_TOKEN = import.meta.env.META_ACCESS_TOKEN; // Not used directly
 
 // Helper function to get client IP
 function getClientIp(request: Request): string | null {
@@ -27,54 +34,40 @@ const middleware = async (
   { locals, request, cookies }: { locals: any; request: Request; cookies: any },
   next: () => Promise<Response>
 ) => {
-  // console.time("onRequest - start"); // Debug timing
-  // console.log("ENCRYPTION_KEY: ", import.meta.env.LOCATION_ENCRYPTION_KEY); // Debug env
-  // console.log("encryptData('test'): ", encryptData("test")); // Debug encryption
-
   const url = new URL(request.url);
   const fbclid = url.searchParams.get("fbclid");
-  
-  let clientUserAgent = request.headers.get("user-agent");
-if (url.pathname.startsWith("/_image")) {
-  return next();
-}
-// if (url.pathname.startsWith("/_") && import.meta.env.NODE_ENV === "production") {
-//   return new Response("Not found", { status: 404 });
-// }
-  let skipGeolocation = false;
-  if (
-    clientUserAgent ==
-    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
-  ) {
-    console.log("Facebook Bot detected, skipping geolocation");
-    skipGeolocation = true;
-  }
-  if (url.pathname.startsWith("/_astro")) {
-    console.log("Astro public folder detected, skipping geolocation");
-    skipGeolocation = true;
-  }
-  // console.log("fbclid", fbclid); // Debug fbclid
+  const clientUserAgent = request.headers.get("user-agent");
 
-  let clientUuid = cookies.get("uuid")?.value; // Use existing cookie value
-  console.log("clientUserAgent", clientUserAgent);
-  if (!clientUuid) {
-    clientUuid = createId(); // Generate CUID if no cookie
-    // Set cookie in the response later
-  }
-  let eventId = cookies.get("event_id")?.value;
-  if (!eventId) {
-    eventId = createId();
-    cookies.set("event_id", eventId, { path: "/", httpOnly: false });
-  }
-  locals.eventId = eventId;
-  if (url.pathname.startsWith("/api/wh")) {
-    console.log("WH API call detected");
+  // ── 1. Early return for static assets ────────────────────────────
+  if (
+    url.pathname.startsWith("/_image") ||
+    url.pathname.startsWith("/_astro") ||
+    url.pathname.startsWith("/favicon") ||
+    url.pathname.endsWith(".ico") ||
+    url.pathname.endsWith(".xml") ||
+    url.pathname.endsWith(".txt") ||
+    url.pathname.endsWith(".json") ||
+    url.pathname.endsWith(".webmanifest")
+  ) {
     return next();
   }
-  // console.log("clientUuid determined:", clientUuid); // Debug CUID
 
-  // Admin check (keep as is)
-  //I want to add Auth to a list of paths
+  // ── 2. Block / skip bots ─────────────────────────────────────────
+  const isFacebookBot =
+    clientUserAgent ===
+    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)";
+
+  if (isFacebookBot) {
+    console.log("Facebook Bot detected, skipping middleware processing");
+    return next();
+  }
+
+  // ── 3. Webhook passthrough ───────────────────────────────────────
+  if (url.pathname.startsWith("/api/wh")) {
+    return next();
+  }
+
+  // ── 4. Basic auth for admin paths ────────────────────────────────
   const authPaths = ["/admin", "/test"];
   if (authPaths.includes(url.pathname)) {
     const authHeader = request.headers.get("Authorization");
@@ -101,64 +94,83 @@ if (url.pathname.startsWith("/_image")) {
       });
     }
   }
-  if (
-    clientUserAgent ==
-    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)"
-  ) {
-    console.log("Facebook Bot detected");
-    return next();
+
+  // ── 5. UUID cookie ───────────────────────────────────────────────
+  let clientUuid = cookies.get("uuid")?.value;
+  if (!clientUuid) {
+    clientUuid = createId();
+    cookies.set("uuid", clientUuid, {
+      path: "/",
+      httpOnly: false,
+      maxAge: 365 * 24 * 60 * 60, // 1 year
+    });
+  }
+  locals.clientUuid = clientUuid;
+
+  // ── 6. Event ID cookie (for client/server deduplication) ─────────
+  const currentTimestampMs = Date.now();
+  let eventId = fbclid || `${clientUuid}_${currentTimestampMs}`;
+  cookies.set("event_id", eventId, { path: "/", httpOnly: false });
+  locals.eventId = eventId;
+
+  // ── 7. _fbc / _fbp cookie bootstrapping ──────────────────────────
+  let fbcValue: string | undefined = cookies.get("_fbc")?.value;
+  let fbpValue: string | undefined = cookies.get("_fbp")?.value;
+
+  if (fbclid) {
+    const newFbcValue = `fb.1.${currentTimestampMs}.${fbclid}`;
+    if (fbcValue !== newFbcValue) {
+      fbcValue = newFbcValue;
+      cookies.set("_fbc", fbcValue, {
+        path: "/",
+        httpOnly: false,
+        maxAge: 90 * 24 * 60 * 60, // 90 days
+      });
+    }
   }
 
-  // --- Location Cookie / Lookup Logic ---
+  if (!fbpValue) {
+    const randomNumber = Math.floor(Math.random() * 10000000000);
+    fbpValue = `fb.1.${currentTimestampMs}.${randomNumber}`;
+    cookies.set("_fbp", fbpValue, {
+      path: "/",
+      httpOnly: false,
+      maxAge: 90 * 24 * 60 * 60, // 90 days
+    });
+  }
+
+  // ── 8. Geolocation (cached in encrypted cookie) ──────────────────
   let locationInfo: LocationInfo | null = null;
   let needsLocationCookieUpdate = false;
   const clientIp = getClientIp(request);
-  // console.log("clientIp determined as:", clientIp); // Debug IP
 
+  // Try to read from existing cookie
   const locationCookie = cookies.get(LOCATION_COOKIE_NAME);
   if (locationCookie?.value) {
-    // console.log("Existing location cookie found."); // Informational
     const decryptedData = decryptData(locationCookie.value);
     if (decryptedData) {
       try {
         const parsedData: LocationInfo = JSON.parse(decryptedData);
         if (clientIp && parsedData.query === clientIp) {
-          // console.log(
-          //   "Decrypted location data matches current IP:",
-          //   parsedData
-          // ); // Debugging cookie data
           locationInfo = parsedData;
         } else if (!clientIp && parsedData.query) {
-          // console.log(
-          //   "Could not determine current IP, using location data from cookie based on previous IP:",
-          //   parsedData.query
-          // ); // Debugging cookie data
           locationInfo = parsedData;
         } else {
-          // console.log(
-          //   "IP mismatch or invalid data in location cookie. Current IP:",
-          //   clientIp,
-          //   "Cookie IP:",
-          //   parsedData.query
-          // ); // Debugging cookie data
-          cookies.delete(LOCATION_COOKIE_NAME, { path: "/" }); // Delete invalid cookie
+          cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
         }
       } catch (e) {
         console.error("Error parsing decrypted location data:", e);
         cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
       }
     } else {
-      // console.log("Failed to decrypt location cookie."); // Informational / Error
       cookies.delete(LOCATION_COOKIE_NAME, { path: "/" });
     }
-  } else {
-    console.log("No location cookie found."); // Informational
   }
 
-  if (!locationInfo && !skipGeolocation) {
+  // Fetch fresh geolocation if not cached
+  if (!locationInfo) {
     if (import.meta.env.DEBUG === "1") {
-      console.log(`DEBUG MODE: Using mock geolocation data.`); // Keep: Debug mode
-      const mockQueryIp = clientIp || "127.0.0.1";
+      console.log("DEBUG MODE: Using mock geolocation data.");
       locationInfo = {
         status: "success",
         country: "United States",
@@ -170,16 +182,13 @@ if (url.pathname.startsWith("/_image")) {
         lat: 33.9533,
         lon: -43.1883,
         timezone: "America/Sao_Paulo",
-        isp: "Mock ISP (Dev Mode)", // Indicate mock
+        isp: "Mock ISP (Dev Mode)",
         org: "Mock Org (Dev Mode)",
         as: "Mock AS (Dev Mode)",
-        query: mockQueryIp,
+        query: clientIp || "127.0.0.1",
       };
       needsLocationCookieUpdate = true;
     } else if (clientIp) {
-      // console.log(
-      //   `PRODUCTION MODE: Performing IP geolocation lookup for ${clientIp}...`
-      // ); // Informational
       try {
         const geoResponse = await fetch(
           `http://ip-api.com/json/${clientIp}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query`
@@ -187,10 +196,6 @@ if (url.pathname.startsWith("/_image")) {
         const geoData: LocationInfo = await geoResponse.json();
 
         if (geoData.status === "success" && geoData.query) {
-          console.log(
-            "Geolocation lookup successful:",
-            JSON.stringify(geoData, null, 2)
-          ); // Keep: Location Info
           locationInfo = geoData;
           needsLocationCookieUpdate = true;
         } else {
@@ -203,125 +208,31 @@ if (url.pathname.startsWith("/_image")) {
       } catch (error) {
         console.error("Error during IP geolocation lookup:", error);
       }
-    } else {
-      // console.log(
-      //   "PRODUCTION MODE: Skipping geolocation lookup as client IP could not be determined."
-      // ); // Informational
     }
-  } else {
-    // console.log("Using location info from cookie."); // Informational
   }
 
-  // Store final location info in locals and cookies
+  // Persist location cookie if updated
+  if (needsLocationCookieUpdate && locationInfo) {
+    const encrypted = encryptData(JSON.stringify(locationInfo));
+    if (encrypted) {
+      cookies.set(LOCATION_COOKIE_NAME, encrypted, {
+        path: "/",
+        httpOnly: true,
+        maxAge: LOCATION_COOKIE_MAX_AGE_SECONDS,
+      });
+    }
+  }
 
+  // Expose to downstream pages / API routes via locals
   locals.locationInfo = locationInfo;
-  locals.clientUuid = clientUuid; // Pass CUID via locals
 
-  // --- Meta Pixel Cookie (_fbc, _fbp) Handling ---
-  let fbcCookie = cookies.get("_fbc");
-  let fbpCookie = cookies.get("_fbp");
-  let fbcValue: string | undefined = fbcCookie?.value;
-  let fbpValue: string | undefined = fbpCookie?.value;
-  const currentTimestampMs = Date.now();
-  const currentTimestampSec = Math.floor(currentTimestampMs / 1000);
-  let needsFbcCookieUpdate = false;
-  let needsFbpCookieUpdate = false;
-
-  if (fbclid) {
-    // console.log("fbclid found:", fbclid); // Informational
-    const creationTimeMs = currentTimestampMs; // Meta expects ms in _fbc/_fbp cookie format
-    const newFbcValue = `fb.1.${creationTimeMs}.${fbclid}`;
-    if (fbcValue !== newFbcValue) {
-      // console.log("Setting/updating fbc value for event/cookie:", newFbcValue); // Informational
-      fbcValue = newFbcValue;
-      needsFbcCookieUpdate = true;
-    }
-  } // No else needed, if no fbclid, use existing fbcValue (which might be undefined)
-
-  if (!fbpValue) {
-    // console.log("No existing fbp cookie found, generating new one."); // Informational
-    const creationTimeMs = currentTimestampMs; // ms since epoch
-    const randomNumber = Math.floor(Math.random() * 10000000000);
-    fbpValue = `fb.1.${creationTimeMs}.${randomNumber}`;
-    needsFbpCookieUpdate = true;
-  } // else { console.log("Using existing fbp cookie value:", fbpValue); } // Informational
-
-  // Persist cookies if we generated/updated them
-  if (needsFbcCookieUpdate && fbcValue) {
-    cookies.set("_fbc", fbcValue, {
-      path: "/",
-      httpOnly: false,
-      maxAge: 90 * 24 * 60 * 60, // 90 days
-    });
-  }
-  if (needsFbpCookieUpdate && fbpValue) {
-    cookies.set("_fbp", fbpValue, {
-      path: "/",
-      httpOnly: false,
-      maxAge: 90 * 24 * 60 * 60, // 90 days
-    });
-  }
-
-  // --- Hashing Data for Meta --- NOTE: Only location data is available here
-  const rawLocationData: RawUserData = {
-    city: locationInfo?.city,
-    state: locationInfo?.region,
-    countryCode: locationInfo?.countryCode,
-  };
-  const hashedLocationData = hashUserData(rawLocationData); // Remove extra 'true' argument
-  // console.log("hashedLocationData", hashedLocationData); // Debug hash
-
-  // --- Prepare Meta PageView Event Data ---
-  // Generate and store event ID for deduplication
-  eventId = fbclid || `${clientUuid}_${currentTimestampMs}`;
-  cookies.set("event_id", eventId, { path: "/", httpOnly: false });
-  locals.eventId = eventId;
-  // Declare pageViewEventData *before* using it in logs
-  const pageViewEventData = {
-    event_name: "PageView",
-    event_time: currentTimestampSec,
-    action_source: "website",
-    event_source_url: url.href,
-
-    event_id: eventId, // Unique event ID per visit
-
-    user_data: {
-      ...hashedLocationData,
-      client_ip_address: clientIp ? String(clientIp) : undefined, // Ensure IP is a string
-      client_user_agent: request.headers.get("user-agent") || "",
-      fbc: fbcValue || undefined,
-      fbp: fbpValue || undefined,
-      external_id: clientUuid, // Pass CUID
-    },
-  };
-
-  // Log the final PageView event data (useful for debugging Meta calls)
-  console.log(
-    "Final PageView Event Data (Server-Side):",
-    JSON.stringify(pageViewEventData, null, 2)
-  ); // Keep: PageView Event Data
-  if (url.pathname == "/") {
-    cookies.set("pv_ts", currentTimestampMs.toString());
-  }
-  // --- Send PageView Event to Meta (Server-Side) ---
-  if (import.meta.env.DEBUG !== "1") {
-    try {
-      // Don't await, let it run in the background
-      sendToMeta({ data: [pageViewEventData] });
-    } catch (error) {
-      console.error("Error sending server-side PageView event to Meta:", error);
-    }
-  } else {
-    console.log("DEBUG MODE: Not sending server-side PageView event to Meta"); // Keep: Debug mode
-  }
-
-  // --- Process Request and Get Response ---
+  // ── 9. Process request ───────────────────────────────────────────
   const response = await next();
 
+  // Ensure UTF-8 charset for HTML responses
   try {
     const contentType = response.headers.get("content-type");
     if (!contentType && response.headers) {
-      // If not explicitly set and looks like HTML by URL, set UTF-8
       const looksHtml = url.pathname.endsWith(".html") || url.pathname === "/";
       if (looksHtml) {
         response.headers.set("content-type", "text/html; charset=utf-8");
@@ -331,7 +242,6 @@ if (url.pathname.startsWith("/_image")) {
       contentType.startsWith("text/html") &&
       !/charset=/i.test(contentType)
     ) {
-      // Ensure charset if missing for HTML
       response.headers.set("content-type", "text/html; charset=utf-8");
     }
   } catch (e) {

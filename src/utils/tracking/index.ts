@@ -3,18 +3,23 @@
  * 
  * Usage:
  * 
- * Client-side (in Astro components):
- *   import { fireMetaPixel, fireGoogleAdsConversion, getMetaCookies } from '../utils/tracking'
- *   fireMetaPixel('Lead', { lead_score: 75 })
- *   fireGoogleAdsConversion('AW-16561604318', 'Lead')
+ * Server-side (API endpoints):
+ *   import { sendMetaCAPI, buildMetaUserData, type MetaEventPayload } from '../utils/tracking/meta'
  * 
- * Server-side API endpoints:
- *   import { sendMetaCAPI, buildMetaUserData } from '../utils/tracking/meta'
- *   import { sendGoogleAdsEnhancedConversion } from '../utils/tracking/googleAds'
+ * Client-side (Astro component scripts):
+ *   import { fireMetaPixel, getMetaCookies } from '../utils/tracking'
+ *   import { fireGoogleAdsConversion } from '../utils/tracking/googleAds'
+ * 
+ * Event flow:
+ *   1. Middleware bootstraps cookies (uuid, _fbc, _fbp, event_id) + geolocation
+ *   2. Layout.astro fires client-side PageView (fbq) + server-side PageView (POST /api/track)
+ *   3. Lead events fire from /forms/leads-astro (server) + fbqTrack('Lead') (client)
+ *   4. Video progress fires from client JS → POST /api/video-progress
+ *   5. Purchase fires from Hotmart webhook → /api/wh/[id]
  * 
  * Environment variables needed:
- *   META_PIXEL_ID=879805447822781 (comma-separated for multiple)
- *   META_ACCESS_TOKEN=EAADzCoQr2C8... (comma-separated, same order)
+ *   META_PIXEL_ID=id1,id2 (comma-separated for multiple)
+ *   META_PIXEL_ACCESS_TOKEN=tok1,tok2 (comma-separated, same order)
  *   GOOGLE_ADS_ID=AW-16561604318
  *   GOOGLE_ADS_LEAD_LABEL=Lead
  *   GOOGLE_ADS_PURCHASE_LABEL=Purchase
