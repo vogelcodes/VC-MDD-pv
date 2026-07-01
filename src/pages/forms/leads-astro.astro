@@ -92,48 +92,6 @@ if (Astro.request.method === "POST") {
   const source = data.get("source") || "";
   const searchParams = new URLSearchParams(source.toString().split("?")[1]);
   const offerUrl = data.get("offerUrl") || "";
-
-  // Survey fields
-  const babyBirthDate = data.get("baby_birth_date")?.toString() || "";
-  const usingFormula = data.get("using_formula")?.toString() || "";
-  const difficulty = data.get("difficulty")?.toString() || "";
-  const backToWork = data.get("back_to_work")?.toString() || "";
-
-  // Compute lead score
-  let leadScore = 0;
-  const today = new Date();
-  
-  if (babyBirthDate) {
-    try {
-      const birthDate = new Date(babyBirthDate);
-      const timeSinceBirthDays = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (timeSinceBirthDays > 60) {
-        leadScore += 20;
-      }
-    } catch (e) {
-      console.error("Error parsing baby birth date:", e);
-    }
-  }
-  
-  if (usingFormula === "sim") {
-    leadScore += 25;
-  }
-  
-  if (backToWork === "sim") {
-    leadScore += 20;
-  } else if (backToWork === "ja_voltei") {
-    leadScore += 30;
-  }
-  
-  const difficultyLower = difficulty.toLowerCase();
-  const urgencyWords = ["desespero", "angustia", "não aguento", "estress", "medo", "não sei mais o que fazer"];
-  if (urgencyWords.some(word => difficultyLower.includes(word))) {
-    leadScore += 15;
-  }
-  
-  // Clamp score between 0-100
-  leadScore = Math.min(100, Math.max(0, leadScore));
-  const isHighUrgency = leadScore >= 70;
   //lets concatanate all search params values with "|"
   const sck = Array.from(searchParams.entries())
     .map(([key, value]) =>
@@ -220,7 +178,7 @@ if (Astro.request.method === "POST") {
   // Send server-side Lead event to Meta CAPI
   if (!DRY_RUN) {
     sendMetaCAPI(metaEventData.data as MetaEventPayload[]).catch((err) =>
-      console.error("Error sending Lead to Meta CAPI:", err)
+      console.error("Error sending Lead to Meta CAPI:", err),
     );
   } else {
     console.log("DEBUG MODE: Not sending to Meta");
@@ -244,11 +202,9 @@ if (Astro.request.method === "POST") {
     leadRegion: string | undefined, // Use potentially undefined values
     leadUserAgentOS: string | undefined, // Use potentially undefined value
     leadSource: string,
-    leadScore: number,
-    isHighUrgency: boolean,
   ) {
-    const urgencyLabel = isHighUrgency ? "🚨 HIGH_URGENCY" : "";
     const leadsList = await fetchLeads();
+    const leadScore = 0; // Placeholder
     const emailCount = leadsList.filter(
       (item) =>
         item.email?.trim().toLowerCase() === email?.trim().toLowerCase(),
@@ -256,11 +212,11 @@ if (Astro.request.method === "POST") {
     const telegramURL =
       TELEGRAM_BOT_URL &&
       `${TELEGRAM_BOT_URL}&text=${encodeURIComponent(
-        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\nScore: ${leadScore}/100 ${urgencyLabel}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
+        `${emailCount <= 1 ? "Nova Lead:" : emailCount + "x Lead:"}\n${leadName}\n${leadEmail}\n${leadIntlPhone}\n${"CTA: " + (leadCta ?? "")}\n${leadCountryCode || "N/A"} - ${leadCity || "N/A"} - ${leadRegion || "N/A"}\n${leadUserAgentOS || "N/A"}\n${decodeURIComponent(leadSource ?? "")}\nhttps://api.whatsapp.com/send?phone=${leadIntlPhone
           .replace("+", "")
           .trim()}&text=${encodeURIComponent(
           `Oi ${leadName.split(" ")[0]}! Tudo bem?❤\n\nAqui é a Bárbara e faço parte da equipe do Lactoflow.🥰\n\nVi que você se interessou pelo curso Lactoflow.\n\nPosso te ajudar a entender se o curso é o melhor caminho pra você.\n\nVocê está com alguma dificuldade com a sua amamentação?`, // Use first name from passed name
-        )}`
+        )}`,
       )}`;
 
     if (n8n_WEBHOOK_URL) {
@@ -284,7 +240,7 @@ if (Astro.request.method === "POST") {
           phid: phid,
           clarityID: clarityID,
           lead_score: leadScore,
-          high_urgency: isHighUrgency ? "true" : "false",
+          high_urgency: "false",
           // Use original form fields for sheet
         }),
       }).catch((err) => console.error("n8n webhook error:", err));
@@ -321,7 +277,7 @@ if (Astro.request.method === "POST") {
           phid: phid,
           clarityID: clarityID,
           lead_score: leadScore,
-          high_urgency: isHighUrgency ? "true" : "false",
+          high_urgency: "false",
         }),
       })
         .then((res) => res.json())
@@ -344,8 +300,6 @@ if (Astro.request.method === "POST") {
     stateOrRegion, // Pass potentially updated state/region
     userAgentInfo.os.name, // Pass OS name
     source.toString(),
-    leadScore,
-    isHighUrgency,
   );
 
   if (!DRY_RUN) {

@@ -164,27 +164,16 @@ let searchParams = Astro.url.searchParams;
     <CTA
       ctaOption="1"
       label="Quero aumentar minha produção de leite com segurança"
-      installments={"12"}
-      installmentValue={"20,37"}
-      total={"197,00"}
+      price
     />
     <Depos />
-    <CTA
-      ctaOption="2"
-      label="Você também pode aumentar a sua produção"
-      installments={"12"}
-      installmentValue={"20,37"}
-      total={"197,00"}
-    />
+    <CTA ctaOption="2" label="Você também pode aumentar a sua produção" price />
     <Furadeira />
     <Furadeira2 />
     <Bonus />
     <CTA
       ctaOption="3"
       price
-      installments={"12"}
-      installmentValue={"29,94"}
-      total={"297,00"}
       label="Quero garantir minha vaga no LactoFlow com todos os bônus"
     />
     <Conteudo />
@@ -193,9 +182,6 @@ let searchParams = Astro.url.searchParams;
     <CTA
       ctaOption="4"
       price
-      installments={"12"}
-      installmentValue={"29,94"}
-      total={"297,00"}
       label="Sim, eu quero começar com apoio e segurança"
     />
     <div class="flex flex-col text-center sm:flex-row sm:text-left">
@@ -218,7 +204,7 @@ let searchParams = Astro.url.searchParams;
       >
       <PreCheckout
         clientID={clientUuid?.value}
-        offerUrl={"https://pay.hotmart.com/O84147403X?off=w49bayjs&checkoutMode=10"}
+        offerUrl={"https://pay.hotmart.com/O84147403X?off=ambi4xnz&checkoutMode=10"}
       />
     </div>
   </div>
