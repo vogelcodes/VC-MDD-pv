@@ -51,6 +51,7 @@ const eventId =
       position: relative;
       width: 100vw;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -60,12 +61,15 @@ const eventId =
       position: relative;
       width: 100vw;
       height: 100vh;
+      height: 100dvh;
       background: #000;
     }
     @media (orientation: landscape) {
       #video-container {
         width: 56.25vh; /* 9/16 aspect ratio */
+        width: 56.25dvh;
         height: 100vh;
+        height: 100dvh;
         margin: 0 auto;
       }
     }
@@ -74,6 +78,42 @@ const eventId =
       background: #1e3a5f;
       min-height: 100vh;
       z-index: 1;
+    }
+    #video-cta {
+      position: fixed;
+      top: calc(64px + env(safe-area-inset-top, 0px));
+      left: max(12px, env(safe-area-inset-left, 0px));
+      right: max(12px, env(safe-area-inset-right, 0px));
+      z-index: 30;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #video-cta[hidden] {
+      display: none;
+    }
+    #video-cta-button {
+      pointer-events: auto;
+      min-height: 48px;
+      max-width: 100%;
+      padding: 12px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-bottom: 3px solid #255a16;
+      border-radius: 999px;
+      background: #07a71c;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+    #video-cta-button:hover {
+      background: #236c0f;
+    }
+    #video-cta-button:focus-visible {
+      outline: 3px solid #fff;
+      outline-offset: 3px;
     }
     #custom-overlay {
       position: absolute;
@@ -262,6 +302,18 @@ const eventId =
     </div>
   </div>
 
+  <div id="video-cta">
+    <button
+      id="video-cta-button"
+      type="button"
+      aria-haspopup="dialog"
+      aria-controls="modal"
+      aria-expanded="false"
+    >
+      Quero entrar no LactoFlow
+    </button>
+  </div>
+
   <!-- Content Section (scrollable content from index) -->
   <section id="content-section" class="bg-blue">
     <div class="flex flex-col items-center space-y-4 py-8">
@@ -300,6 +352,9 @@ const eventId =
   <!-- Modal -->
   <div
     id="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Entrar no LactoFlow"
     class="hidden fixed inset-0 items-start justify-center bg-blue/70 z-50"
   >
     <div
@@ -484,8 +539,31 @@ const eventId =
     import { isModalOpen, ctaValue } from "../../store";
 
     const modal = document.getElementById("modal") as HTMLDivElement;
+    const videoWrapper = document.getElementById("video-wrapper");
+    const floatingCta = document.getElementById("video-cta");
+    const floatingCtaButton = document.getElementById("video-cta-button");
+    let videoVisible = true;
+    let modalOpen = false;
+    let modalTrigger: HTMLElement | null = null;
+
+    function updateFloatingCta() {
+      if (floatingCta) floatingCta.hidden = !videoVisible || modalOpen;
+      floatingCtaButton?.setAttribute("aria-expanded", String(modalOpen));
+    }
+
+    if (videoWrapper) {
+      // Keep the CTA only while enough of the video remains below the top button.
+      const observer = new IntersectionObserver(([entry]) => {
+        videoVisible = entry.isIntersecting;
+        updateFloatingCta();
+      }, { rootMargin: "-128px 0px 0px 0px" });
+      observer.observe(videoWrapper);
+    }
+
+    floatingCtaButton?.addEventListener("click", () => openModal("video-flutuante"));
 
     function openModal(cta: string) {
+      modalTrigger = document.activeElement as HTMLElement | null;
       const form = document.querySelector("form");
       if (form) {
         const ctaInput = form.querySelector('input[name="cta"]');
@@ -499,11 +577,19 @@ const eventId =
 
       modal.classList.remove("hidden");
       modal.classList.add("flex");
+      modalOpen = true;
+      updateFloatingCta();
+      document.getElementById("close")?.focus({ preventScroll: true });
     }
     function closeModal() {
       if (!modal) return;
       modal.classList.add("hidden");
       modal.classList.remove("flex");
+      modalOpen = false;
+      updateFloatingCta();
+      if (modalTrigger?.getClientRects().length) {
+        modalTrigger.focus({ preventScroll: true });
+      }
     }
     isModalOpen.set(false);
 
